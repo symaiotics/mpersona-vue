@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from './pages/Home.vue'
+import Home from '@/pages/Home.vue'
+import Create from '@/pages/Create.vue'
+import Interact from '@/pages/Interact.vue'
+
+
 import Testimonials from './pages/Testimonials.vue'
 import Blog from './pages/Blog.vue'
 import BlogPost from './pages/BlogPost.vue'
@@ -24,32 +28,43 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name:'home',
       component: Home
     },
     {
-      path: '/testimonials',
-      component: Testimonials
+      path: '/create',
+      name:'create',
+      component: Create
     },
     {
-      path: '/blog',
-      component: Blog
+      path: '/interact',
+      name:'interact',
+      component: Interact
     },
-    {
-      path: '/blog-post',
-      component: BlogPost
-    },
-    {
-      path: '/about',
-      component: About
-    },
-    {
-      path: '/contact',
-      component: Contact
-    },
-    {
-      path: '/help',
-      component: Help
-    },
+    // {
+    //   path: '/testimonials',
+    //   component: Testimonials
+    // },
+    // {
+    //   path: '/blog',
+    //   component: Blog
+    // },
+    // {
+    //   path: '/blog-post',
+    //   component: BlogPost
+    // },
+    // {
+    //   path: '/about',
+    //   component: About
+    // },
+    // {
+    //   path: '/contact',
+    //   component: Contact
+    // },
+    // {
+    //   path: '/help',
+    //   component: Help
+    // },
     {
       path: '/:pathMatch(.*)*',
       component: PageNotFound

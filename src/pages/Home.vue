@@ -15,42 +15,55 @@
       <!-- Page sections -->
       <HeroHome />
       <Stats />
-
-
       <Carousel />
-      <Tabs />
-      <Process />
+      <Personas />
+      <!-- <Process />
       <PricingTables />
       <TestimonialsBlocks />
       <FeaturesBlocks />
-      <Cta />
+      <Cta /> -->
 
     </main>
 
     <!-- Site footer -->
-    <Footer />
+    <!-- <Footer /> -->
 
   </div>
 </template>
 
 <script setup>
 
-import {ref, onMounted} from 'vue';
-import Header from './../partials/Header.vue'
-import PageIllustration from './../partials/PageIllustration.vue'
-import HeroHome from './../partials/HeroHome.vue'
-import Stats from './../partials/Stats.vue'
-import Carousel from './../partials/Carousel.vue'
-import Tabs from './../partials/Tabs.vue'
-import Process from './../partials/Process.vue'
-import PricingTables from './../partials/PricingTables.vue'
-import TestimonialsBlocks from './../partials/TestimonialsBlocks.vue'
-import FeaturesBlocks from './../partials/FeaturesBlocks.vue'
-import Cta from './../partials/Cta.vue'
-import Footer from './../partials/Footer.vue'
+import { ref, onMounted } from 'vue';
+import Header from '@/partials/Header.vue'
+import PageIllustration from '@/partials/PageIllustration.vue'
+import HeroHome from '@/partials/HeroHome.vue'
+import Stats from '@/partials/Stats.vue'
+import Carousel from '@/partials/Carousel.vue'
+import Personas from '@/partials/Personas.vue'
+import Process from '@/partials/Process.vue'
+import PricingTables from '@/partials/PricingTables.vue'
+import TestimonialsBlocks from '@/partials/TestimonialsBlocks.vue'
+import FeaturesBlocks from '@/partials/FeaturesBlocks.vue'
+import Cta from '@/partials/Cta.vue'
+import Footer from '@/partials/Footer.vue'
 
-onMounted(()=>{
+//composables
+import { usePersonas } from '@/composables/usePersonas.js'
+import { useCategories } from '@/composables/useCategories.js'
+const { personas, usedCategories, skills, getPersonas, getSkills, getUsedCategories } = usePersonas()
+const { categories, getCategories, createAdminCategories } = useCategories()
+
+onMounted(() => {
   console.log("Accessing the API at", import.meta.env.VITE_API_URL)
+
+  //Personas
+  getPersonas();
+  getSkills();
+
+  //Categories
+  getUsedCategories();
+  createAdminCategories();
+
 })
 
 
