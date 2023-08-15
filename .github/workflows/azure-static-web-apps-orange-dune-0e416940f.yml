@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     env:
-      VITE_API_URL: https://api.mpersona.com
+      VITE_API_URL: https://mpersona-node.azurewebsites.net
     steps:
       - uses: actions/checkout@v3
         with:
