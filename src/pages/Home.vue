@@ -15,6 +15,8 @@
       <!-- Page sections -->
       <HeroHome />
       <Stats />
+
+
       <Carousel />
       <Tabs />
       <Process />
@@ -31,7 +33,9 @@
   </div>
 </template>
 
-<script>
+<script setup>
+
+import {ref, onMounted} from 'vue';
 import Header from './../partials/Header.vue'
 import PageIllustration from './../partials/PageIllustration.vue'
 import HeroHome from './../partials/HeroHome.vue'
@@ -45,21 +49,10 @@ import FeaturesBlocks from './../partials/FeaturesBlocks.vue'
 import Cta from './../partials/Cta.vue'
 import Footer from './../partials/Footer.vue'
 
-export default {
-  name: 'Home',
-  components: {
-    Header,
-    PageIllustration,
-    HeroHome,
-    Stats,
-    Carousel,
-    Tabs,
-    Process,
-    PricingTables,
-    TestimonialsBlocks,
-    FeaturesBlocks,
-    Cta,
-    Footer,
-  },
-}
+onMounted(()=>{
+  console.log("Accessing the API at", import.meta.env.VITE_API_URL)
+})
+
+
+
 </script>
