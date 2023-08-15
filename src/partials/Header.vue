@@ -17,16 +17,16 @@
         <nav class="hidden md:flex md:grow">
 
           <!-- Desktop menu links -->
-          <!-- <ul class="flex grow flex-wrap items-center font-medium">
+          <ul class="flex grow flex-wrap items-center font-medium">
             <li>
-              <router-link to="/about" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">About</router-link>
+              <router-link to="/create" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Create Persona</router-link>
             </li>
             <li>
-              <router-link to="/blog" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Blog</router-link>
+              <router-link to="/interact" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Interact</router-link>
             </li>
             <li>
               <router-link to="/testimonials" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Testimonials</router-link>
-            </li> -->
+            </li> 
             <!-- 1st level: hover -->
             <!-- <Dropdown title="Resources">
               <li>
@@ -35,8 +35,8 @@
               <li>
                 <router-link to="/404" class="text-sm text-gray-600 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-500 flex py-2 px-4 leading-tight">404</router-link>
               </li>
-            </Dropdown>
-          </ul> -->
+            </Dropdown>-->
+          </ul>
 
           <!-- Desktop lights switch -->
           <div class="form-switch flex flex-col justify-center ml-3">
