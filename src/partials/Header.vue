@@ -120,12 +120,12 @@
                 <!-- Links -->
                 <ul>
                   <li>
-                    <router-link to="/about" class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">About</router-link>
+                    <router-link to="/create" class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Create</router-link>
                   </li>
                   <li>
-                    <router-link to="/blog" class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Blog</router-link>
+                    <router-link to="/interact" class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>
                   </li>
-                  <li>
+                  <!-- <li>
                     <router-link to="/testimonials" class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Testimonials</router-link>
                   </li>
                   <li class="py-2 my-2 border-t border-b border-gray-200 dark:border-gray-800">
@@ -141,7 +141,7 @@
                   </li>
                   <li>
                     <router-link to="/contact" class="font-medium w-full inline-flex items-center justify-center border border-transparent px-4 py-2 my-2 rounded text-white bg-teal-500 hover:bg-teal-400 transition duration-150 ease-in-out">Request code</router-link>
-                  </li>
+                  </li> -->
                 </ul>
               </div>
             </nav>
