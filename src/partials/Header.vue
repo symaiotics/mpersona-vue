@@ -24,9 +24,9 @@
             <li>
               <router-link to="/interact" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Interact</router-link>
             </li>
-            <li>
+            <!-- <li>
               <router-link to="/testimonials" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Testimonials</router-link>
-            </li> 
+            </li>  -->
             <!-- 1st level: hover -->
             <!-- <Dropdown title="Resources">
               <li>
