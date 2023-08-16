@@ -1,4 +1,3 @@
-// mouse.js
 import { ref, onMounted, onUnmounted } from 'vue'
 import axios from "axios";
 

@@ -1,13 +1,8 @@
-// mouse.js
 import { ref, onMounted, onUnmounted } from 'vue'
 import axios from "axios";
 
-var currentModel = ref(0)
-var models = [
-    "gpt-4",
-    "gpt-3.5-turbo-16k",
-    "gpt-3.5-turbo",
-];
+import { useModels } from '@/composables/useModels.js'
+const { adminModels, selectedModel } = useModels()
 
 var temperature = ref(0.5)
 var promptResponse = ref(null)
@@ -22,7 +17,7 @@ export function usePrompts() {
                 var params = {
                     userPrompt: userPrompt,
                     systemPrompt: systemPrompt,
-                    model: models[currentModel.value],
+                    model: adminModels.value[selectedModel.value].model,
                     temperature: temperature.value
                 }
 

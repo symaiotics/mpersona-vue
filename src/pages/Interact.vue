@@ -52,6 +52,8 @@
                         placeholder="User the instructions"></textarea>
 
 
+                        <div>You've used {{ tokens }} tokens out of a maximum {{ parseInt(adminModels[selectedModel].maxTokens/4*3) }} </div>
+
                       <div class="w-full">
                         <button @click="doPrompt"
                           class="btn text-black bg-teal-500 hover:bg-teal-400 w-full flex items-center mt-3">
@@ -105,6 +107,9 @@
                           </div>
                         </template>
                       </template>
+
+                      <!-- <D3GC title="Results Graph" :darkMode="false" :nodesSource = "graphData.nodes" :linksSource = "graphData.links" /> -->
+                      
                     </div>
                   </div>
 
@@ -130,7 +135,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+
+
+import D3GC from '@symaiotics/d3-graph-creator-tailwind'
+import '@symaiotics/d3-graph-creator-tailwind/dist/style.css';
 
 import Header from './../partials/Header.vue'
 import PageIllustration from './../partials/PageIllustration.vue'
@@ -138,6 +147,7 @@ import Footer from './../partials/Footer.vue'
 import Personas from '@/partials/Personas.vue'
 
 
+import { useModels } from '@/composables/useModels.js'
 import { usePrompts } from '@/composables/usePrompts.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
@@ -145,9 +155,176 @@ const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkill
 const { categories, selectedCategory, getCategories, createAdminCategories } = useCategories()
 
 const { promptOpenAI, promptResponse, promptResponseCode } = usePrompts()
+const { adminModels, selectedModel } = useModels()
 
 let userPrompt = ref("");
 let status = ref("Waiting");
+let tokens = computed(()=>{
+  return parseInt((userPrompt.value.length + selectedPersona.value.basePrompt.length)/4 )
+});
+
+let graphData =  
+
+{
+    "type": "networkGraph",
+    "nodes": [
+        {
+            "id": "timothy-overturf",
+            "name": {
+                "en": "Timothy Overturf",
+                "fr": "Timothy Overturf"
+            },
+            "group": 1,
+            "radius": 30
+        },
+        {
+            "id": "sisu-capital",
+            "name": {
+                "en": "Sisu Capital, LLC",
+                "fr": "Sisu Capital, LLC"
+            },
+            "group": 2,
+            "radius": 30
+        },
+        {
+            "id": "hans-overturf",
+            "name": {
+                "en": "Hansueli 'Hans' Overturf",
+                "fr": "Hansueli 'Hans' Overturf"
+            },
+            "group": 3,
+            "radius": 30
+        },
+        {
+            "id": "sec",
+            "name": {
+                "en": "Securities and Exchange Commission",
+                "fr": "Commission des valeurs mobilières et des changes"
+            },
+            "group": 4,
+            "radius": 30
+        },
+        {
+            "id": "alice-liu-jensen",
+            "name": {
+                "en": "Alice Liu Jensen",
+                "fr": "Alice Liu Jensen"
+            },
+            "group": 5,
+            "radius": 30
+        },
+        {
+            "id": "rahul-kolhatkar",
+            "name": {
+                "en": "Rahul Kolhatkar",
+                "fr": "Rahul Kolhatkar"
+            },
+            "group": 5,
+            "radius": 30
+        },
+        {
+            "id": "joseph-sansone",
+            "name": {
+                "en": "Joseph Sansone",
+                "fr": "Joseph Sansone"
+            },
+            "group": 5,
+            "radius": 30
+        },
+        {
+            "id": "john-han",
+            "name": {
+                "en": "John Han",
+                "fr": "John Han"
+            },
+            "group": 5,
+            "radius": 30
+        }
+    ],
+    "links": [
+        {
+            "source": "timothy-overturf",
+            "target": "sisu-capital",
+            "value": 1,
+            "type": {
+                "en": "Owner of",
+                "fr": "Propriétaire de"
+            }
+        },
+        {
+            "source": "hans-overturf",
+            "target": "timothy-overturf",
+            "value": 1,
+            "type": {
+                "en": "Father of",
+                "fr": "Père de"
+            }
+        },
+        {
+            "source": "sec",
+            "target": "timothy-overturf",
+            "value": 1,
+            "type": {
+                "en": "Charged",
+                "fr": "Inculpé"
+            }
+        },
+        {
+            "source": "sec",
+            "target": "sisu-capital",
+            "value": 1,
+            "type": {
+                "en": "Charged",
+                "fr": "Inculpé"
+            }
+        },
+        {
+            "source": "sec",
+            "target": "hans-overturf",
+            "value": 1,
+            "type": {
+                "en": "Charged",
+                "fr": "Inculpé"
+            }
+        },
+        {
+            "source": "alice-liu-jensen",
+            "target": "sec",
+            "value": 1,
+            "type": {
+                "en": "Investigator for",
+                "fr": "Enquêteur pour"
+            }
+        },
+        {
+            "source": "rahul-kolhatkar",
+            "target": "sec",
+            "value": 1,
+            "type": {
+                "en": "Supervisor for",
+                "fr": "Superviseur pour"
+            }
+        },
+        {
+            "source": "joseph-sansone",
+            "target": "sec",
+            "value": 1,
+            "type": {
+                "en": "Chief of Enforcement Division for",
+                "fr": "Chef de la Division de l'application pour"
+            }
+        },
+        {
+            "source": "john-han",
+            "target": "sec",
+            "value": 1,
+            "type": {
+                "en": "Litigator for",
+                "fr": "Avocat pour"
+            }
+        }
+    ]
+}
 
 
 
@@ -164,6 +341,8 @@ onMounted(() => {
 function doPrompt() {
 
   try {
+    promptResponse.value = null;
+    promptResponseCode.value = null;
     status.value = "Processing";
     promptOpenAI(userPrompt.value, selectedPersona.value.basePrompt).then((response) => {
       status.value = "Waiting"

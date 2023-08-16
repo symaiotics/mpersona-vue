@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@headlessui/vue": "^1.7.13",
+    "@symaiotics/d3-graph-creator-tailwind": "^0.0.10",
     "@tailwindcss/forms": "^0.5.3",
     "aos": "^3.0.0-beta.6",
     "axios": "^1.4.0",
