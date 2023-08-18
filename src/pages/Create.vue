@@ -148,7 +148,6 @@ import PageIllustration from './../partials/PageIllustration.vue'
 import Footer from './../partials/Footer.vue'
 import { useRouter, useRoute } from 'vue-router'
 
-
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 const { categories, getCategories, createAdminCategories } = useCategories()

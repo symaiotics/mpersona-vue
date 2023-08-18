@@ -16,6 +16,7 @@ jobs:
     name: Build and Deploy Job
     env:
       VITE_API_URL: https://api.mpersona.com
+      VITE_WEBSOCKET_URL: ws://api.mpersona.com
     steps:
       - uses: actions/checkout@v3
         with:

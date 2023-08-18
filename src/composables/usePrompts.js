@@ -5,27 +5,76 @@ import { useModels } from '@/composables/useModels.js'
 const { adminModels, selectedModel } = useModels()
 
 var temperature = ref(0.5)
-var promptResponse = ref(null)
+var promptResponse = ref("")
 var promptResponseCode = ref(null)
-
+let ws = null;
+let wsUuid = ref(null)
 // by convention, composable function names start with "use"
 export function usePrompts() {
-    async function promptOpenAI(userPrompt, systemPrompt) {
 
+
+    async function websocketConnection() {
+
+        ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
+
+        // Set up an event listener for when the connection is opened
+        ws.addEventListener('open', (event) => {
+            console.log('WebSocket connection opened:', event);
+
+            // Send a message to the server
+            // ws.send('Hello, server!');
+        });
+
+        // Set up an event listener for when a message is received from the server
+        ws.addEventListener('message', (event) => {
+            // console.log('Message received from server:', event.data);
+            const data = JSON.parse(event.data);
+
+            if (data.uuid) {
+                // Store the client ID received from the server
+                console.log("WS UUID Received", data.uuid)
+                wsUuid.value = data.uuid;
+            }
+
+            if (data.fragment) {
+                console.log('data.fragment', data.fragment)
+                promptResponse.value += data.fragment.toString();
+                promptResponse.value = promptResponse.value.replaceAll('\n', "<br/>")
+            }
+
+        });
+
+        // Set up an event listener for when the connection is closed
+        ws.addEventListener('close', (event) => {
+            console.log('WebSocket connection closed:', event);
+        });
+
+        // Set up an event listener for errors
+        ws.addEventListener('error', (event) => {
+            console.log('WebSocket error:', event);
+        });
+
+    }
+
+
+    async function promptOpenAI(model, userPrompt, systemPrompt) {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = {
+                    wsUuid: wsUuid.value,
+                    model: selectedModel.value.model,
                     userPrompt: userPrompt,
                     systemPrompt: systemPrompt,
-                    model: adminModels.value[selectedModel.value].model,
+                    // model: adminModels.value[selectedModel.value].model,
                     temperature: temperature.value
                 }
 
+                console.log(params)
                 // console.log("params", params)
                 var response = await axios.post(import.meta.env.VITE_API_URL + '/prompts', params);
 
                 // console.log(response)
-                promptResponse.value = response.data.payload.text[0].message.content;
+                promptResponse.value = response.data.payload.text;
                 promptResponse.value = promptResponse.value.replaceAll('\n', "<br/>")
                 promptResponseCode.value = response.data.payload.code;
 
@@ -54,6 +103,7 @@ export function usePrompts() {
         promptResponse,
         promptResponseCode,
 
-        promptOpenAI
+        promptOpenAI,
+        websocketConnection
     }
 }

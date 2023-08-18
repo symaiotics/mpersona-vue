@@ -33,6 +33,11 @@ let adminCategories = ref(
             alpha: 'dataScientist',
             label: { en: 'Data Scientist', fr: "Scientifique des données" }
         },
+        {
+            code: 6,
+            alpha: 'hrPay',
+            label: { en: 'HR and Pay', fr: "RH et paie" }
+        }
     ]
 )
 
