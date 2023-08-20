@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
 import Create from '@/pages/Create.vue'
 import Interact from '@/pages/Interact.vue'
+import Join from '@/pages/Join.vue'
+import Login from '@/pages/Login.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -40,6 +42,16 @@ const router = createRouter({
       path: '/interact',
       name:'interact',
       component: Interact
+    },
+    {
+      path: '/join',
+      name:'join',
+      component: Join
+    },
+    {
+      path: '/login',
+      name:'login',
+      component: Login
     },
     // {
     //   path: '/testimonials',
