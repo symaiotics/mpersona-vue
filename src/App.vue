@@ -1,9 +1,9 @@
 <template>
 
 
-<NotificationGroup group="foo">
+<NotificationGroup group="foo" >
   <div
-    class="fixed inset-0 flex items-start justify-end p-6 px-4 py-6 pointer-events-none"
+    class="fixed inset-0 flex items-start justify-end p-6 px-4 py-6 pointer-events-none" style = "z-index:1000"
   >
     <div class="w-full max-w-sm">
       <Notification
@@ -47,8 +47,14 @@
 import {onMounted} from 'vue'
 import AOS from 'aos'
 
+import { useTokens } from '@/composables/useTokens.js'
+const { recallTokens } = useTokens();
+
 
 onMounted(()=>{
+
+  recallTokens();
+
   AOS.init({
       once: true,
       disable: 'phone',

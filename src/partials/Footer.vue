@@ -20,8 +20,8 @@
         <div class="grid md:grid-cols-12 gap-8 lg:gap-20 mb-8 md:mb-12">
 
           <!-- 1st block -->
-          <div class="md:col-span-2 lg:col-span-3">
             <!-- Logo -->
+            <!-- <div class="md:col-span-2 lg:col-span-3">
             <router-link class="inline-block" to="/" aria-label="Cruip">
               <svg class="w-8 h-8" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -39,28 +39,25 @@
               </svg>
             </router-link>
           </div>
-
+ -->
           <!-- 2nd, 3rd, 4th and 5th blocks -->
           <div class="md:col-span-10 lg:col-span-9 grid grid-cols-2 md:grid-cols-4 gap-8">
 
             <!-- 2nd block -->
             <div class="text-sm">
-              <h6 class="font-medium uppercase mb-2">Products</h6>
+              <h6 class="font-medium uppercase mb-2">Open Source Repos</h6>
               <ul>
                 <li class="mb-1">
-                  <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Drag And Drop</router-link>
+                  <a href = "https://github.com/symaiotics/mpersona-vue" target = "_blank" class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">mPersona - Vue.js</a>
                 </li>
                 <li class="mb-1">
-                  <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Visual Studio X</router-link>
-                </li>
-                <li class="mb-1">
-                  <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Easy Content</router-link>
+                  <a href = "https://github.com/symaiotics/mpersona-node" target = "_blank" class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">mPersona - Node.js</a>
                 </li>
               </ul>
             </div>
 
             <!-- 3rd block -->
-            <div class="text-sm">
+            <!-- <div class="text-sm">
               <h6 class="font-medium uppercase mb-2">Resources</h6>
               <ul>
                 <li class="mb-1">
@@ -79,10 +76,10 @@
                   <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Nostrud exercitation</router-link>
                 </li>
               </ul>
-            </div>
+            </div> -->
 
             <!-- 4th block -->
-            <div class="text-sm">
+            <!-- <div class="text-sm">
               <h6 class="font-medium uppercase mb-2">Company</h6>
               <ul>
                 <li class="mb-1">
@@ -101,10 +98,10 @@
                   <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Online communities</router-link>
                 </li>
               </ul>
-            </div>
+            </div> -->
 
             <!-- 5th block -->
-            <div class="text-sm">
+            <!-- <div class="text-sm">
               <h6 class="font-medium uppercase mb-2">Support</h6>
               <ul>
                 <li class="mb-1">
@@ -120,7 +117,7 @@
                   <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Open-source</router-link>
                 </li>
               </ul>
-            </div>
+            </div> -->
 
           </div>
 
@@ -130,7 +127,7 @@
         <div class="md:flex md:items-center md:justify-between">
 
           <!-- Social links -->
-          <ul class="flex mb-4 md:order-2 md:ml-4 md:mb-0">
+          <!-- <ul class="flex mb-4 md:order-2 md:ml-4 md:mb-0">
             <li>
               <a class="flex justify-center items-center text-white bg-teal-500 dark:text-teal-500 dark:bg-gray-800 hover:underline hover:bg-teal-600 rounded-full transition duration-150 ease-in-out" href="#0" aria-label="Twitter">
                 <svg class="w-8 h-8 fill-current" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -168,15 +165,15 @@
                 </svg>
               </a>
             </li>
-          </ul>
+          </ul> -->
 
           <!-- Middle links -->
-          <div class="text-sm md:order-1 text-gray-700 mb-2 md:mb-0">
+          <!-- <div class="text-sm md:order-1 text-gray-700 mb-2 md:mb-0">
             <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Terms</router-link> · <router-link class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">Privacy Policy</router-link>
-          </div>
+          </div> -->
 
           <!-- Copyrights note -->
-          <div class="text-gray-600 dark:text-gray-400 text-sm mr-4">&copy; Cruip.com. All rights reserved.</div>
+          <div class="text-gray-600 dark:text-gray-400 text-sm mr-4">&copy; Symaiotics Corporation. Released under MIT License.</div>
 
         </div>
 

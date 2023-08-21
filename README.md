@@ -1,6 +1,18 @@
-# Appy Vue
 
-Vue.js landing page template designed by Cruip.
+# mPersona - Vue.js
+mPersona is a MIT licensed took to build custom personas to facilitate interaction with Large Language Model services like Open AI's GPT4.
+
+## About
+mPersona is built in 2 parts, a Vue.js web interface (this package) and a Node.js server side application.
+
+## Configuration
+The application also requires environment variables to operate
+- VITE_API_URL=http://localhost:3000
+- VITE_WEBSOCKET_URL=ws://localhost:3000
+
+## License
+Licensed under MIT. ALl private and commercial uses applicable.
+
 
 ## Project setup
 ```
@@ -17,10 +29,3 @@ npm run dev
 npm run build
 ```
 
-### Customize configuration
-See [Configuration Reference](https://vitejs.dev/guide/).
-
-## Support notes
-We are shipping our templates with a very basic Vue.js configuration to let you quickly get into the development process, but we don't discourage you from using any other configuration or framework built on the top of Vue. So, please note that any request dealing with Vue (e.g. extra features, customisations, et cetera) is to be considered out of the support scope.
-
-For more information about what support covers, please see our (FAQs)[https://cruip.com/faq/].

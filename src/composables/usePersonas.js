@@ -1,5 +1,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
-import axios from "axios";
+// import axios from "axios";
+import configuredAxios from "@/utils/axios.js"
+
+import { useTokens } from '@/composables/useTokens.js'
+const { tokenDecoded } = useTokens();
+
 
 let personas = ref(null)
 let usedCategories = ref(null)
@@ -12,7 +17,7 @@ export function usePersonas() {
 
     async function getPersonas() {
         try {
-            var response = await axios.get(import.meta.env.VITE_API_URL + '/personas');
+            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas');
             personas.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Personas", personas.value)
@@ -24,7 +29,7 @@ export function usePersonas() {
 
     async function getSkills() {
         try {
-            var response = await axios.get(import.meta.env.VITE_API_URL + '/personas/skills');
+            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas/skills');
             skills.value = response.data.payload;
 
             //TODO enhance to receive the code as well
@@ -35,10 +40,10 @@ export function usePersonas() {
         }
     }
 
-    
+
     async function getUsedCategories() {
         try {
-            var response = await axios.get(import.meta.env.VITE_API_URL + '/personas/categories');
+            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas/categories');
             usedCategories.value = response.data.payload;
 
             //TODO enhance to receive the code as well
@@ -51,10 +56,10 @@ export function usePersonas() {
 
     async function createPersonas(newPersonas) {
         try {
-            if(!Array.isArray(newPersonas)) newPersonas = [newPersonas]
-            var params = {personas:newPersonas}
-            var response = await axios.post(import.meta.env.VITE_API_URL + '/personas', params);  
-            console.log(response.data.payload)      
+            if (!Array.isArray(newPersonas)) newPersonas = [newPersonas]
+            var params = { personas: newPersonas }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas', params);
+            console.log(response.data.payload)
             // currentPersona.value = response;    
             getPersonas();
         }

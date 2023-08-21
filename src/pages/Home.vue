@@ -26,7 +26,7 @@
     </main>
 
     <!-- Site footer -->
-    <!-- <Footer /> -->
+    <Footer />
 
   </div>
 </template>

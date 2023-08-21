@@ -1,6 +1,6 @@
-import { ref } from 'vue'
-import axios from "axios";
-// import {configureAxios} from "@/utils/axios.js"
+import { ref, computed } from 'vue'
+// import axios from "axios";
+import configuredAxios from "@/utils/axios.js"
 
 let newUser = ref({
     username: null,
@@ -19,14 +19,15 @@ let resetPassword = ref({
     password2: null,
 })
 
-let token = ref(null)
-let tokenDecoded = ref(null)
-
-// const {configuredAxios } = configureAxios();
-
-
 // by convention, composable function names start with "use"
 export function useAccounts() {
+
+    function clearToken() {
+        tokenSet.value = false;
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('tokenDecoded')
+    }
+
 
     function resetNewUser() {
         newUser.value =
@@ -56,7 +57,7 @@ export function useAccounts() {
             try {
                 var params = newUser.value;
                 // console.log("Params", params)
-                var response = await axios.post(import.meta.env.VITE_API_URL + '/accounts',  params );
+                var response = await configuredAxios.post('/accounts', params);
                 responseMessage.value = response.data.payload;
                 resolve(responseMessage.value);
                 //TODO enhance to receive the code as well
@@ -73,8 +74,8 @@ export function useAccounts() {
     function login(username, password) {
         return new Promise(async (resolve, reject) => {
             try {
-                var params = {username, password};
-                var response = await axios.post(import.meta.env.VITE_API_URL + '/accounts/login',  params );
+                var params = { username, password };
+                var response = await configuredAxios.post('/accounts/login', params);
                 console.log("Login Response", response)
                 resolve(response.data.payload);
             }
@@ -103,8 +104,6 @@ export function useAccounts() {
     return {
         newUser,
         resetPassword,
-        token,
-        tokenDecoded,
 
         resetNewUser,
         resetResetPassword,

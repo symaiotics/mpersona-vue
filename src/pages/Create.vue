@@ -21,6 +21,17 @@
             <div class="max-w-3xl mx-auto text-center pb-12 md:pb-16">
               <h1 class="h1 font-red-hat-display mb-4">Create a Persona</h1>
               <p class="text-xl text-gray-600 dark:text-gray-400">Build your own persona to enable your AI worker.</p>
+<br/>
+              <div v-if="!token">
+                <p>
+                  Note: You are <b>not</b> logged in, so any personas you create will be visible and usable by the public.</p>
+                <p>If you would like to keep your personas private, please <router-link to = "/join">  make a free account.</router-link></p>
+              </div>
+
+              <div v-if="token">
+                <p>Since you are logged in, your personas will only be visible to you.</p>
+              </div>
+
             </div>
 
             <!-- Contact form -->
@@ -148,8 +159,10 @@ import PageIllustration from './../partials/PageIllustration.vue'
 import Footer from './../partials/Footer.vue'
 import { useRouter, useRoute } from 'vue-router'
 
+import { useTokens } from '@/composables/useTokens.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
+const { token, tokenDecoded } = useTokens()
 const { categories, getCategories, createAdminCategories } = useCategories()
 const { createPersonas } = usePersonas()
 
@@ -164,7 +177,7 @@ let newPersona = ref({
   files: [],
   referenceBlocks: [],
 
-  createdBy: "unknownUser",
+  createdBy: 'public',
 })
 
 const router = useRouter()
@@ -177,7 +190,7 @@ onMounted(() => {
 
 function createNewPersona() {
   createPersonas(newPersona.value);
-  router.push({name: 'home'})
+  router.push({ name: 'home' })
 }
 
 </script>

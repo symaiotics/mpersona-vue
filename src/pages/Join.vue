@@ -20,7 +20,7 @@
             <div class="max-w-3xl mx-auto text-center pb-12 md:pb-16">
               <h1 class="h1 font-red-hat-display mb-4">Create a mPersona Account</h1>
               <p class="text-xl text-gray-600 dark:text-gray-400">Develop as many private personas as you like.</p>
-              <p class="text-l text-gray-600 dark:text-gray-400">Free to join and use while in Alpha testing.</p>
+              <p class="text-l text-gray-600 dark:text-gray-400">Currently free to join and use during Alpha testing.</p>
             </div>
 
             <!-- Contact form -->

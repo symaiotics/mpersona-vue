@@ -78,6 +78,9 @@ import Footer from './../partials/Footer.vue'
 //Plugins
 import { useRouter, useRoute } from 'vue-router'
 
+onMounted(()=>{
+  unsetTokens();
+})
 
 //Components
 
@@ -85,7 +88,9 @@ import { useRouter, useRoute } from 'vue-router'
 import { notify } from "notiwind"
 
 import { useAccounts } from '@/composables/useAccounts.js'
+import { useTokens } from '@/composables/useTokens.js'
 const { login } = useAccounts();
+const { unsetTokens } = useTokens();
 const router = useRouter()
 
 let username = ref(null)
