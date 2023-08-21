@@ -71,17 +71,11 @@
               </svg>
               <span class="sr-only">Switch to light / dark version</span>
             </label>
-
-
-
           </div>
 
           <div v-if = "tokenDecoded" class="form-switch flex flex-col justify-right ml-3 pt-2 italic">
            {{ tokenDecoded.username }}
           </div>
-
-
-
 
         </nav>
 

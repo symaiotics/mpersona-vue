@@ -8,12 +8,19 @@ var temperature = ref(0.5)
 var promptResponse = ref("")
 var promptResponseCode = ref(null)
 let ws = null;
-let wsUuid = ref(null)
+let wsUuid = ref(null);
+
+let pingInterval;
+let pongTimeout;
+
+
 // by convention, composable function names start with "use"
 export function usePrompts() {
 
-
     async function websocketConnection() {
+
+        clearInterval(pingInterval);
+        clearTimeout(pongTimeout);
 
         ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
 
@@ -21,25 +28,39 @@ export function usePrompts() {
         ws.addEventListener('open', (event) => {
             console.log('WebSocket connection opened:', event);
 
-            // Send a message to the server
-            // ws.send('Hello, server!');
+            pingInterval = setInterval(() => {
+                ws.send('ping');
+            }, 5000);
+
         });
 
         // Set up an event listener for when a message is received from the server
         ws.addEventListener('message', (event) => {
             // console.log('Message received from server:', event.data);
-            const data = JSON.parse(event.data);
 
-            if (data.uuid) {
-                // Store the client ID received from the server
-                console.log("WS UUID Received", data.uuid)
-                wsUuid.value = data.uuid;
+            try {
+                const data = JSON.parse(event.data);
+
+                if (data.uuid) {
+                    // Store the client ID received from the server
+                    console.log("WS UUID Received", data.uuid)
+                    wsUuid.value = data.uuid;
+                }
+                else if (data.fragment) {
+                    // console.log('data.fragment', data.fragment)
+                    promptResponse.value += data.fragment.toString();
+                    promptResponse.value = promptResponse.value.replaceAll('\n', "<br/>")
+                }
+                else {
+                    console.log('.')
+                }
+
+
+
+
             }
-
-            if (data.fragment) {
-                console.log('data.fragment', data.fragment)
-                promptResponse.value += data.fragment.toString();
-                promptResponse.value = promptResponse.value.replaceAll('\n', "<br/>")
+            catch (error) {
+                console.log("Error with websocket message", error)
             }
 
         });
@@ -47,6 +68,17 @@ export function usePrompts() {
         // Set up an event listener for when the connection is closed
         ws.addEventListener('close', (event) => {
             console.log('WebSocket connection closed:', event);
+
+            // Clear the Ping interval and Pong timeout
+            clearInterval(pingInterval);
+            clearTimeout(pongTimeout);
+
+            // Optionally: set up logic to attempt reconnection
+            setTimeout(() => {
+                console.log('Attempting to reconnect...');
+                ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
+            }, 500);  // Attempt to reconnect after 5 seconds
+
         });
 
         // Set up an event listener for errors
