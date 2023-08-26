@@ -14,18 +14,20 @@
 
 
       <section class="relative">
-        <div class="max-w-9xl mx-auto px-4 sm:px-6 relative">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 relative">
           <div class="pt-32 pb-12 md:pt-40 md:pb-20">
 
             <!-- Page header -->
-            <div class="max-w-3xl mx-auto text-center pb-12 md:pb-16">
+            <div class="max-w-3xl mx-auto text-center pb-3 md:pb-4">
               <h1 class="h1 font-red-hat-display mb-4">Create a Persona</h1>
               <p class="text-xl text-gray-600 dark:text-gray-400">Build your own persona to enable your AI worker.</p>
-<br/>
+              <br />
               <div v-if="!token">
                 <p>
-                  Note: You are <b>not</b> logged in, so any personas you create will be visible and usable by the public.</p>
-                <p>If you would like to keep your personas private, please <router-link to = "/join">  make a free account.</router-link></p>
+                  Note: You are <b>not</b> logged in, so any personas you create will be visible and usable by the public.
+                </p>
+                <p>If you would like to keep your personas private, please <router-link to="/join"> make a free
+                    account.</router-link></p>
               </div>
 
               <div v-if="token">
@@ -35,37 +37,55 @@
             </div>
 
             <!-- Contact form -->
-            <div class="max-w-xl mx-auto">
-              <div class="flex flex-wrap -mx-3 mb-1">
+            <!-- <div class="max-w-xl mx-auto"> -->
+            <div class="flex flex-wrap -mx-3 mb-1">
 
-                <!-- {{ newPersona }} -->
+              <!-- {{ newPersona }} -->
 
-                <div class="w-full  px-3 mb-4 md:mb-1">
-                  <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="first-name">
-                    Persona Name
-                    <span class="text-red-600">*</span>
-                  </label>
-                  <input v-model="newPersona.name" id="first-name" type="text" class="form-input w-full"
-                    placeholder="Enter the name of the persona" required />
+              <div class="w-full  px-3 mb-4 md:mb-1">
+
+
+                <div class="flex flex-col items-center">
+                  <div v-if="!statusCreatingAvatar && newPersona.url">
+                    <img :src="newPersona.url" alt="Description" class="mb-4 rounded-md">
+                  </div>
+                  <p v-if="statusCreatingAvatar">Loading a new avatar... please wait</p>
+                  <button @click="createNewAvatar(newPersona.name)" :disabled="statusCreatingAvatar"
+                    class="btn text-white bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded">Generate
+                    New Avatar</button>
                 </div>
 
-                <div class="w-full  px-3 mb-4 md:mb-1">
-                  <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1"
-                    for="persona-description">
-                    Description
-                    <span class="text-sm text-gray-500">Optional</span>
+                <!-- 
+                <section class="hero container max-w-screen-lg mx-auto pb-10 flex justify-center">
+                  <img :src="newPersona.url" alt="User's Avatars"><br/>
+                  <div>
+                  </div>
+                </section> -->
 
-                  </label>
-                  <input v-model="newPersona.description.en" id="persona-description" type="text"
-                    class="form-input w-full" placeholder="Enter a brief description" required />
-                </div>
+                <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="first-name">
+                  Persona Name
+                  <span class="text-red-600">*</span>
+                </label>
+                <input v-model="newPersona.name" id="first-name" type="text" class="form-input w-full"
+                  placeholder="Enter the name of the persona" required />
+              </div>
 
-                <!-- <div class="w-full md:w-1/2 px-3">
+              <div class="w-full  px-3 mb-4 md:mb-1">
+                <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="persona-description">
+                  Description
+                  <span class="text-sm text-gray-500">Optional</span>
+
+                </label>
+                <input v-model="newPersona.description.en" id="persona-description" type="text" class="form-input w-full"
+                  placeholder="Enter a brief description" required />
+              </div>
+
+              <!-- <div class="w-full md:w-1/2 px-3">
                   <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="last-name">Last Name <span class="text-red-600">*</span></label>
                   <input id="last-name" type="text" class="form-input w-full" placeholder="Enter your last name" required />
                 </div> -->
-              </div>
-              <!-- <div class="flex flex-wrap -mx-3 mb-5">
+            </div>
+            <!-- <div class="flex flex-wrap -mx-3 mb-5">
                 <div class="w-full px-3">
                   <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="company">Company <span class="text-red-600">*</span></label>
                   <input id="company" type="text" class="form-input w-full" placeholder="Enter your company name" required />
@@ -77,34 +97,34 @@
                   <input id="phone" type="tel" class="form-input w-full" placeholder="Enter your phone number" required />
                 </div>
               </div> -->
-              <div class="flex flex-wrap -mx-3 mb-1">
-                <div class="w-full px-3">
-                  <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="category">Category
-                    <span class="text-red-600">*</span></label>
-                  <select v-model="newPersona.categories" id="category" class="form-select w-full" required>
-                    <option v-for="(category, index) in categories" :key="'category' + index" :value="[category]">{{
-                      category.label.en }}
-                    </option>
-                  </select>
-                </div>
+            <div class="flex flex-wrap -mx-3 mb-1">
+              <div class="w-full px-3">
+                <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="category">Category
+                  <span class="text-red-600">*</span></label>
+                <select v-model="newPersona.categories" id="category" class="form-select w-full" required>
+                  <option v-for="(category, index) in categories" :key="'category' + index" :value="[category]">{{
+                    category.label.en }}
+                  </option>
+                </select>
               </div>
-              <div class="flex flex-wrap -mx-3 mb-5">
-                <div class="w-full px-3">
-                  <div class="flex justify-between items-center mb-1">
-                    <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
-                      Persona Instructions
-                    </label>
-                    <span class="text-sm text-gray-500">Required</span>
-                  </div>
-                  <textarea v-model="newPersona.basePrompt" id="message" rows="8" class="form-textarea w-full"
-                    placeholder="Define the persona instructions" required></textarea>
-                  <p> The Persona Instructions determine how the Large Language Model will conduct its interactions. Here,
-                    you can define the rules by which it should operate, how it identifies itself, and the functions it
-                    provides.</p>
+            </div>
+            <div class="flex flex-wrap -mx-3 mb-5">
+              <div class="w-full px-3">
+                <div class="flex justify-between items-center mb-1">
+                  <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
+                    Persona Instructions
+                  </label>
+                  <span class="text-sm text-gray-500">Required</span>
+                </div>
+                <textarea v-model="newPersona.basePrompt" id="message" rows="8" class="form-textarea w-full"
+                  placeholder="Define the persona instructions" required></textarea>
+                <p> The Persona Instructions determine how the Large Language Model will conduct its interactions. Here,
+                  you can define the rules by which it should operate, how it identifies itself, and the functions it
+                  provides.</p>
 
-                </div>
               </div>
-              <!-- <div class="flex flex-wrap -mx-3 mb-5">
+            </div>
+            <!-- <div class="flex flex-wrap -mx-3 mb-5">
                 <div class="w-full px-3">
                   <div class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-3">Tell us about your role
                   </div>
@@ -126,19 +146,21 @@
                   </label>
                 </div>
               </div> -->
-              <div class="flex flex-wrap -mx-3 mt-6">
-                <div class="w-full px-3">
-                  <button @click="createNewPersona"
-                    class="btn text-white bg-teal-500 hover:bg-teal-400 w-full flex items-center">
-                    <span>Create Persona</span>
-                    <svg class="w-3 h-3 shrink-0 mt-px ml-2" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
-                      <path class="fill-current"
-                        d="M6.602 11l-.875-.864L9.33 6.534H0v-1.25h9.33L5.727 1.693l.875-.875 5.091 5.091z" />
-                    </svg>
-                  </button>
-                </div>
+            <div class="flex flex-wrap -mx-3 mt-6">
+              <div class="w-full px-3">
+
+
+                <button @click="createNewPersona" :disabled="statusCreatingAvatar"
+                  class="btn text-white bg-teal-500 hover:bg-teal-400 w-full flex items-center mb-3">
+                  <span>Create Persona</span>
+                  <svg class="w-3 h-3 shrink-0 mt-px ml-2" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+                    <path class="fill-current"
+                      d="M6.602 11l-.875-.864L9.33 6.534H0v-1.25h9.33L5.727 1.693l.875-.875 5.091 5.091z" />
+                  </svg>
+                </button>
               </div>
             </div>
+            <!-- </div> -->
 
           </div>
         </div>
@@ -164,10 +186,11 @@ import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 const { token, tokenDecoded } = useTokens()
 const { categories, getCategories, createAdminCategories } = useCategories()
-const { createPersonas } = usePersonas()
+const { createPersonas, createNewPersonaAvatar } = usePersonas()
 
 let newPersona = ref({
   name: "",
+  url: "",
   description: { en: "", fr: "" },
   basePrompt: "",
 
@@ -183,6 +206,7 @@ let newPersona = ref({
 const router = useRouter()
 const route = useRoute()
 
+let statusCreatingAvatar = ref(false)
 
 onMounted(() => {
   getCategories();
@@ -191,6 +215,17 @@ onMounted(() => {
 function createNewPersona() {
   createPersonas(newPersona.value);
   router.push({ name: 'home' })
+}
+
+function createNewAvatar(name) {
+  statusCreatingAvatar.value = true;
+  createNewPersonaAvatar(name).then((response) => {
+    newPersona.value.url = response;
+    statusCreatingAvatar.value = false;
+  }).catch((error) => {
+    statusCreatingAvatar.value = false;
+    console.log("Error Creating Avatar", error)
+  })
 }
 
 </script>

@@ -71,26 +71,28 @@
 
                 <!-- {{ filteredPersonas }} -->
                 <div v-for="(persona, index) in filteredPersonas" :key="'persona' + index" class="relative">
-                  <img class="w-full" src="../images/persona1.png" width="352" height="264" alt="Persona thumbnail" />
-                  <div class="absolute inset-0 flex flex-col">
-                    <div class="grow flex justify-center items-center">
-                      <!-- <a class="hover:opacity-75 transition duration-150 ease-in-out" href="#0">
+                  <div  @click="selectAndInteract(persona)">
+                    <img class="w-full" :src="persona.url || defaultImage" width="352" height="264" alt="Persona thumbnail" />
+                    <div class="absolute inset-0 flex flex-col">
+                      <div class="grow flex justify-center items-center">
+                        <!-- <a class="hover:opacity-75 transition duration-150 ease-in-out" href="#0">
                         <img src="../images/play-button.svg" width="72" height="72" alt="Play icon" />
                       </a> -->
-                    </div>
-                    <div
-                      class="w-full bottom-0 px-6 py-3 bg-white opacity-90 dark:bg-gray-900 flex justify-between items-center">
-                      <a class="text-gray-900 dark:text-gray-400 font-medium" href="#0">
+                      </div>
+                      <div
+                        class="w-full bottom-0 px-6 py-3 bg-white opacity-90 dark:bg-gray-900 flex justify-between items-center">
+
                         {{ persona.name }}<br />
                         {{ persona.description.en }}
 
-                      </a>
-                      <div
-                        class="inline-flex px-3 py-1 text-xs font-medium text-white bg-gray-900 bg-opacity-50 dark:text-teal-400 dark:bg-teal-600 dark:bg-opacity-25 rounded-full">
-                        <button @click="selectAndInteract(persona)"
-                          class="hover:opacity-75 transition duration-150 ease-in-out">
-                          Select
-                        </button>
+
+                        <div
+                          class="inline-flex px-3 py-1 text-xs font-medium text-white bg-gray-900 bg-opacity-50 dark:text-teal-400 dark:bg-teal-600 dark:bg-opacity-25 rounded-full">
+                          <button 
+                            class="hover:opacity-75 transition duration-150 ease-in-out">
+                            Select
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -276,7 +278,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-
+import defaultImage from "../images/persona1.png"
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkills, getUsedCategories } = usePersonas()
@@ -309,7 +311,8 @@ function selectCategory(category) {
 
 function selectAndInteract(persona) {
   selectedPersona.value = persona;
-  router.push({name: 'interact'})
+  console.log("Selected Persona", persona)
+  router.push({ name: 'interact' })
 
 }
 

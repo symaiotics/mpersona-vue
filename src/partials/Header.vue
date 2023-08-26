@@ -19,7 +19,7 @@
 
           <!-- Desktop menu links -->
           <ul class="flex grow flex-wrap items-center font-medium">
-            <li>
+            <li v-if="!tokenDecoded">
               <router-link to="/join"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Join</router-link>
             </li>
@@ -49,8 +49,8 @@
 
           <div class="form-switch flex flex-col justify-left ml-3 pt-2">
 
-            <router-link v-if = "token" to="/login">Logout</router-link>
-            <router-link v-if = "!token" to="/login">Login</router-link>
+            <router-link v-if="token" to="/login">Logout</router-link>
+            <router-link v-if="!token" to="/login">Login</router-link>
 
           </div>
           <div class="form-switch flex flex-col justify-center ml-3">
@@ -73,8 +73,8 @@
             </label>
           </div>
 
-          <div v-if = "tokenDecoded" class="form-switch flex flex-col justify-right ml-3 pt-2 italic">
-           {{ tokenDecoded.username }}
+          <div v-if="tokenDecoded" class="form-switch flex flex-col justify-right ml-3 pt-2 italic">
+            {{ tokenDecoded.username }}
           </div>
 
         </nav>
@@ -143,7 +143,7 @@
                 </router-link>
                 <!-- Links -->
                 <ul>
-                  <li>
+                  <li v-if="!tokenDecoded">
                     <router-link to="/join"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Join</router-link>
                   </li>
@@ -155,11 +155,11 @@
                     <router-link to="/interact"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>
                   </li>
-                  <li v-if = "!token">
+                  <li v-if="!token">
                     <router-link to="/login"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Login</router-link>
                   </li>
-                  <li v-if = "token">
+                  <li v-if="token">
                     <router-link to="/login"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Logout</router-link>
                   </li>
