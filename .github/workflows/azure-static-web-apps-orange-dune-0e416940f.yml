@@ -17,6 +17,7 @@ jobs:
     env:
       VITE_API_URL: https://api.mpersona.com
       VITE_WEBSOCKET_URL: wss://api.mpersona.com
+      VITE_STORAGE_URL: https://mpersona.blob.core.windows.net
     steps:
       - uses: actions/checkout@v3
         with:
