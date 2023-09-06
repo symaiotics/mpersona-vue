@@ -4,7 +4,7 @@ import Create from '@/pages/Create.vue'
 import Interact from '@/pages/Interact.vue'
 import Join from '@/pages/Join.vue'
 import Login from '@/pages/Login.vue'
-import createKnowledgeProfile from '@/pages/createKnowledgeProfile.vue'
+import CreateKnowledgeProfile from '@/pages/CreateKnowledgeProfile.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -42,7 +42,7 @@ const router = createRouter({
     {
       path: '/createKp',
       name:'createKp',
-      component: createKnowledgeProfile
+      component: CreateKnowledgeProfile
     },
     {
       path: '/interact',
