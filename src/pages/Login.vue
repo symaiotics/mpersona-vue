@@ -98,18 +98,13 @@ let password = ref(null)
 
 function doLogin() {
   login(username.value, password.value).then((response) => {
-
-    notify({
-      group: "foo",
-      title: "Success",
-      text: "Login successful"
-    }, 4000) // 4s
-
-
+    notify({ group: "success", title: "Success", text: "Login successful"}, 4000) // 4s
     router.push({ name: 'home' })
-
   }).catch((error) => {
     console.log("Error identified", error)
+    notify({ group: "failure", title: "Error", text: "Login unsuccessful. Please try again." }, 4000) // 4s
+
+
   });
 
 }

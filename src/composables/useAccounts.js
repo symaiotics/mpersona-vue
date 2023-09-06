@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 // import axios from "axios";
 import configuredAxios from "@/utils/axios.js"
+import { notify } from "notiwind"
 
 let newUser = ref({
     username: null,
@@ -59,11 +60,13 @@ export function useAccounts() {
                 // console.log("Params", params)
                 var response = await configuredAxios.post('/accounts', params);
                 responseMessage.value = response.data.payload;
+                notify({ group: "success", title: "Success", text: "Account created successfully" }, 4000) // 4s
                 resolve(responseMessage.value);
                 //TODO enhance to receive the code as well
                 // console.log("Loaded Personas", personas.value)
             }
             catch (error) {
+                notify({ group: "failure", title: "Error", text: "Error creating your account. Check your username and passwords and try again." }, 4000) // 4s
                 console.log("Error", error)
                 reject(error);
 

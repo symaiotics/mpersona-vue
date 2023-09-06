@@ -135,13 +135,7 @@ function createNewAccount() {
     resetNewUser();
     console.log('response', response)
 
-    notify({
-        group: "foo",
-        title: "Success",
-        text: "Your account was created!"
-      }, 4000) // 4s
-
-
+    // notify({group: "success",title: "Success",text: "Your account was created!"}, 4000) // 4s
     if (response == 'success') {
 
     }
@@ -150,10 +144,12 @@ function createNewAccount() {
 
     //Display a prompt
     if (response == 'usernameExists') {
+      // notify({group: "failure",title: "Conflicting Username",text: "That username already exists!"}, 4000) // 4s
       console.log("That username already exists, sorry.")
     }
 
   }).catch((error) => {
+    // notify({group: "failure",title: "Conflicting Username",text: "That username already exists!"}, 4000) // 4s
     console.log("Error identified", error)
   });
 

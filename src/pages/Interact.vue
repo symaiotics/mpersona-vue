@@ -51,7 +51,7 @@
                       <textarea v-model="selectedPersona.basePrompt" id="response" rows="4" class="form-textarea w-full"
                         placeholder="User the instructions"></textarea>
 
-                        <p>Select your model</p>
+                      <p>Select your model</p>
                       <select v-model="selectedModel" id="model" class="form-select w-full" required>
                         <option v-for="(model, index) in adminModels" :key="'model' + index" :value="model">{{
                           model.label }}
@@ -72,11 +72,21 @@
                         </button>
 
 
+
+                        <button @click="updatePersona"
+                          class="btn text-black bg-blue-500 hover:bg-teal-400 w-full flex items-center mt-3">
+                          <span>Save Changes to Persona</span>
+
+                        </button>
+
+
+
                         <button @click="reset"
                           class="btn text-black bg-yellow-500 hover:bg-teal-400 w-full flex items-center mt-3">
                           <span>Reset</span>
 
                         </button>
+
 
                       </div>
 
@@ -104,20 +114,20 @@
                       </div>
                       <div v-html="promptResponse" class=" w-full form-textarea w-full" style="min-height:200px;"></div>
 
-
+{{ extractedJSON }}
 
                       <template v-if="promptResponseCode && promptResponseCode.length">
                         <br />
                         <p>Segements of code (if provided) are identified below:</p>
                         <template v-for="code in promptResponseCode">
 
-                          <HTMLContent :html = "code.code"/>
+                          <HTMLContent :html="code.code" />
 
                           <!-- <div v-html="code.code" class=" w-full form-textarea w-full" style="min-height:200px;"> -->
                           <!-- </div> -->
                         </template>
 
-                      
+
                       </template>
                       <!-- <D3GC title="Results Graph" :darkMode="false" :nodesSource = "graphData.nodes" :linksSource = "graphData.links" /> -->
 
@@ -163,10 +173,10 @@ import { useModels } from '@/composables/useModels.js'
 import { usePrompts } from '@/composables/usePrompts.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
-const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkills, getUsedCategories } = usePersonas()
+const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkills, getUsedCategories, updatePersonas } = usePersonas()
 const { categories, selectedCategory, getCategories, createAdminCategories } = useCategories()
 
-const { promptOpenAI, promptResponse, promptResponseCode , websocketConnection} = usePrompts()
+const { promptOpenAI, promptResponse, promptResponseCode, websocketConnection } = usePrompts()
 const { adminModels, selectedModel } = useModels()
 
 let userPrompt = ref("");
@@ -369,8 +379,81 @@ function doPrompt() {
 
 }
 
+function updatePersona() {
+  if (selectedPersona.value) {
+    updatePersonas([selectedPersona.value])
+  }
+}
 
 function reset() {
   selectedPersona.value = null;
 }
+
+
+let extractedJSON = computed(() => {
+
+  var text = promptResponse.value;
+
+  const validJSONs = [];
+    
+    let startIdx = text.indexOf('{');
+    while (startIdx !== -1) {
+        let endIdx = startIdx;
+        let braceCount = 1;
+
+        while (endIdx < text.length && braceCount > 0) {
+            endIdx++;
+            if (text[endIdx] === '{') {
+                braceCount++;
+            } else if (text[endIdx] === '}') {
+                braceCount--;
+            }
+        }
+
+        const potentialJSON = text.substring(startIdx, endIdx + 1);
+        try {
+            const sanitizedString = potentialJSON.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+            const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+            const parsed = JSON.parse(replacedString);
+            validJSONs.push(parsed);
+        } catch (e) {
+            // Not valid JSON, skip
+        }
+
+        startIdx = text.indexOf('{', startIdx + 1);
+    }
+
+    return validJSONs;
+
+  // const potentialJSONs = [];
+  //   // const regex = /(\{[\s\S]*?\})(?![\s\S]*\{[\s\S]*?\})/g;  // Look for JSON-like substrings
+  //   const regex = /(\{[\s\S]*?\}(?=\s|$))/g;  // Look for JSON-like substrings, adjusting the regex to capture the closing characters
+
+  //   let match;
+  //   while (match = regex.exec(text)) {
+  //     console.log("match1", match)
+  //       potentialJSONs.push(match[1]);
+  //   }
+
+  //   const validJSONs = [];
+  //   potentialJSONs.forEach(jsonString => {
+  //       try {
+  //           // Remove <br/> tags and newline characters
+  //           const sanitizedString = jsonString.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+
+  //           // Replace single quotes around keys to double quotes
+  //           const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+  //           console.log("replacedString 2", replacedString)
+  //           const parsed = JSON.parse(replacedString);
+  //           validJSONs.push(parsed);
+  //       } catch (e) {
+  //         console.log("e", e)
+  //           // Not valid JSON, skip
+  //       }
+  //   });
+
+  //   return validJSONs;
+})
+
+
 </script>
