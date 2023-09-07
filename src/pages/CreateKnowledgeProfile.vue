@@ -128,7 +128,7 @@
               </div>
             </div>
 
-
+<!-- <StickyBox/> -->
             <div v-if="newKnowledgeProfile?.processedFiles?.length" class="flex flex-wrap -mx-3 mt-6">
               <div v-for="(kp, index) in newKnowledgeProfile.processedFiles" :key="'processedFile' + index" class="w-full px-3">
                 <!-- {{ kp.content }}  -->
@@ -164,6 +164,7 @@ import { useRouter } from 'vue-router'
 import DragAndDropFiles from '@/components/DragAndDropFiles.vue';
 import HighlightFileContents from '@/components/HighlightFileContents.vue';
 import FloatingHighlightBar from '@/components/FloatingHighlightBar.vue';
+import StickyBox from '@/components/StickyBox.vue';
 import { useTokens } from '@/composables/useTokens.js'
 const { token, tokenDecoded } = useTokens()
 

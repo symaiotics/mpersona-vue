@@ -4,25 +4,56 @@
             <button @click="highlight('context')" class="px-4 py-2 bg-red-500 text-white rounded">Context</button>
             <button @click="highlight('structure')" class="px-4 py-2 bg-blue-500 text-white rounded">Structure</button>
             <button @click="highlight('content')" class="px-4 py-2 bg-yellow-500 text-black rounded">Content</button>
+            <button @click="generateFacts" class="px-4 py-2 bg-green-500 text-black rounded">Generate Facts</button>
         </div>
 
-        <div class="relative p-4 border">
-            <!-- Wrapper div -->
-            <div class="relative">
-                <!-- Original text -->
-                <div ref="textContent" class="z-10 font-sans text-base leading-normal p-0 preserve-newlines" @mouseup="captureSelection"
-                    v-html="props.originalText"></div>
+        <div class="flex min-h-48 overflow-y-auto">
+            <!-- Left Column -->
+            <div class="w-2/3  p-4 overflow-y-auto h-screen custom-scrollbar">
 
-                <!-- Highlighted text overlay -->
-                <div ref="highlightedContent"
-                    class="absolute inset-0 z-20 font-sans text-base leading-normal pointer-events-none  preserve-newlines"
-                    v-html="highlightedText"></div>
+                <div class="relative  ">
+                    <!-- Wrapper div -->
 
-                <!-- {{ highlightedJSON }}
-                <br/>
-                {{ highlightedSegmentsJSON }} -->
+                    <!-- Original text -->
+                    <div ref="textContent" class="z-10 font-sans text-base leading-normal p-0 preserve-newlines"
+                        @mouseup="captureSelection" v-html="props.originalText"></div>
+
+                    <!-- Highlighted text overlay -->
+                    <div ref="highlightedContent"
+                        class="absolute inset-0 z-20 font-sans text-base leading-normal pointer-events-none  preserve-newlines"
+                        v-html="highlightedText"></div>
+
+                </div>
+
+
+            </div>
+
+            <!-- Right Column -->
+            <div class="w-1/3 p-4 overflow-y-auto h-screen custom-scrollbar">
+                <div :id="scrollId">
+
+                    <div v-for="(segment, index) in highlightedSegmentsArray" class="relative" :key="'segments' + index">
+
+                        <div class="m-2 rounded p-2" :class="`highlight-${segment.type}`">
+                            {{ segment.content.substring(0, 50) }}... ({{ segment.content.length }})
+                        </div>
+
+                        <!-- Delete button -->
+                        <button
+                            class="absolute top-0 right-0 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150"
+                            @click="deleteSegment(index)">
+                            ×
+                        </button>
+                    </div>
+
+                </div>
             </div>
         </div>
+
+
+
+
+
     </div>
 </template>
   
@@ -30,120 +61,19 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-
+import { v4 as uuidv4 } from 'uuid';
 
 let props = defineProps({
     originalText: { type: String, default: "Some basic longform text to be categorized" }
 })
-// const originalText = `
-//   Fenton was born near Frewsburg, in Chautauqua County, New York, on July 4, 1819.[1] He was the son of a farmer, and schoolteacher, George Washington Fenton (1783–1860) and Elsey (née Owen) Fenton (1790–1875).[2] He had four siblings: Roswell Owen Fenton, George Washington Fenton Jr., William H.H. Fenton, and John Freeman Fenton.[3]
 
-
-
-// His paternal grandparents were Roswell Fenton and Deborah (née Freeman) Fenton and his maternal grandfather was John Owen of Carroll, New York.[3] His paternal aunt, Hannah Fenton was the wife of Lambert Van Buren of Kinderhook, New York.[4]
-
-// He was educated in the district school, Cary's Academy near Cincinnati, Ohio, and the Fredonia Academy.[5]
-//         `;
+const scrollId = ref('id-' + uuidv4())
 const highlights = ref([]);
-
 const textContent = ref(null);
 const highlightedContent = ref(null);
-
-//   const captureSelection = () => {
-//     const selection = window.getSelection();
-//     if (!selection.rangeCount) return;
-
-//     const range = selection.getRangeAt(0);
-//     const start = range.startOffset;
-//     const end = range.endOffset;
-
-//     const newHighlight = { start, end, type: 'pending' };
-
-//     for (let i = 0; i < highlights.value.length; i++) {
-//         const highlight = highlights.value[i];
-
-//         if (newHighlight.start <= highlight.end && newHighlight.end >= highlight.start) {
-//             // Overlapping
-//             if (highlight.type === newHighlight.type) {
-//                 // Merge if they're the same type
-//                 highlight.start = Math.min(newHighlight.start, highlight.start);
-//                 highlight.end = Math.max(newHighlight.end, highlight.end);
-//                 return;
-//             } else {
-//                 // Split if they're different types
-//                 if (newHighlight.start > highlight.start) {
-//                     highlights.value.push({ start: highlight.start, end: newHighlight.start, type: highlight.type });
-//                 }
-//                 if (newHighlight.end < highlight.end) {
-//                     highlights.value.push({ start: newHighlight.end, end: highlight.end, type: highlight.type });
-//                 }
-//                 // Remove the original highlight, since it's now been split
-//                 highlights.value.splice(i, 1);
-//                 i--; // Decrement the index to account for the removed item
-//             }
-//         }
-//     }
-
-//     // Add the new highlight
-//     highlights.value.push(newHighlight);
-// };
-
-
-// const captureSelection = () => {
-//     const selection = window.getSelection();
-//     if (!selection.rangeCount) return;
-
-//     const range = selection.getRangeAt(0);
-//     const start = range.startOffset;
-//     const end = range.endOffset;
-
-//     const newHighlight = { start, end, type: 'pending' };
-
-//     for (let i = 0; i < highlights.value.length; i++) {
-//         const highlight = highlights.value[i];
-
-//         // Completely contained
-//         if (newHighlight.start <= highlight.start && newHighlight.end >= highlight.end) {
-//             // Remove the fully contained highlight
-//             highlights.value.splice(i, 1);
-//             i--; // Decrement the index to account for the removed item
-//             continue;
-//         }
-
-//         // Partial overlap
-//         if (newHighlight.start < highlight.end && newHighlight.end > highlight.start) {
-//             if (highlight.type !== newHighlight.type) {
-//                 // If they're of different types, trim or split the existing highlight
-//                 if (newHighlight.start > highlight.start) {
-//                     highlight.end = newHighlight.start;
-//                 } else if (newHighlight.end < highlight.end) {
-//                     highlight.start = newHighlight.end;
-//                 }
-//             } else {
-//                 // If they're of the same type, extend the existing highlight
-//                 highlight.start = Math.min(newHighlight.start, highlight.start);
-//                 highlight.end = Math.max(newHighlight.end, highlight.end);
-//                 return;
-//             }
-//         }
-//     }
-
-//     // Add the new highlight
-//     highlights.value.push(newHighlight);
-// };
-
-
-// const highlight = (type) => {
-//     // Update only the 'pending' highlights
-//     for (const highlight of highlights.value) {
-//         if (highlight.type === 'pending') {
-//             highlight.type = type;
-//         }
-//     }
-// };
-
 let lastSelection = ref(null);
 
+//Get the cursor text selection
 const captureSelection = () => {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
@@ -155,6 +85,7 @@ const captureSelection = () => {
     lastSelection.value = { start, end };
 };
 
+//Create a high light
 const highlight = (type) => {
     if (!lastSelection.value) return;
 
@@ -193,6 +124,7 @@ const highlight = (type) => {
     lastSelection.value = null;
 };
 
+//Add the HTML to actually highlight the text
 const highlightedText = computed(() => {
     const sortedHighlights = [...highlights.value].sort((a, b) => a.start - b.start);
 
@@ -218,6 +150,40 @@ const highlightedText = computed(() => {
 
 
 
+function deleteSegment(index) {
+    highlights.value.splice(index, 1)
+}
+
+function generateFacts()
+{
+/*
+Collect the context from the Knowledge Profile
+Collect the context from this file specifically
+Extract out all the separate elements in the content
+
+Have GPT create a JSON array of all the facts contained in the file
+fact String? Object? Any?
+questionsForFact Array of questions to ask this fact
+
+Insert these facts into the DB
+{
+knowledgeProfile
+fileDetails {size: filename.length, mime, filename, azureFilename }
+fileContext Array of the various context elements snupped 
+
+fact
+questionsForFact
+
+identifiedStructure String
+
+momentCreated, etc.
+}
+
+*/
+}
+
+
+//Get the highlighted segments
 const highlightedJSON = computed(() => {
     let contextText = '';
     let structureText = '';
@@ -245,12 +211,11 @@ const highlightedJSON = computed(() => {
     };
 });
 
-
 const highlightedSegmentsJSON = computed(() => {
     let contextSegments = [];
     let structureSegments = [];
     let contentSegments = [];
-
+    let index = 0;
     for (const highlight of highlights.value) {
         const segment = props.originalText.substring(highlight.start, highlight.end);
         switch (highlight.type) {
@@ -263,7 +228,9 @@ const highlightedSegmentsJSON = computed(() => {
             case 'content':
                 contentSegments.push(segment);
                 break;
+
         }
+        index++;
     }
 
     return {
@@ -274,13 +241,23 @@ const highlightedSegmentsJSON = computed(() => {
 });
 
 
+const highlightedSegmentsArray = computed(() => {
+    let allSegments = [];
+    for (const highlight of highlights.value) {
+        var segment = { "content": props.originalText.substring(highlight.start, highlight.end), "type": highlight.type };
+        allSegments.push(segment)
+    }
+    return allSegments;
+});
+
+
 </script>
   
 <style>
-
 ::selection {
     background-color: lightblue;
-    color: black; /* This will set the color of the text when selected. Adjust as needed. */
+    color: black;
+    /* This will set the color of the text when selected. Adjust as needed. */
 }
 
 /* For browser compatibility, also include the following */
@@ -292,7 +269,8 @@ const highlightedSegmentsJSON = computed(() => {
 
 .dark ::selection {
     background-color: darkblue;
-    color: white; /* This will set the color of the text when selected. Adjust as needed. */
+    color: white;
+    /* This will set the color of the text when selected. Adjust as needed. */
 }
 
 /* For browser compatibility, also include the following */
@@ -303,7 +281,7 @@ const highlightedSegmentsJSON = computed(() => {
 
 
 .preserve-newlines {
-  white-space: pre-line;
+    white-space: pre-line;
 }
 
 .highlight-context {
@@ -319,6 +297,44 @@ const highlightedSegmentsJSON = computed(() => {
 .highlight-content {
     background-color: #ffd392be;
     color: black;
+}
+
+.dark .highlight-context {
+    background-color: #ff54547c;
+    color: white;
+}
+
+.dark .highlight-structure {
+    background-color: #add8e6aa;
+    color: white;
+}
+
+.dark .highlight-content {
+    background-color: #ffd392be;
+    color: white;
+}
+
+
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+    /* width of the entire scrollbar */
+    height: 5px;
+    /* height for horizontal scrollbars */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f2f4f8;
+    /* color of the tracking area */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #888;
+    /* color of the scroll thumb */
+    border-radius: 20px;
+    /* roundness of the scroll thumb */
+    border: 3px solid #f2f4f8;
+    /* creates padding around scroll thumb */
 }
 </style>
   
