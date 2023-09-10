@@ -156,6 +156,7 @@ function deleteSegment(index) {
 
 function generateFacts()
 {
+
 /*
 Collect the context from the Knowledge Profile
 Collect the context from this file specifically

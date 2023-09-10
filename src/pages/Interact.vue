@@ -176,7 +176,7 @@ import { useCategories } from '@/composables/useCategories.js'
 const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkills, getUsedCategories, updatePersonas } = usePersonas()
 const { categories, selectedCategory, getCategories, createAdminCategories } = useCategories()
 
-const { promptOpenAI, promptResponse, promptResponseCode, websocketConnection } = usePrompts()
+const { promptOpenAI, promptResponse, promptResponseCode } = usePrompts()
 const { adminModels, selectedModel } = useModels()
 
 let userPrompt = ref("");
@@ -356,7 +356,7 @@ onMounted(() => {
 
   //Categories
   getUsedCategories();
-  websocketConnection();
+  // websocketConnection();
 
 })
 

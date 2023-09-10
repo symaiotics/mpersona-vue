@@ -31,9 +31,10 @@
               <router-link to="/interact"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Interact</router-link>
             </li>
-            <li v-if = "token">
+            <li v-if="token">
               <router-link to="/createKp"
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Knowledge Profile</router-link>
+                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Knowledge
+                Profile</router-link>
             </li>
             <!-- <li>
               <router-link to="/testimonials" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Testimonials</router-link>
@@ -51,12 +52,15 @@
 
           <!-- Desktop lights switch -->
 
-          <div class="form-switch flex flex-col justify-left ml-3 pt-2">
+          <div class=" flex flex-col justify-left ml-3 pt-2">
+            <p v-if="wsUuid">(Connected)</p>
+          </div>
 
+          <div class="form-switch flex flex-col justify-left ml-3 pt-2">
             <router-link v-if="token" to="/login">Logout</router-link>
             <router-link v-if="!token" to="/login">Login</router-link>
-
           </div>
+
           <div class="form-switch flex flex-col justify-center ml-3">
             <input type="checkbox" name="light-switch" id="light-switch-desktop" v-model="darkMode" @input="toggleLights"
               class="light-switch sr-only" />
@@ -159,9 +163,10 @@
                     <router-link to="/interact"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>
                   </li>
-                  <li v-if = "token">
+                  <li v-if="token">
                     <router-link to="/createKp"
-                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Knowledge Profile</router-link>
+                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Knowledge
+                      Profile</router-link>
                   </li>
                   <li v-if="!token">
                     <router-link to="/login"
@@ -205,7 +210,9 @@ import Dropdown from '@/utils/Dropdown.vue'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 
 import { useTokens } from '@/composables/useTokens.js'
+import { useWebsockets } from '@/composables/useWebsockets.js'
 const { token, tokenDecoded } = useTokens();
+const { wsUuid } = useWebsockets();
 
 const mobileNavOpen = ref(false);
 const darkMode = ref(false);

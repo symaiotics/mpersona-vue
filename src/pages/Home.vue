@@ -52,6 +52,7 @@ import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 const { personas, usedCategories, skills, getPersonas, getSkills, getUsedCategories } = usePersonas()
 const { categories, getCategories, createAdminCategories } = useCategories()
+// const {websocketConnection, wsUuid } = useWebsockets()
 
 onMounted(() => {
   console.log("Accessing the API at", import.meta.env.VITE_API_URL)
@@ -63,6 +64,9 @@ onMounted(() => {
   //Categories
   getUsedCategories();
   createAdminCategories();
+
+  //Websockets
+  // websocketConnection()
 
 })
 
