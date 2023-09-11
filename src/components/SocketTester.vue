@@ -12,7 +12,9 @@
         <button @click="sendMessage">Send a message</button>
     </div>
   -->
-
+    <!-- {{ stageIndex }} :
+    {{ stageUuid }} :
+    {{ socketIndex }} -->
 
     <div
         class="flex flex-col  bg-white border border-gray-200 rounded-lg shadow md:flex-row  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 relative">
@@ -40,9 +42,10 @@
 
         <!-- Interim and final message-->
         <div class="md:w-1/2 justify-between p-4 leading-normal">
-            <div v-html="partialMessageMarkdown" class="border transition duration-300 preserve-whitespace-pre-line p-3 rounded-md"
-                v-if="partialMessage"> </div>
-<!-- 
+            <div v-html="partialMessageMarkdown"
+                class="border transition duration-300 preserve-whitespace-pre-line p-3 rounded-md" v-if="partialMessage">
+            </div>
+            <!-- 
             <div 
             v-if="completedMessage" 
             v-html="completedMessageMarkdown" 
@@ -64,8 +67,9 @@
             @blur="isFocused = true"
             @input="updateContent" >
             </div> -->
-<!-- {{ sessions[sessionId].completedMessage }} -->
-            <EditContent v-if = "sessions?.[sessionId]?.completedMessage" v-model:content="sessions[sessionId].completedMessage" />
+            <!-- {{ sessions[sessionId].completedMessage }} -->
+            <EditContent v-if="sessions?.[sessionId]?.completedMessage"
+                v-model:content="sessions[sessionId].completedMessage" />
 
         </div>
 
@@ -93,13 +97,14 @@ import EditContent from '@/components/EditContent.vue';
 
 //Composables
 import { useWebsockets } from '@/composables/useWebsockets.js';
-const { wsUuid, sessions, registerSession, unregisterSession, sendToServer } = useWebsockets();
+const { wsUuid, sessions, registerSession, unregisterSession, updateSession, sendToServer } = useWebsockets();
 
 //Props
 const props = defineProps({
     trigger: { type: Boolean, default: false },
     stageIndex: { type: Number },
     stageUuid: { type: String },
+    socketIndex: { type: Number },
     sessionId: { type: String, default: () => uuidv4() },
     userPrompt: { type: String, default: "" },
     model: { type: String, default: "gpt-4" },
@@ -110,9 +115,24 @@ const props = defineProps({
 const trigger = computed(() => props.trigger);
 let isFocused = ref(false)
 
+const stageIndex = computed(() => props.stageIndex);
+const stageUuid = computed(() => props.stageUuid);
+const socketIndex = computed(() => props.socketIndex);
+
+watch(stageIndex, (newValue, oldValue) => {
+    updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
+});
+
+watch(stageUuid, (newValue, oldValue) => {
+    updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
+});
+
+watch(socketIndex, (newValue, oldValue) => {
+    updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
+});
+
 watch(trigger, (newValue, oldValue) => {
-    //   console.log('trigger changed', { newValue, oldValue });
-    // Add your logic here for when the trigger prop changes
+    //Execute this socket
     sendMessage();
 });
 
@@ -128,11 +148,12 @@ const partialMessageDiv = ref(null);
 
 
 onMounted(() => {
-    registerSession(sessionId.value, props.stageIndex, props.stageUuid)
+    // console.log("pre reg ", props.value)
+    registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
 })
 
 onBeforeUnmount(() => {
-    unregisterSession(sessionId.value, props.stageIndex, props.stageUuid)
+    unregisterSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
 })
 
 const partialMessage = computed(() => {

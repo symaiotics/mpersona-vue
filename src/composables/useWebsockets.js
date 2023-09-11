@@ -1,5 +1,5 @@
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 let ws = null;
 let wsUuid = ref(null);
@@ -7,6 +7,24 @@ let wsUuid = ref(null);
 let pingInterval;
 let pongTimeout;
 const sessions = ref({});
+
+const sessionsContent = computed(() => {
+
+    var content = [];
+    var keys = Object.keys(sessions.value);
+    keys.forEach((key, index, origArray) => {
+        // console.log(sessions.value[key])
+        content.push(
+            { content: sessions.value[key].completedMessage || sessions.value[key].partialMessage || "", 
+            label: sessions.value[key].stageUuid + sessions.value[key].stageIndex + sessions.value[key].socketIndex,
+            sessionId: key, 
+            stageUuid: sessions.value[key].stageUuid, 
+            stageIndex: sessions.value[key].stageIndex,  
+            socketIndex: sessions.value[key].socketIndex })
+    })
+
+    return content;
+})
 
 export function useWebsockets() {
 
@@ -45,9 +63,9 @@ export function useWebsockets() {
 
             if (data.session && sessions.value[data.session]) {
                 // Check if the partialMessage ref exists for the session, if not create it
-                // if (!sessions.value[data.session].partialMessage) {
-                //     sessions.value[data.session].partialMessage = ref('');
-                // }
+                if (!sessions.value[data.session].partialMessage) {
+                    sessions.value[data.session].partialMessage = ref('');
+                }
 
                 if (data.type === 'EOM') {
                     sessions.value[data.session].completedMessage = sessions.value[data.session].messages.join('');
@@ -96,25 +114,36 @@ export function useWebsockets() {
         }
     }
 
-    function registerSession(session, stageIndex, stageUuid, callback) {
+    function registerSession(session, stageIndex, stageUuid, socketIndex, callback) {
         // sessions.value[data.session].partialMessage = ref('');
-        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex, stageUuid };
-                console.log("Registered session", sessions.value[session])
+        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid , socketIndex: socketIndex};
+        console.log("Registered session", sessions.value[session])
 
     }
 
-    function unregisterSession(session,  stageIndex, stageUuid, ) {
-        // console.log("Unreg session", session)
+    function updateSession(session, stageIndex, stageUuid, socketIndex, callback) {
+        // sessions.value[data.session].partialMessage = ref('');
+        sessions.value[session].stageIndex = stageIndex;
+        sessions.value[session].stageUuid = stageUuid;
+        sessions.value[session].socketIndex = socketIndex;
+        console.log("Updated session", sessions.value[session])
+
+    }
+
+    function unregisterSession(session, stageIndex, stageUuid, socketIndex) {
+        console.log("Deleted session", session)
         delete sessions.value[session];
     }
 
     return {
         wsUuid,
         sessions,
+        sessionsContent,
 
         websocketConnection,
         sendToServer,
         registerSession,
+        updateSession,
         unregisterSession,
     };
 }
