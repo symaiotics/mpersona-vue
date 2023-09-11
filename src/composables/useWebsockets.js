@@ -96,13 +96,14 @@ export function useWebsockets() {
         }
     }
 
-    function registerSession(session, callback) {
-        // console.log("Registered session", session)
+    function registerSession(session, stageIndex, stageUuid, callback) {
         // sessions.value[data.session].partialMessage = ref('');
-        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "" };
+        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex, stageUuid };
+                console.log("Registered session", sessions.value[session])
+
     }
 
-    function unregisterSession(session) {
+    function unregisterSession(session,  stageIndex, stageUuid, ) {
         // console.log("Unreg session", session)
         delete sessions.value[session];
     }

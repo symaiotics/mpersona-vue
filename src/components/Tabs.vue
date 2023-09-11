@@ -19,13 +19,16 @@
         </button>
       </div>
       <div class="tab-content p-4 border border-t-0 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-b">
-        <slot :name="`tab-${modelValue}`"></slot>
+        <template v-for="(tab, index) in tabs"  :key="'tab'+index">
+          <div v-show="modelValue === index">
+            <slot :name="`tab-${index}`"></slot>
+          </div>
+        </template>
       </div>
     </div>
   </template>
   
   <script setup>
-  
   const { tabs, modelValue } = defineProps(['tabs', 'modelValue']);
   const emit = defineEmits();
   

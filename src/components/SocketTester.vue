@@ -40,16 +40,37 @@
 
         <!-- Interim and final message-->
         <div class="md:w-1/2 justify-between p-4 leading-normal">
-            <!-- <div class = "preserve-whitespace-pre-wrap" v-if="partialMessage">{{ partialMessage }}</div> -->
-            <div class="preserve-whitespace-pre-line" v-if="partialMessage">{{ partialMessage }}</div>
-            <!-- <div class = "preserve-whitespace-pre-wrap"  v-if="completedMessage">{{ completedMessage }}</div> -->
-            <div class="preserve-whitespace-pre-line" v-if="completedMessage">{{ completedMessage }}</div>
+            <div v-html="partialMessageMarkdown" class="border transition duration-300 preserve-whitespace-pre-line p-3 rounded-md"
+                v-if="partialMessage"> </div>
+<!-- 
+            <div 
+            v-if="completedMessage" 
+            v-html="completedMessageMarkdown" 
+            contenteditable="true"
+            class="border transition duration-300 preserve-whitespace-pre-line"
+            :class="{ 'border-blue-500 border-4': isFocused }" 
+            @focus="isFocused = true" 
+            @blur="isFocused = true"
+            @input="updateContent" >
+            </div>
+
+            <div 
+            v-if="completedMessage" 
+            v-html="completedMessage" 
+            contenteditable="true"
+            class="border transition duration-300 preserve-whitespace-pre-line"
+            :class="{ 'border-blue-500 border-4': isFocused }" 
+            @focus="isFocused = true" 
+            @blur="isFocused = true"
+            @input="updateContent" >
+            </div> -->
+<!-- {{ sessions[sessionId].completedMessage }} -->
+            <EditContent v-if = "sessions?.[sessionId]?.completedMessage" v-model:content="sessions[sessionId].completedMessage" />
+
         </div>
 
         <ButtonClose @close="onCloseClick" />
         <ButtonEdit @edit="onEditClick" />
-
-
 
     </div>
 </template>
@@ -63,10 +84,12 @@ import defaultImage from "../images/persona1.png"
 import { StarIcon } from '@heroicons/vue/24/solid'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
+import MarkdownIt from 'markdown-it';
 
 //Components
 import ButtonClose from '@/components/ButtonClose.vue';
 import ButtonEdit from '@/components/ButtonEdit.vue';
+import EditContent from '@/components/EditContent.vue';
 
 //Composables
 import { useWebsockets } from '@/composables/useWebsockets.js';
@@ -75,6 +98,8 @@ const { wsUuid, sessions, registerSession, unregisterSession, sendToServer } = u
 //Props
 const props = defineProps({
     trigger: { type: Boolean, default: false },
+    stageIndex: { type: Number },
+    stageUuid: { type: String },
     sessionId: { type: String, default: () => uuidv4() },
     userPrompt: { type: String, default: "" },
     model: { type: String, default: "gpt-4" },
@@ -83,12 +108,12 @@ const props = defineProps({
 });
 
 const trigger = computed(() => props.trigger);
-
+let isFocused = ref(false)
 
 watch(trigger, (newValue, oldValue) => {
-//   console.log('trigger changed', { newValue, oldValue });
-  // Add your logic here for when the trigger prop changes
-  sendMessage();
+    //   console.log('trigger changed', { newValue, oldValue });
+    // Add your logic here for when the trigger prop changes
+    sendMessage();
 });
 
 
@@ -98,12 +123,16 @@ const emit = defineEmits(['edit', 'close', 'like']
 const sessionId = ref(props.sessionId);
 const userPrompt = ref(props.userPrompt);
 
+const completedMessageDiv = ref(null);
+const partialMessageDiv = ref(null);
+
+
 onMounted(() => {
-    registerSession(sessionId.value)
+    registerSession(sessionId.value, props.stageIndex, props.stageUuid)
 })
 
 onBeforeUnmount(() => {
-    unregisterSession(sessionId.value)
+    unregisterSession(sessionId.value, props.stageIndex, props.stageUuid)
 })
 
 const partialMessage = computed(() => {
@@ -148,6 +177,30 @@ const onCloseClick = () => {
 const onEditClick = () => {
     emit('edit');
 };
+
+
+
+const partialMessageMarkdown = computed(() => {
+    const md = new MarkdownIt();
+    return md.render(partialMessage.value);
+});
+
+const completedMessageMarkdown = computed(() => {
+    const md = new MarkdownIt();
+    return md.render(completedMessage.value);
+});
+
+function updateContent(event) {
+
+    // sessions.value[sessionId.value].completedMessage = event.target.innerHtml;
+
+    // console.log(completedMessageDiv.value)
+    // = completedMessageDiv.value;
+
+    // isFocused.value = false;
+    // console.log(event)
+    // sessions.value[sessionId.value].completedMessage = "";
+}
 
 </script>
 
