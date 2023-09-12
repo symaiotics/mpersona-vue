@@ -12,6 +12,8 @@
         <PageIllustration />
       </div>
 
+
+
       <section class="relative">
         <div class="max-w-9xl mx-auto px-4 sm:px-6 relative">
           <div class="pt-32 pb-12 md:pt-40 md:pb-20">
@@ -79,6 +81,8 @@ import Header from '@/partials/Header.vue'
 import PageIllustration from '@/partials/PageIllustration.vue'
 import SocketStage from '@/components/SocketStage.vue'
 import Tabs from '@/components/Tabs.vue';
+import MarkdownReveal from '@/components/MarkdownReveal.vue';
+
 
 //Composables
 

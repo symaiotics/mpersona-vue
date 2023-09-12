@@ -109,7 +109,7 @@ export function useWebsockets() {
 
     function sendToServer(uuid, session, model, temperature, systemPrompt, userPrompt, type) {
         if (ws) {
-            console.log(type)
+            // console.log(type)
             ws.send(JSON.stringify({ uuid, session, model, temperature, systemPrompt, userPrompt, type }));
         }
     }

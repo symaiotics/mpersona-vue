@@ -14,7 +14,7 @@
                 placeholder="Enter your prompts here"></textarea>
 
             <!-- {{ sessionsContent }} -->
-            <label for="includePrevOutput" class="ml-2 text-gray-700 dark:text-gray-300">
+            <label v-if="props.stageIndex" for="includePrevOutput" class="ml-2 text-gray-700 dark:text-gray-300">
                 Append Previous Output</label>
             <VueMultiselect v-if="props.stageIndex" v-model="selectedSessionsContent" :options="sessionsContentFiltered"
                 :searchable="true" :close-on-select="false" :custom-label="customLabelContent" :multiple="true"
@@ -149,7 +149,8 @@ watch(sessionsContent, (newValue, oldValue) => {
     //Update the selected 
     selectedSessionsContent.value.forEach((tag, index, origArray) => {
         if (sessions.value[tag.sessionId]) {
-            tag.content = (sessions.value[tag.sessionId].partialMessage || sessions.value[tag.sessionId].completedMessage).slice(0, 25)
+            tag.content = (sessions.value[tag.sessionId].partialMessage || sessions.value[tag.sessionId].completedMessage)
+            tag.completed = sessions.value[tag.sessionId].completedMessage.length > 0 ? true : false;
         }
         else {
             origArray.splice(index, 1)

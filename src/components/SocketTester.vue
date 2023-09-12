@@ -19,6 +19,7 @@
     <div
         class="flex flex-col  bg-white border border-gray-200 rounded-lg shadow md:flex-row  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 relative">
 
+        <!-- {{ appendedContent }} -->
         <!--Image and Name and Description-->
 
         <img class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
@@ -71,10 +72,18 @@
             <EditContent v-if="sessions?.[sessionId]?.completedMessage"
                 v-model:content="sessions[sessionId].completedMessage" />
 
+
+                <div class=" w-full h-96 pointer-events-none " aria-hidden="true">
+      <MarkdownReveal v-if = "sessions?.[sessionId]?.completedMessage?.length && sessions[sessionId].completedMessage.includes('## Slide') " :markdownContent = "sessions[sessionId].completedMessage"/>
+        </div>
+
+
         </div>
 
         <ButtonClose @close="onCloseClick" />
         <ButtonEdit @edit="onEditClick" />
+
+ 
 
     </div>
 </template>
@@ -89,11 +98,13 @@ import { StarIcon } from '@heroicons/vue/24/solid'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
 import MarkdownIt from 'markdown-it';
+ 
 
 //Components
 import ButtonClose from '@/components/ButtonClose.vue';
 import ButtonEdit from '@/components/ButtonEdit.vue';
 import EditContent from '@/components/EditContent.vue';
+import MarkdownReveal from '@/components/MarkdownReveal.vue';
 
 //Composables
 import { useWebsockets } from '@/composables/useWebsockets.js';
@@ -104,8 +115,9 @@ const props = defineProps({
     trigger: { type: Boolean, default: false },
     stageIndex: { type: Number },
     stageUuid: { type: String },
-    socketIndex: { type: Number },
     sessionId: { type: String, default: () => uuidv4() },
+    socketIndex: { type: Number },
+    appendedContent: { type: Array, default: [] },
     userPrompt: { type: String, default: "" },
     model: { type: String, default: "gpt-4" },
     temperature: { type: Number, default: 0.5 },
@@ -115,6 +127,7 @@ const props = defineProps({
 const trigger = computed(() => props.trigger);
 let isFocused = ref(false)
 
+const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
@@ -136,6 +149,17 @@ watch(trigger, (newValue, oldValue) => {
     sendMessage();
 });
 
+watch(appendedContent, (newValue, oldValue) => {
+    var contentCompleted = true;
+    appendedContent.value.forEach((tag) => {
+        if (!tag.completed) contentCompleted = false;
+    })
+    //Execute this socket
+    console.log("contentCompleted", contentCompleted)
+    if (contentCompleted) sendMessage();
+}, { deep: true });
+
+
 
 const emit = defineEmits(['edit', 'close', 'like']
 );
@@ -147,9 +171,14 @@ const completedMessageDiv = ref(null);
 const partialMessageDiv = ref(null);
 
 
+ 
+
 onMounted(() => {
     // console.log("pre reg ", props.value)
     registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
+
+ 
+
 })
 
 onBeforeUnmount(() => {
@@ -175,8 +204,14 @@ const completedMessage = computed(() => {
 function sendMessage() {
     if (wsUuid?.value) {
         sessions.value[sessionId.value].completedMessage = "";
+
+        var combinedPrompt = props.userPrompt;
+        props.appendedContent.forEach((prompt) => {
+            combinedPrompt += "\n" + prompt.content;
+        })
+        console.log("Prompting user and appended ", combinedPrompt)
         //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
-        sendToServer(wsUuid.value, sessionId.value, props.model, props.temperature, props.persona.basePrompt, props.userPrompt, 'prompt')
+        sendToServer(wsUuid.value, sessionId.value, props.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
     }
 }
 
@@ -304,3 +339,7 @@ function updateContent(event) {
     /* Adjust based on the status */
 }
 </style>
+<!-- 
+<style src="reveal.js/dist/reveal.css"></style>
+<style src="reveal.js/dist/theme/black.css"></style> -->
+
