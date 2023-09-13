@@ -88,10 +88,9 @@
 
         </div>
 
-        <div class=" w-full h-96 pointer-events-none " aria-hidden="true">
-            <MarkdownReveal
-                v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
-                :markdownContent="sessions[sessionId].completedMessage" />
+        <div v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
+            class=" w-full h-96 pointer-events-none " aria-hidden="true">
+            <MarkdownReveal :markdownContent="sessions[sessionId].completedMessage" />
         </div>
 
     </div>
