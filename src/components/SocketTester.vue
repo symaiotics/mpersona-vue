@@ -157,15 +157,15 @@ watch(trigger, (newValue, oldValue) => {
     sendMessage();
 });
 
-watch(appendedContent, (newValue, oldValue) => {
-    var contentCompleted = true;
-    appendedContent.value.forEach((tag) => {
-        if (!tag.completed) contentCompleted = false;
-    })
-    //Execute this socket
-    console.log("contentCompleted", contentCompleted)
-    if (contentCompleted) sendMessage();
-}, { deep: true });
+// watch(appendedContent, (newValue, oldValue) => {
+//     var contentCompleted = true;
+//     appendedContent.value.forEach((tag) => {
+//         if (!tag.completed) contentCompleted = false;
+//     })
+//     //Execute this socket
+//     console.log("contentCompleted", contentCompleted)
+//     if (contentCompleted) sendMessage();
+// }, { deep: true });
 
 
 
