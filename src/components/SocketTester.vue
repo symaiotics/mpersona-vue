@@ -30,8 +30,9 @@
                 <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.persona.name }}
                 </h5>
                 <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
-                <button @click="sendMessage"
-                    class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded">Generate</button>
+                <button @click="sendMessage" :disabled="processing"
+                    class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded disabled:text-gray-300">Generate {{ processing?" (Pending)":"" }}</button>
+                     
             </div>
 
             <div class="flex row">
@@ -132,6 +133,7 @@ const props = defineProps({
     persona: { type: Object },
 });
 
+let processing = ref(false);
 const trigger = computed(() => props.trigger);
 let isFocused = ref(false)
 
@@ -139,6 +141,35 @@ const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
+
+const emit = defineEmits(['edit', 'close', 'like']
+);
+//Make sessionId reactive
+const sessionId = ref(props.sessionId);
+const userPrompt = ref(props.userPrompt);
+
+const completedMessageDiv = ref(null);
+const partialMessageDiv = ref(null);
+
+
+
+
+const partialMessage = computed(() => {
+    if (sessions?.value) {
+        const session = sessions.value[sessionId.value];  // Use the sessionId prop to access the correct session
+        return session ? session?.partialMessage : '';
+    }
+    else return "";
+});
+
+const completedMessage = computed(() => {
+    if (sessions?.value) {
+        const session = sessions.value[sessionId.value];  // Use the sessionId prop to access the correct session
+        return session ? session?.completedMessage : '';
+    }
+    else return "";
+});
+
 
 watch(stageIndex, (newValue, oldValue) => {
     updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
@@ -157,26 +188,29 @@ watch(trigger, (newValue, oldValue) => {
     sendMessage();
 });
 
-// watch(appendedContent, (newValue, oldValue) => {
-//     var contentCompleted = true;
-//     appendedContent.value.forEach((tag) => {
-//         if (!tag.completed) contentCompleted = false;
-//     })
-//     //Execute this socket
-//     console.log("contentCompleted", contentCompleted)
-//     if (contentCompleted) sendMessage();
-// }, { deep: true });
+watch(appendedContent, (newValue, oldValue) => {
+    var contentCompleted = true;
+    appendedContent.value.forEach((tag) => {
+        if (!tag.completed) contentCompleted = false;
+    })
+    //Execute this socket
+    console.log("contentCompleted", contentCompleted)
+    if (contentCompleted) sendMessage();
+}, { deep: true });
 
 
 
-const emit = defineEmits(['edit', 'close', 'like']
-);
-//Make sessionId reactive
-const sessionId = ref(props.sessionId);
-const userPrompt = ref(props.userPrompt);
+watch(completedMessage, (newValue, oldValue) => {
+    console.log("Completed Change")
+    console.log(completedMessage)
+    console.log(newValue)
+    console.log(oldValue)
+    if (!oldValue.length && newValue.length) {
+        processing.value = false;
+    }
+    // updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
+});
 
-const completedMessageDiv = ref(null);
-const partialMessageDiv = ref(null);
 
 
 
@@ -193,33 +227,21 @@ onBeforeUnmount(() => {
     unregisterSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
 })
 
-const partialMessage = computed(() => {
-    if (sessions?.value) {
-        const session = sessions.value[sessionId.value];  // Use the sessionId prop to access the correct session
-        return session ? session?.partialMessage : '';
-    }
-    else return "";
-});
-
-const completedMessage = computed(() => {
-    if (sessions?.value) {
-        const session = sessions.value[sessionId.value];  // Use the sessionId prop to access the correct session
-        return session ? session?.completedMessage : '';
-    }
-    else return "";
-});
-
 function sendMessage() {
     if (wsUuid?.value) {
-        sessions.value[sessionId.value].completedMessage = "";
+        if (!processing.value) {
+            sessions.value[sessionId.value].completedMessage = "";
 
-        var combinedPrompt = props.userPrompt;
-        props.appendedContent.forEach((prompt) => {
-            combinedPrompt += "\n" + prompt.content;
-        })
-        console.log("Prompting user and appended ", combinedPrompt)
-        //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
-        sendToServer(wsUuid.value, sessionId.value, props.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
+            var combinedPrompt = props.userPrompt;
+            props.appendedContent.forEach((prompt) => {
+                combinedPrompt += "\n" + prompt.content;
+            })
+            console.log("Prompting user and appended ", combinedPrompt)
+            //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
+            sendToServer(wsUuid.value, sessionId.value, props.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
+            processing.value = true;
+
+        }
     }
 }
 
@@ -273,10 +295,12 @@ function updateContent(event) {
 <style>
 .preserve-whitespace-pre-wrap {
     white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 .preserve-whitespace-pre-line {
     white-space: pre-line;
+    word-wrap: break-word;
 }
 
 
