@@ -30,21 +30,21 @@ onMounted(() => {
   let deck = new Reveal({
     plugins: [Markdown],
     embedded: true,
-    controls: true,
+    // controls: true,
 
-    // Help the user learn the controls by providing hints, for example by
-    // bouncing the down arrow when they first encounter a vertical slide
-    controlsTutorial: true,
+    // // Help the user learn the controls by providing hints, for example by
+    // // bouncing the down arrow when they first encounter a vertical slide
+    // controlsTutorial: true,
 
-    // Determines where controls appear, "edges" or "bottom-right"
-    controlsLayout: 'bottom-right',
+    // // Determines where controls appear, "edges" or "bottom-right"
+    // controlsLayout: 'bottom-right',
 
-    // Visibility rule for backwards navigation arrows; "faded", "hidden"
-    // or "visible"
-    controlsBackArrows: 'faded',
+    // // Visibility rule for backwards navigation arrows; "faded", "hidden"
+    // // or "visible"
+    // controlsBackArrows: 'faded',
 
-    // Display a presentation progress bar
-    progress: true,
+    // // Display a presentation progress bar
+    // progress: true,
 
 
 
