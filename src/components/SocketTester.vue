@@ -15,38 +15,41 @@
     <!-- {{ stageIndex }} :
     {{ stageUuid }} :
     {{ socketIndex }} -->
+    <div class="w-full">
 
-    <div
-        class="flex flex-col  bg-white border border-gray-200 rounded-lg shadow md:flex-row  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 relative">
 
-        <!-- {{ appendedContent }} -->
-        <!--Image and Name and Description-->
+        <div
+            class="flex flex-col  bg-white border border-gray-200 rounded-lg shadow md:flex-row  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 relative">
 
-        <img class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
-            :src="props.persona.url || defaultImage" alt="">
-        <div class=" justify-between p-4 leading-normal md:w-1/4">
-            <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.persona.name }}
-            </h5>
-            <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
-            <button @click="sendMessage"
-                class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded">Generate</button>
-        </div>
+            <!-- {{ appendedContent }} -->
+            <!--Image and Name and Description-->
 
-        <div class="flex row">
-            <div v-if="completedMessage" class=" justify-between p-4 leading-normal md:w-1/4">
-                <StarIcon @click="like"
-                    class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
-                <TrashIcon @click="clear"
-                    class="h-6 w-6 dark:text-gray-200 text-gray-600 transform hover:scale-105 transition-transform duration-150" />
+            <img class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
+                :src="props.persona.url || defaultImage" alt="">
+            <div class=" justify-between p-4 leading-normal md:w-1/4">
+                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.persona.name }}
+                </h5>
+                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
+                <button @click="sendMessage"
+                    class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded">Generate</button>
             </div>
-        </div>
 
-        <!-- Interim and final message-->
-        <div class="md:w-1/2 justify-between p-4 leading-normal">
-            <div v-html="partialMessageMarkdown"
-                class="border transition duration-300 preserve-whitespace-pre-line p-3 rounded-md" v-if="partialMessage">
+            <div class="flex row">
+                <div v-if="completedMessage" class=" justify-between p-4 leading-normal md:w-1/4">
+                    <StarIcon @click="like"
+                        class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
+                    <TrashIcon @click="clear"
+                        class="h-6 w-6 dark:text-gray-200 text-gray-600 transform hover:scale-105 transition-transform duration-150" />
+                </div>
             </div>
-            <!-- 
+
+            <!-- Interim and final message-->
+            <div class="md:w-1/2 justify-between p-4 leading-normal">
+                <div v-html="partialMessageMarkdown"
+                    class="border transition duration-300 preserve-whitespace-pre-line p-3 rounded-md"
+                    v-if="partialMessage">
+                </div>
+                <!-- 
             <div 
             v-if="completedMessage" 
             v-html="completedMessageMarkdown" 
@@ -68,22 +71,28 @@
             @blur="isFocused = true"
             @input="updateContent" >
             </div> -->
-            <!-- {{ sessions[sessionId].completedMessage }} -->
-            <EditContent v-if="sessions?.[sessionId]?.completedMessage"
-                v-model:content="sessions[sessionId].completedMessage" />
+                <!-- {{ sessions[sessionId].completedMessage }} -->
+                <EditContent v-if="sessions?.[sessionId]?.completedMessage"
+                    v-model:content="sessions[sessionId].completedMessage" />
 
 
-                <div class=" w-full h-96 pointer-events-none " aria-hidden="true">
-      <MarkdownReveal v-if = "sessions?.[sessionId]?.completedMessage?.length && sessions[sessionId].completedMessage.includes('## Slide') " :markdownContent = "sessions[sessionId].completedMessage"/>
+
+
+            </div>
+
+            <ButtonClose @close="onCloseClick" />
+            <ButtonEdit @edit="onEditClick" />
+
+
+
+
         </div>
 
-
+        <div class=" w-full h-96 pointer-events-none " aria-hidden="true">
+            <MarkdownReveal
+                v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
+                :markdownContent="sessions[sessionId].completedMessage" />
         </div>
-
-        <ButtonClose @close="onCloseClick" />
-        <ButtonEdit @edit="onEditClick" />
-
- 
 
     </div>
 </template>
@@ -98,7 +107,7 @@ import { StarIcon } from '@heroicons/vue/24/solid'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 
 import MarkdownIt from 'markdown-it';
- 
+
 
 //Components
 import ButtonClose from '@/components/ButtonClose.vue';
@@ -171,13 +180,13 @@ const completedMessageDiv = ref(null);
 const partialMessageDiv = ref(null);
 
 
- 
+
 
 onMounted(() => {
     // console.log("pre reg ", props.value)
     registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
 
- 
+
 
 })
 

@@ -13,7 +13,6 @@
       </div>
 
 
-
       <section class="relative">
         <div class="max-w-9xl mx-auto px-4 sm:px-6 relative">
           <div class="pt-32 pb-12 md:pt-40 md:pb-20">

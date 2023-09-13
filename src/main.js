@@ -1,6 +1,6 @@
 
-import 'reveal.js/dist/reveal.css';
-import 'reveal.js/dist/theme/black.css';
+// import 'reveal.js/dist/reveal.css';
+// import 'reveal.js/dist/theme/moon.css';
 
 
 import { createApp } from 'vue'
