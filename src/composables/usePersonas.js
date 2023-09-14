@@ -74,7 +74,7 @@ export function usePersonas() {
     async function createNewPersonaAvatar(description) {
         return new Promise(async (resolve, reject) => {
             try {
-                var params = { avatarPrompt: "An attractive digital avatar, Pixar style 3D render of a friendly person smiling, inside, 4k, high resolution, trending in artstation, for a " + description + " " }
+                var params = { avatarPrompt:  description  }
                 var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/avatar', params);
                 resolve(import.meta.env.VITE_STORAGE_URL + "/images/" + response.data.payload)
                 getPersonas();

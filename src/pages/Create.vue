@@ -45,15 +45,30 @@
               <div class="w-full  px-3 mb-4 md:mb-1">
 
 
-                <div class="flex flex-col items-center">
+                <div class="flex flex-col items-center mb-1">
                   <div v-if="!statusCreatingAvatar && newPersona.url">
                     <img :src="newPersona.url" alt="Description" class="mb-4 rounded-md">
                   </div>
                   <p v-if="statusCreatingAvatar">Loading a new avatar... please wait</p>
-                  <button @click="createNewAvatar(newPersona.name)" :disabled="statusCreatingAvatar"
+                  <button @click="createNewAvatar(avatarPrompt)" :disabled="statusCreatingAvatar"
                     class="btn text-white bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded">Generate
                     New Avatar</button>
+
+
+
+
+
                 </div>
+
+                <div class="mb-5">
+                <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="avatarPrompt">
+                  Avatar Prompt
+                  <span class="text-red-600">*</span>
+                </label>
+
+                <input v-model="avatarPrompt" id="avatarPrompt" type="text" class="form-input w-full"
+                  placeholder="Enter how you would like your avatar to look" required />
+</div>  
 
                 <!-- 
                 <section class="hero container max-w-screen-lg mx-auto pb-10 flex justify-center">
@@ -206,6 +221,7 @@ let newPersona = ref({
 const router = useRouter()
 const route = useRoute()
 
+let avatarPrompt = ref('An attractive digital avatar, Pixar style 3D render of a friendly person smiling, inside, 4k, high resolution')
 let statusCreatingAvatar = ref(false)
 
 onMounted(() => {
