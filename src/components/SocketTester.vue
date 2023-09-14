@@ -15,6 +15,8 @@
     <!-- {{ stageIndex }} :
     {{ stageUuid }} :
     {{ socketIndex }} -->
+
+    <!-- {{ sessionId }} -->
     <div class="w-full">
 
 
@@ -24,18 +26,22 @@
             <!-- {{ appendedContent }} -->
             <!--Image and Name and Description-->
 
-            <img class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
-                :src="props.persona.url || defaultImage" alt="">
-            <div class=" justify-between p-4 leading-normal md:w-1/4">
-                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.persona.name }}
-                </h5>
-                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
-                <button @click="sendMessage" :disabled="processing"
-                    class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded disabled:text-gray-300">Generate {{ processing?" (Pending)":"" }}</button>
-                     
-            </div>
+            <template v-if="props?.persona">
+                <img v-if = "props.persona.url" class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
+                    :src="props.persona.url" alt="">
+                    <img v-else  class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
+                    :src="defaultImage" alt="">
+                <div class=" justify-between p-4 leading-normal md:w-1/4">
+                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.persona.name }}
+                    </h5>
+                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
+                    <button @click="sendMessage" :disabled="processing"
+                        class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded disabled:text-gray-300">Generate {{ processing?" (Pending)":"" }}</button>
+                </div>
+            </template>
 
             <div class="flex row">
+                <!-- {{ sessionId }} -->
                 <div v-if="completedMessage" class=" justify-between p-4 leading-normal md:w-1/4">
                     <StarIcon @click="like"
                         class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
@@ -122,15 +128,19 @@ const { wsUuid, sessions, registerSession, unregisterSession, updateSession, sen
 //Props
 const props = defineProps({
     trigger: { type: Boolean, default: false },
+
     stageIndex: { type: Number },
     stageUuid: { type: String },
+
     sessionId: { type: String, default: () => uuidv4() },
     socketIndex: { type: Number },
-    appendedContent: { type: Array, default: [] },
+
     userPrompt: { type: String, default: "" },
     model: { type: String, default: "gpt-4" },
     temperature: { type: Number, default: 0.5 },
     persona: { type: Object },
+    appendedContent: { type: Array, default: [] },
+
 });
 
 let processing = ref(false);
@@ -142,7 +152,7 @@ const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
 
-const emit = defineEmits(['edit', 'close', 'like']
+const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket']
 );
 //Make sessionId reactive
 const sessionId = ref(props.sessionId);
@@ -211,20 +221,14 @@ watch(completedMessage, (newValue, oldValue) => {
     // updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
 });
 
-
-
-
-
 onMounted(() => {
-    // console.log("pre reg ", props.value)
     registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
-
-
-
+    emit('addSocket', {persona:props.persona, sessionId:sessionId.value, stageIndex:props.stageIndex,  stageUuid:props.stageUuid, socketIndex:props.socketIndex})
 })
 
 onBeforeUnmount(() => {
     unregisterSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
+    emit('removeSocket', {persona:props.persona, sessionId:sessionId.value, stageIndex:props.stageIndex,  stageUuid:props.stageUuid, socketIndex:props.socketIndex})
 })
 
 function sendMessage() {

@@ -6,7 +6,8 @@ let wsUuid = ref(null);
 
 let pingInterval;
 let pongTimeout;
-const sessions = ref({});
+const stages = ref([]); //Manages all the stages within the app. However, this will need to revamped if we enable multiple workstreams
+const sessions = ref({}); //Sessions - Does not need a rework, would work across all
 
 const sessionsContent = computed(() => {
 
@@ -139,6 +140,7 @@ export function useWebsockets() {
         wsUuid,
         sessions,
         sessionsContent,
+        stages,
 
         websocketConnection,
         sendToServer,

@@ -10,15 +10,16 @@
 
             </VueMultiselect>
 
-            <textarea v-model="userPrompt" id="response" rows="8" class="form-textarea w-full mb-2"
-                placeholder="Enter your prompts here"></textarea>
+            <textarea :value="props.userPrompt" @input="updateUserPrompt($event.target.value)" id="response" rows="8"
+                class="form-textarea w-full mb-2" placeholder="Enter your prompts here"></textarea>
 
             <!-- {{ sessionsContent }} -->
             <label v-if="props.stageIndex" for="includePrevOutput" class="ml-2 text-gray-700 dark:text-gray-300">
                 Append Previous Output</label>
-            <VueMultiselect v-if="props.stageIndex" v-model="selectedSessionsContent" :options="sessionsContentFiltered"
-                :searchable="true" :close-on-select="false" :custom-label="customLabelContent" :multiple="true"
-                :show-labels="false" label="label" track-by="label" placeholder="Append previous content" />
+            <VueMultiselect v-if="props.stageIndex" v-model="localSelectedSessionsContent" @update:modelValue='handleSessionContentInput'
+                :options="sessionsContentFiltered" :searchable="true" :close-on-select="false"
+                :custom-label="customLabelContent" :multiple="true" :show-labels="false" label="label" track-by="label"
+                placeholder="Append previous content" />
 
             <!-- {{ selectedSessionsContent }} -->
 
@@ -61,19 +62,38 @@
                     track-by="name" :options="personas" :option-height="104" :custom-label="customLabel"
                     :show-labels="false" />
 
-                <button @click="addToRoster"
+                <button @click="addToSockets"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-200 font-bold m-2 p-2 rounded w-auto">
                     Add to Stage
                 </button>
 
             </div>
 
-            <template v-for="(persona, index) in personaRoster" :key="'persona'+persona.uuid">
+            <!-- TODO change this from the persona Roster-->
+            <!-- TODO Fix the key-->
+            <template v-for="(socket, index) in props.sockets" :key="'stageSocket'+index">
                 <!-- {{ props }} -->
-                <SocketTester :stageIndex="props.stageIndex" :stageUuid="props.stageUuid" :socketIndex="index"
-                    :appendedContent="selectedSessionsContent" @like="like(persona)" @close="remove(index)"
-                    @edit="edit(persona)" :trigger="triggerGeneration" :model="selectedModel.model" :temperature="0.5"
-                    :persona="persona" :userPrompt="userPrompt" />
+                <SocketTester
+                :trigger="triggerGeneration" 
+                :stageIndex="props.stageIndex" 
+                :stageUuid="props.stageUuid" 
+
+                :sessionId="socket.sessionId"
+                :socketIndex="index"
+
+                :userPrompt="props.userPrompt" 
+                :model="selectedModel.model" 
+                :temperature="0.5"
+                :persona="socket.persona" 
+                :appendedContent="props.selectedSessionsContent" 
+                
+                @like="like(persona)" 
+                @close="removeFromSockets(index)"
+                @edit="edit(persona)" 
+                @addSocket="addSocket" 
+                @removeSocket="removeSocket" 
+                
+                />
             </template>
         </div>
     </div>
@@ -108,18 +128,21 @@ const { promptOpenAI, promptResponse, promptResponseCode } = usePrompts()
 const { adminModels, selectedModel } = useModels()
 
 //Definitions
-let userPrompt = ref("");
-let personaRoster = ref([]);
+// let userPrompt = ref("");
+// let personaRoster = ref([]);
 let triggerGeneration = ref(false);
-let selectedSessionsContent = ref([]);
+let localSelectedSessionsContent = ref([]);
 
 let props = defineProps({
+
+    selectedSessionsContent: { type: Array, default: [] },
+    userPrompt: { type: String, default: "" },
+    sockets: { type: Array, default: [] },
     stageIndex: { type: Number, default: 0 },
     stageUuid: { type: String },
-
 })
 
-let emit = defineEmits(['deleteStage'])
+let emit = defineEmits(['deleteStage', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'updateSessionContent', 'addSocket','removeSocket'])
 
 //Tabs
 let activeTab = ref(0)
@@ -142,39 +165,46 @@ let sessionsContentFiltered = computed(() => {
 onMounted(() => {
     getPersonas();
     getUsedCategories();
+    if (props.selectedSessionsContent) localSelectedSessionsContent.value = props.selectedSessionsContent;
 })
+
+// TODO update so the selectedSessionContent (selectedStageContent?) is saved into the stage itself
+// const selectedSessionContent = computed(() => props.selectedSessionContent);
 
 
 watch(sessionsContent, (newValue, oldValue) => {
     //Update the selected 
-    selectedSessionsContent.value.forEach((tag, index, origArray) => {
+    props.selectedSessionsContent.forEach((tag, index, origArray) => {
         if (sessions.value[tag.sessionId]) {
+
+            //TODO, emit instead?
             tag.content = (sessions.value[tag.sessionId].partialMessage || sessions.value[tag.sessionId].completedMessage)
             tag.completed = sessions.value[tag.sessionId].completedMessage.length > 0 ? true : false;
         }
         else {
+            emit('removeSessionContent', index)
             origArray.splice(index, 1)
         }
     })
 });
 
 //Functions
-function addToRoster() {
-    if (selectedPersona.value)
-        personaRoster.value.push(selectedPersona.value)
+function addToSockets() {
+    // console.log("Add to Roster", selectedPersona.value)
+    if (selectedPersona.value) emit('addToSockets', { persona: selectedPersona.value, stageIndex: props.stageIndex, stageUuid: props.stageUuid })
+}
+
+function removeFromSockets(index) {
+    emit('removeFromSockets', { index, stageIndex: props.stageIndex })
 }
 
 function generateStage() {
-    //Toggle the value to trigger the children
-    triggerGeneration.value = !triggerGeneration.value;
-    // triggerGeneration.value = false;
-
+    triggerGeneration.value = !triggerGeneration.value; //Toggle - change is detected down stream
 }
 
 function deleteStage() {
     emit('deleteStage', props.stageIndex);
 }
-
 
 function like(persona) {
     console.log("Liked Persona", persona);
@@ -184,11 +214,27 @@ function edit(persona) {
     activeTab.value = 1;
 }
 
-function remove(index) {
-    personaRoster.value.splice(index, 1)
+//Updat the userPrompt back to the parent
+const updateUserPrompt = (newValue) => {
+    emit('update:userPrompt', newValue);
+};
+
+const handleSessionContentInput = (newValue) => {
+    // console.log("SessionContent changed", newValue)
+    emit('updateSessionContent', { newValue: newValue, stageIndex: props.stageIndex });
+};
+
+function addSocket(val)
+{
+    console.log("SocketStage addSocket: still useful?", val)
+    // emit('addSocket', val)
 }
 
-
+function removeSocket(val)
+{
+    console.log("SocketStage removeSocket: still useful?", val)
+    // emit('removeSocket', val)
+}
 
 
 </script>
