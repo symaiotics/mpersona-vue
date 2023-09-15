@@ -37,20 +37,10 @@
                 <template v-for="(stage, index) in stages" :key="'stage' + stage.uuid">
                   <!-- {{ stage }} -->
                   <!--:personaRoster="stage.personaRoster"-->
-                  <SocketStage 
-                  :stageIndex="index" 
-                  :stageUuid="stage.uuid" 
-                  :sockets="stage.sockets"
-                  :selectedSessionsContent="stage.selectedSessionsContent"
-                  v-model:userPrompt = "stage.userPrompt"
-                  @deleteStage="deleteStage" 
-
-                  @addToSockets='addToSockets' 
-                  @removeFromSockets='removeFromSockets'
-                  
-                  @updateSessionContent = "updateSessionContent"
-
-                  />
+                  <SocketStage :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
+                    :selectedSessionsContent="stage.selectedSessionsContent" v-model:userPrompt="stage.userPrompt"
+                    @deleteStage="deleteStage" @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
+                    @updateSessionContent="updateSessionContent" />
                   <!-- 
                   @addSocket = "addSocket" 
                   @removeSocket = "removeSocket"
@@ -61,24 +51,24 @@
               <template v-slot:tab-1>
                 <div>
 
-<!-- {{ stages }} -->
+                  <!-- {{ stages }} -->
 
                   <div class="w-full  px-3 mb-4 md:mb-1">
                     <!-- {{ workStreams }} -->
                     <!-- {{ stages }}
                     {{ sessions }} -->
                     <div class="flex items-center">
-                    <VueMultiselect v-if="workStreams" v-model="selectedWorkStream" placeholder="Select a Work Stream"
-                      label="name" track-by="name" :options="workStreams" :option-height="104" :custom-label="customLabel"
-                      :show-labels="false" />
+                      <VueMultiselect v-if="workStreams" v-model="selectedWorkStream" placeholder="Select a Work Stream"
+                        label="name" track-by="name" :options="workStreams" :option-height="104"
+                        :custom-label="customLabel" :show-labels="false" />
 
 
                       <button @click="loadWorkStream"
-                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-200 font-bold m-2 p-2 rounded w-auto">
-                    Select
-                </button>
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-200 font-bold m-2 p-2 rounded w-auto">
+                        Select
+                      </button>
 
-            </div>
+                    </div>
 
 
                   </div>
@@ -217,18 +207,15 @@ const messages = computed(() => {
 //Lifecycle hooks
 onMounted(() => {
   getWorkStreams();
-  // getPersonas();
-  // getUsedCategories();
+  if (!stages.value.length)
+    addStage();
 })
-
-
-
 
 //Functions
 function addStage() {
   var newStage = {
-    userPrompt:"",
-    selectedSessionsContent:[],
+    userPrompt: "",
+    selectedSessionsContent: [],
     uuid: uuidv4(),
     sockets: [],
     // personaRoster: [],
@@ -250,19 +237,18 @@ function addToSockets(val) {
       socketIndex: stages.value[val.stageIndex].sockets.length,
       stageIndex: val.stageIndex,
       stageUuid: val.stageUuid,
-      persona:val.persona,
+      persona: val.persona,
     }
-      )
+  )
 }
 
 function removeFromSockets(val) {
   stages.value[val.stageIndex].sockets.splice(val.index, 1)
 }
 
-function saveWorkStream()
-{
+function saveWorkStream() {
   createWorkStreams(newWorkStream.value).then((response) => {
-    
+
     //Reset Work Stream
     newWorkStream.value =
     {
@@ -273,8 +259,7 @@ function saveWorkStream()
   })
 }
 
-function loadWorkStream()
-{
+function loadWorkStream() {
   selectWorkStream(selectedWorkStream.value);
   activeTab.value = 0;
 }
@@ -294,8 +279,7 @@ function loadWorkStream()
 //   var filtered = sessions.value.filter((session)=>{return session.stage ==  })
 // })
 
-function updateSessionContent(val)
-{
+function updateSessionContent(val) {
   stages.value[val.stageIndex].selectedSessionsContent = val.newValue;
 }
 
