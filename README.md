@@ -1,6 +1,7 @@
 
-# mPersona - Vue.js
-mPersona is a MIT licensed took to build custom personas to facilitate interaction with Large Language Model services like Open AI's GPT4.
+# mPersona - By Symaiotics
+mPersona is a Cloud-based and downloadable tool to build and interact with custom personas.
+It facilitates much better interaction with Large Language Model services like Open AI's GPT4.
 
 ## About
 mPersona is built in 2 parts, a Vue.js web interface (this package) and a Node.js server side application.
