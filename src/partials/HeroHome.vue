@@ -13,7 +13,7 @@
 
 
             <h1 class="h1 lg:text-6xl mb-4 font-red-hat-display font-black" data-aos="fade-down">mPersona.com</h1>
-            <h2 class="h1 lg:text-6xl mb-4 font-red-hat-display font-black" data-aos="fade-down">by Symaiotics</h2>
+            <h2 class="h2 lg:text-6xl mb-4 font-red-hat-display font-black" data-aos="fade-down">by Symaiotics</h2>
             <p class="text-xl text-gray-600 dark:text-gray-400" data-aos="fade-down" data-aos-delay="150">Unlock the power of persona-driven AI interactions.</p>
  
           </div>
