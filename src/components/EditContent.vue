@@ -85,4 +85,26 @@ onUnmounted(() => {
 });
   
   </script>
-  
+  <style>
+
+
+.preserve-whitespace-pre-wrap {
+    white-space: pre-wrap;
+    word-wrap: break-all;
+}
+
+.preserve-whitespace-pre-line {
+    white-space: pre-line;
+    word-wrap: break-all;
+}
+
+
+
+code {
+    word-break: break-word;
+    
+    white-space : pre-wrap !important;
+}
+
+
+</style>

@@ -204,7 +204,7 @@ watch(appendedContent, (newValue, oldValue) => {
         if (!tag.completed) contentCompleted = false;
     })
     //Execute this socket
-    console.log("contentCompleted", contentCompleted)
+    // console.log("contentCompleted", contentCompleted)
     if (contentCompleted) sendMessage();
 }, { deep: true });
 
@@ -297,15 +297,6 @@ function updateContent(event) {
 
 
 <style>
-.preserve-whitespace-pre-wrap {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-.preserve-whitespace-pre-line {
-    white-space: pre-line;
-    word-wrap: break-word;
-}
 
 
 .card {
