@@ -172,7 +172,7 @@ const customLabel = (option) => option ? option.name : '';
 let activeTab = ref(0)
 const tabs = ref([
   { label: 'Interact' },
-  { label: 'Manage' },
+  { label: 'Work Streams' },
   { label: 'Results' },
 ]);
 

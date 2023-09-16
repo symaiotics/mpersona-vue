@@ -10,7 +10,7 @@
 
             </VueMultiselect>
 
-            <textarea :value="props.userPrompt" @input="updateUserPrompt($event.target.value)" id="response" rows="8"
+            <textarea :value="props.userPrompt" @input="updateUserPrompt($event.target.value)" id="response" rows="4"
                 class="form-textarea w-full mb-2" placeholder="Enter your prompts here"></textarea>
 
             <!-- {{ sessionsContent }} -->
@@ -38,12 +38,12 @@
             </div> -->
 
             <button @click="generateStage"
-                class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded">
+                class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mr-2 p-3 rounded">
                 Generate Stage
             </button>
 
             <button @click="deleteStage"
-                class="self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold  m-2 p-3 rounded">
+                class=" bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold  mr-2 p-3 rounded">
                 Delete Stage
             </button>
 
@@ -191,7 +191,7 @@ watch(sessionsContent, (newValue, oldValue) => {
 //Functions
 function addToSockets() {
     // console.log("Add to Roster", selectedPersona.value)
-    if (selectedPersona.value) emit('addToSockets', { persona: selectedPersona.value, stageIndex: props.stageIndex, stageUuid: props.stageUuid })
+    if (selectedPersona.value) emit('addToSockets', { persona: JSON.parse(JSON.stringify(selectedPersona.value)), stageIndex: props.stageIndex, stageUuid: props.stageUuid })
 }
 
 function removeFromSockets(index) {

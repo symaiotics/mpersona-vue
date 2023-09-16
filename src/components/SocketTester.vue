@@ -1,108 +1,98 @@
 <template>
-    <!-- <div class="p-4">
-        Testing Only
-        <p>name: {{ persona.name }}</p>
-        <p>wsUuid: {{ wsUuid }}</p>
-        <p>sessionId: {{ sessionId }}</p>
-        <p>user prompt: {{ props.userPrompt }}</p>
-        <p>model: {{ props.model }}</p>
-        <p>temp: {{ props.temperature }}</p>
-        <div v-if="partialMessage">{{ partialMessage }}</div>
-        <div v-if="completedMessage">{{ completedMessage }}</div>
-        <button @click="sendMessage">Send a message</button>
-    </div>
-  -->
-    <!-- {{ stageIndex }} :
-    {{ stageUuid }} :
-    {{ socketIndex }} -->
-
-    <!-- {{ sessionId }} -->
     <div class="w-full">
 
-
+        <!-- Main Container -->
         <div
-            class="flex flex-col  bg-white border border-gray-200 rounded-lg shadow md:flex-row  hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 relative">
-
-            <!-- {{ appendedContent }} -->
-            <!--Image and Name and Description-->
-
+            class="p-1 bg-white border border-gray-200 rounded-lg shadow md:flex-row hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 relative">
+            <!-- Persona Template -->
             <template v-if="props?.persona">
-                <img v-if = "props.persona.url" class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
-                    :src="props.persona.url" alt="">
-                    <img v-else  class="object-cover w-full rounded-t-lg md:h-48  md:w-48 md:rounded-none md:rounded-l-lg"
-                    :src="defaultImage" alt="">
-                <div class=" justify-between p-4 leading-normal md:w-1/4">
-                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ props.persona.name }}
-                    </h5>
-                    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
-                    <button @click="sendMessage" :disabled="processing"
-                        class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-3 rounded disabled:text-gray-300">Generate {{ processing?" (Pending)":"" }}</button>
+                <div class="flex row">
+                    <div class="flex-col">
+                        <img v-if="props.persona.url" class="object-cover w-full rounded-t-lg md:h-24 md:w-24 rounded"
+                            :src="props.persona.url" alt="">
+                        <img v-else class="object-cover w-full rounded-t-lg md:h-24 md:w-24 rounded" :src="defaultImage"
+                            alt="">
+                    </div>
+                    <div class="flex-col leading-normal pl-3 pr-2 pt-3">
+                        <h5
+                            class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-wordwrap">
+                            {{ props.persona.name }}</h5>
+                        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
+                    </div>
+                    <div class="flex-col flex items-start pl-3 pr-2 pt-3">
+                        <div class="self-start">
+                            <button @click="sendMessage" :disabled="processing"
+                                class=" mr-2 bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded disabled:text-gray-300">
+                                Generate
+                            </button>
+                            <!-- <button @click="onEditClick" :disabled="processing"
+                            class=" bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded disabled:text-gray-300">
+                            Edit 
+                        </button> -->
+                        </div>
+                    </div>
                 </div>
             </template>
 
-            <div class="flex row">
-                <!-- {{ sessionId }} -->
-                <div v-if="completedMessage" class=" justify-between p-4 leading-normal md:w-1/4">
+            <!-- Interim and final message section -->
+            <div v-if="partialMessage" v-html="partialMessageMarkdown"
+                class="border w-full transition duration-300 preserve-whitespace-pre-line p-4 pt-10 rounded-md"></div>
+
+            <div v-if="completedMessage" class="relative">
+                <div class="absolute top-0 right-0 flex space-x-4 p-4">
                     <StarIcon @click="like"
                         class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
                     <TrashIcon @click="clear"
                         class="h-6 w-6 dark:text-gray-200 text-gray-600 transform hover:scale-105 transition-transform duration-150" />
                 </div>
+                <EditContent class="w-full p-4 pt-10" v-model:content="sessions[sessionId].completedMessage" />
             </div>
 
-            <!-- Interim and final message-->
-            <div class="md:w-1/2 justify-between p-4 leading-normal">
-                <div v-html="partialMessageMarkdown"
-                    class="border transition duration-300 preserve-whitespace-pre-line p-3 rounded-md"
-                    v-if="partialMessage">
-                </div>
-                <!-- 
-            <div 
-            v-if="completedMessage" 
-            v-html="completedMessageMarkdown" 
-            contenteditable="true"
-            class="border transition duration-300 preserve-whitespace-pre-line"
-            :class="{ 'border-blue-500 border-4': isFocused }" 
-            @focus="isFocused = true" 
-            @blur="isFocused = true"
-            @input="updateContent" >
+
+            <div v-if="editPersona">
+                <EditContent v-if="props.persona && editPersona" class="w-full"
+                    v-model:content="props.persona.basePrompt" />
             </div>
 
-            <div 
-            v-if="completedMessage" 
-            v-html="completedMessage" 
-            contenteditable="true"
-            class="border transition duration-300 preserve-whitespace-pre-line"
-            :class="{ 'border-blue-500 border-4': isFocused }" 
-            @focus="isFocused = true" 
-            @blur="isFocused = true"
-            @input="updateContent" >
-            </div> -->
-                <!-- {{ sessions[sessionId].completedMessage }} -->
-                <EditContent v-if="sessions?.[sessionId]?.completedMessage"
-                    v-model:content="sessions[sessionId].completedMessage" />
-
-
-
-
-            </div>
-
+            <!-- Close and Edit Buttons -->
             <ButtonClose @close="onCloseClick" />
             <ButtonEdit @edit="onEditClick" />
-
-
-
-
         </div>
 
+        <!-- Edit Content and Icons Section -->
+        <!-- <div class="w-full h-auto">
+            <div class="flex items-center p-4">
+                <div v-if="completedMessage" class="flex items-center space-x-4">
+                    <StarIcon @click="like"
+                        class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
+                    <TrashIcon @click="clear"
+                        class="h-6 w-6 dark:text-gray-200 text-gray-600 transform hover:scale-105 transition-transform duration-150" />
+                </div>
+                <div class="flex-grow">
+                    <EditContent v-if="sessions?.[sessionId]?.completedMessage" class="w-full"
+                        v-model:content="sessions[sessionId].completedMessage" />
+                </div>
+            </div>
+            <div class="flex items-center p-4">
+                <div class="flex-grow">
+                    <EditContent v-if="props.persona && editPersona" class="w-full"
+                        v-model:content="props.persona.basePrompt" />
+                </div>
+                <div v-if="props.persona && editPersona" class="pl-4">
+                    <CloudIcon @click="saveChanges"
+                        class="h-6 w-6 text-green-500 transform hover:scale-105 transition-transform duration-150" />
+                </div>
+            </div>
+        </div> -->
+
+        <!-- Markdown Reveal Section -->
         <div v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
-            class=" w-full h-96 pointer-events-none " aria-hidden="true">
+            class="w-full h-96 pointer-events-none" aria-hidden="true">
             <MarkdownReveal :markdownContent="sessions[sessionId].completedMessage" />
         </div>
-
     </div>
 </template>
-  
+
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
@@ -111,6 +101,7 @@ import defaultImage from "../images/persona1.png"
 // import { StarIcon } from '@heroicons/vue/outline';
 import { StarIcon } from '@heroicons/vue/24/solid'
 import { TrashIcon } from '@heroicons/vue/24/solid'
+import { CloudIcon } from '@heroicons/vue/24/solid'
 
 import MarkdownIt from 'markdown-it';
 
@@ -162,7 +153,7 @@ const completedMessageDiv = ref(null);
 const partialMessageDiv = ref(null);
 
 
-
+let editPersona = ref(false)
 
 const partialMessage = computed(() => {
     if (sessions?.value) {
@@ -223,12 +214,12 @@ watch(completedMessage, (newValue, oldValue) => {
 
 onMounted(() => {
     registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
-    emit('addSocket', {persona:props.persona, sessionId:sessionId.value, stageIndex:props.stageIndex,  stageUuid:props.stageUuid, socketIndex:props.socketIndex})
+    emit('addSocket', { persona: props.persona, sessionId: sessionId.value, stageIndex: props.stageIndex, stageUuid: props.stageUuid, socketIndex: props.socketIndex })
 })
 
 onBeforeUnmount(() => {
     unregisterSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
-    emit('removeSocket', {persona:props.persona, sessionId:sessionId.value, stageIndex:props.stageIndex,  stageUuid:props.stageUuid, socketIndex:props.socketIndex})
+    emit('removeSocket', { persona: props.persona, sessionId: sessionId.value, stageIndex: props.stageIndex, stageUuid: props.stageUuid, socketIndex: props.socketIndex })
 })
 
 function sendMessage() {
@@ -265,7 +256,8 @@ const onCloseClick = () => {
 };
 
 const onEditClick = () => {
-    emit('edit');
+    editPersona.value = !editPersona.value;
+    // emit('edit');
 };
 
 
@@ -297,8 +289,6 @@ function updateContent(event) {
 
 
 <style>
-
-
 .card {
     display: flex;
     border: 1px solid #ccc;
