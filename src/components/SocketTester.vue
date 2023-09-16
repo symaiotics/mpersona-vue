@@ -21,10 +21,10 @@
                     </div>
                     <div class="flex-col flex items-start pl-3 pr-2 pt-3">
                         <div class="self-start">
-                            <button @click="sendMessage" :disabled="processing"
+                            <!-- <button @click="sendMessage" :disabled="processing"
                                 class=" mr-2 bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded disabled:text-gray-300">
                                 Generate
-                            </button>
+                            </button> -->
                             <!-- <button @click="onEditClick" :disabled="processing"
                             class=" bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded disabled:text-gray-300">
                             Edit 
@@ -55,8 +55,11 @@
             </div>
 
             <!-- Close and Edit Buttons -->
-            <ButtonClose @close="onCloseClick" />
+            <!-- <ButtonWait /> -->
+            <ButtonWait v-if="partialMessage"  />
+            <ButtonGenerate v-if="!partialMessage"  @generate="sendMessage" />
             <ButtonEdit @edit="onEditClick" />
+            <ButtonClose @close="onCloseClick" />
         </div>
 
         <!-- Edit Content and Icons Section -->
@@ -109,6 +112,8 @@ import MarkdownIt from 'markdown-it';
 //Components
 import ButtonClose from '@/components/ButtonClose.vue';
 import ButtonEdit from '@/components/ButtonEdit.vue';
+import ButtonGenerate from '@/components/ButtonGenerate.vue';
+import ButtonWait from '@/components/ButtonWait.vue';
 import EditContent from '@/components/EditContent.vue';
 import MarkdownReveal from '@/components/MarkdownReveal.vue';
 

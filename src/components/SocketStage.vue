@@ -38,12 +38,12 @@
             </div> -->
 
             <button @click="generateStage"
-                class="self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mr-2 p-3 rounded">
+                class=" sm:w-full md:w-auto self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mr-2 p-3 mb-2 rounded">
                 Generate Stage
             </button>
 
             <button @click="deleteStage"
-                class=" bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold  mr-2 p-3 rounded">
+                class=" sm:w-full md:w-auto bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold  mr-2 p-3 rounded">
                 Delete Stage
             </button>
 
