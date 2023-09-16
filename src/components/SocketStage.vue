@@ -4,42 +4,27 @@
         <!-- First Column -->
         <div class="w-full md:w-1/4 p-4">
             <p>Stage {{ props.stageIndex + 1 }}</p>
+
             <!-- <p>Select your model</p> -->
             <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="false" :close-on-select="false"
-                :custom-label="customLabelModel" :show-labels="false" placeholder="Pick a model">
+                :custom-label="customLabelModel" :show-labels="false" placeholder="Pick a model" />
 
-            </VueMultiselect>
-
+            <!-- User Prompt -->
             <textarea :value="props.userPrompt" @input="updateUserPrompt($event.target.value)" id="response" rows="4"
                 class="form-textarea w-full " placeholder="Enter your prompts here"></textarea>
 
-            <!-- {{ sessionsContent }} -->
-            <div v-if = "props.stageIndex" class = " mb-2">
+
+            <!-- Append Previous Outputs-->
+            <div v-if="props.stageIndex" class=" mb-2">
                 <label v-if="props.stageIndex" for="includePrevOutput" class="ml-2 text-gray-700 dark:text-gray-300">
-                Append Previous Output</label>
-            <VueMultiselect v-if="props.stageIndex" v-model="localSelectedSessionsContent"
-                @update:modelValue='handleSessionContentInput' :options="sessionsContentFiltered" :searchable="true"
-                :close-on-select="false" :custom-label="customLabelContent" :multiple="true" :show-labels="false"
-                label="label" track-by="label" placeholder="Append previous content" />
+                    Append Previous Output</label>
+                <VueMultiselect v-if="props.stageIndex" v-model="localSelectedSessionsContent"
+                    @update:modelValue='handleSessionContentInput' :options="sessionsContentFiltered" :searchable="true"
+                    :close-on-select="false" :custom-label="customLabelContent" :multiple="true" :show-labels="false"
+                    label="label" track-by="label" placeholder="Append previous content" />
             </div>
 
-            <!-- {{ selectedSessionsContent }} -->
-
-            <!-- <div class="flex items-center" v-if = "props.stageIndex">
-                <input id="includePrevOutput" type="checkbox"
-                    class="form-checkbox h-5 w-5 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-500 rounded border-gray-300 dark:border-gray-700 shadow-sm" />
-                <label for="includePrevOutput" class="ml-2 text-gray-700 dark:text-gray-300">
-                    Append Previous Output</label>
-            </div> -->
-
-            <!-- <div class="flex items-center" v-if="props.stageIndex">
-                <input id="autoGenerate" type="checkbox"
-                    class="form-checkbox h-5 w-5 text-indigo-600 dark:text-indigo-400 focus:ring-indigo-500 dark:focus:ring-indigo-500 rounded border-gray-300 dark:border-gray-700 shadow-sm" />
-                <label for="autoGenerate" class="ml-2 text-gray-700 dark:text-gray-300">
-                    Auto-Generate</label>
-            </div> -->
-
-
+            <!-- Buttons -->
             <div class="flex space-x-2">
 
                 <button @click="generateStage"
@@ -52,11 +37,8 @@
                     Delete Stage
                 </button>
 
-
-
                 <!-- Up Chevron Button -->
-                
-                <button v-if="props.stageIndex" @click = "moveStageUp"
+                <button v-if="props.stageIndex" @click="moveStageUp"
                     class="bg-blue-500 text-white rounded flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -4 24 24" fill="currentColor"
                         class="w-12 h-12">
@@ -65,7 +47,7 @@
                 </button>
 
                 <!-- Down Chevron Button -->
-                <button @click = "moveStageDown"
+                <button @click="moveStageDown"
                     class="bg-red-500 text-white  rounded flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 32" fill="currentColor"
                         class="w-12 h-12">
@@ -73,9 +55,6 @@
                     </svg>
                 </button>
             </div>
-
-
-
 
         </div>
 
@@ -112,8 +91,6 @@
     </div>
 </template>
 
-
-
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 
@@ -123,10 +100,7 @@ import VueMultiselect from 'vue-multiselect'
 // import '@symaiotics/d3-graph-creator-tailwind/dist/style.css';
 
 //Components
-import Header from '@/partials/Header.vue'
-import PageIllustration from '@/partials/PageIllustration.vue'
 import SocketTester from '@/components/SocketTester.vue'
-import Tabs from '@/components/Tabs.vue';
 
 //Composables
 import { useWebsockets } from '@/composables/useWebsockets.js'

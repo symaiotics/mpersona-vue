@@ -11,8 +11,8 @@
       <div class="relative max-w-9xl mx-auto h-0 pointer-events-none -z-1" aria-hidden="true">
         <PageIllustration />
       </div>
-
-
+<!-- stages
+{{ stages }} -->
       <section class="relative">
         <div class="max-w-9xl mx-auto px-4 sm:px-6 relative">
           <div class="pt-32 pb-12 md:pt-40 md:pb-20">
@@ -231,17 +231,38 @@ function deleteStage(index) {
 
 function moveStageUp(index) {
   if (index > 0) {
+    var newIndex = index-1;
+
+    //Incorrect, this is fixing the wrong thing. Need to fix all the other indexes 
+    // stages.value.forEach((stage)=>{
+    //   stage.selectedSessionsContent.forEach((session)=>{
+    //     if(session.stageIndex == index) session.stageIndex = newIndex;
+    //   })
+    // })
     const itemToMoveUp = stages.value[index];
     stages.value.splice(index, 1);
     stages.value.splice(index - 1, 0, itemToMoveUp);
+    //TODO update selectedSessionsContent so the indexes of those change as well
+
   }
 }
 
 function moveStageDown(index) {
   if (index < stages.value.length - 1) {
+    var newIndex = index+1;
+
+    //Incorrect
+    // stages.value.forEach((stage)=>{
+    //   stage.selectedSessionsContent.forEach((session)=>{
+    //     if(session.stageIndex == index) session.stageIndex = newIndex;
+    //   })
+    // })
+
     const itemToMoveDown = stages.value[index];
     stages.value.splice(index, 1);
     stages.value.splice(index + 1, 0, itemToMoveDown);
+
+    //TODO update selectedSessionsContent so the indexes of those change as well
   }
 }
 
