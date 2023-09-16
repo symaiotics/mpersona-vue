@@ -40,7 +40,7 @@
                   <SocketStage :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
                     :selectedSessionsContent="stage.selectedSessionsContent" v-model:userPrompt="stage.userPrompt"
                     @deleteStage="deleteStage" @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
-                    @updateSessionContent="updateSessionContent" />
+                    @updateSessionContent="updateSessionContent" @moveStageUp = "moveStageUp" @moveStageDown = "moveStageDown" />
                   <!-- 
                   @addSocket = "addSocket" 
                   @removeSocket = "removeSocket"
@@ -228,6 +228,23 @@ function deleteStage(index) {
   console.log(index)
   stages.value.splice(index, 1)
 }
+
+function moveStageUp(index) {
+  if (index > 0) {
+    const itemToMoveUp = stages.value[index];
+    stages.value.splice(index, 1);
+    stages.value.splice(index - 1, 0, itemToMoveUp);
+  }
+}
+
+function moveStageDown(index) {
+  if (index < stages.value.length - 1) {
+    const itemToMoveDown = stages.value[index];
+    stages.value.splice(index, 1);
+    stages.value.splice(index + 1, 0, itemToMoveDown);
+  }
+}
+
 
 function addToSockets(val) {
   console.log("Add to Roster", val)
