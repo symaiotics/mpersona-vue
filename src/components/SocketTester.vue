@@ -56,8 +56,8 @@
 
             <!-- Close and Edit Buttons -->
             <!-- <ButtonWait /> -->
-            <ButtonWait v-if="partialMessage"  />
-            <ButtonGenerate v-if="!partialMessage"  @generate="sendMessage" />
+            <ButtonWait v-if="partialMessage" />
+            <ButtonGenerate v-if="!partialMessage" @generate="sendMessage" />
             <ButtonEdit @edit="onEditClick" />
             <ButtonClose @close="onCloseClick" />
         </div>
@@ -89,6 +89,17 @@
         </div> -->
 
         <!-- Markdown Reveal Section -->
+
+
+
+        <div v-if="thisSessionsContent?.[0]">
+           Extracts: {{ thisSessionsContent[0].extracts }}
+            <br/>
+           Code: {{ thisSessionsContent[0].extracts.code }}
+            <br/>
+           JSON: {{ thisSessionsContent[0].extracts.json }}
+        </div>
+
         <div v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
             class="w-full h-96 pointer-events-none" aria-hidden="true">
             <MarkdownReveal :markdownContent="sessions[sessionId].completedMessage" />
@@ -119,7 +130,9 @@ import MarkdownReveal from '@/components/MarkdownReveal.vue';
 
 //Composables
 import { useWebsockets } from '@/composables/useWebsockets.js';
-const { wsUuid, sessions, registerSession, unregisterSession, updateSession, sendToServer } = useWebsockets();
+import { useExecutor } from '@/composables/useExecutor.js';
+const { wsUuid, sessions, sessionsContent, registerSession, unregisterSession, updateSession, sendToServer } = useWebsockets();
+const { actionJson } = useExecutor();
 
 //Props
 const props = defineProps({
@@ -147,6 +160,9 @@ const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
+
+const thisSessionsContent = computed(() => sessionsContent.value.filter((session) => { return session.sessionId = props.sessionId }));
+
 
 const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket']
 );
@@ -201,7 +217,7 @@ watch(appendedContent, (newValue, oldValue) => {
     })
     //Execute this socket
     // console.log("contentCompleted", contentCompleted)
-    if (contentCompleted) sendMessage();
+    if (appendedContent.value.length && contentCompleted) sendMessage();
 }, { deep: true });
 
 
@@ -209,10 +225,18 @@ watch(appendedContent, (newValue, oldValue) => {
 watch(completedMessage, (newValue, oldValue) => {
     console.log("Completed Change")
     console.log(completedMessage)
-    console.log(newValue)
-    console.log(oldValue)
+    console.log("New Value", newValue)
+    console.log("Old Value", oldValue)
     if (!oldValue.length && newValue.length) {
         processing.value = false;
+
+        if(thisSessionsContent.value.length)
+        {
+            // console.log(thisSessionsContent.value[0])
+            // console.log(thisSessionsContent.value[0].extracts)
+            // console.log(thisSessionsContent.value[0].extracts.value.json)
+            actionJson(thisSessionsContent.value[0].extracts.value.json)
+        }
     }
     // updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
 });

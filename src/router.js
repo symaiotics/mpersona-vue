@@ -3,6 +3,7 @@ import Home from '@/pages/Home.vue'
 import Create from '@/pages/Create.vue'
 import Interact from '@/pages/Interact.vue'
 import InteractLive from '@/pages/InteractLive.vue'
+import Manage from '@/pages/Manage.vue'
 import Join from '@/pages/Join.vue'
 import Login from '@/pages/Login.vue'
 import CreateKnowledgeProfile from '@/pages/CreateKnowledgeProfile.vue'
@@ -54,6 +55,11 @@ const router = createRouter({
       path: '/interactLive',
       name:'interactLive',
       component: InteractLive
+    },
+    {
+      path: '/manage',
+      name:'manage',
+      component: Manage
     },
     {
       path: '/join',

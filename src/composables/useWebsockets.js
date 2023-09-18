@@ -10,18 +10,31 @@ const stages = ref([]); //Manages all the stages within the app. However, this w
 const sessions = ref({}); //Sessions - Does not need a rework, would work across all
 
 const sessionsContent = computed(() => {
-
     var content = [];
     var keys = Object.keys(sessions.value);
     keys.forEach((key, index, origArray) => {
         // console.log(sessions.value[key])
         content.push(
-            { content: sessions.value[key].completedMessage || sessions.value[key].partialMessage || "", 
-            label: sessions.value[key].stageUuid + sessions.value[key].stageIndex + sessions.value[key].socketIndex,
-            sessionId: key, 
-            stageUuid: sessions.value[key].stageUuid, 
-            stageIndex: sessions.value[key].stageIndex,  
-            socketIndex: sessions.value[key].socketIndex })
+            {
+                content: sessions.value[key].completedMessage || sessions.value[key].partialMessage || "",
+                label: sessions.value[key].stageUuid + sessions.value[key].stageIndex + sessions.value[key].socketIndex,
+                sessionId: key,
+                stageUuid: sessions.value[key].stageUuid,
+                stageIndex: sessions.value[key].stageIndex,
+                socketIndex: sessions.value[key].socketIndex,
+                extracts: computed(()=>{
+                    return extractData(sessions.value[key].completedMessage || sessions.value[key].partialMessage || "")
+                })
+                
+                // {
+                //     code: computed(() => {
+                //         return extractCode(sessions.value[key].completedMessage || sessions.value[key].partialMessage || "")
+                //     }),
+                //     json: computed(() => {
+                //         return extractJSON(sessions.value[key].completedMessage || sessions.value[key].partialMessage || "")
+                //     }),
+                // }
+            })
     })
 
     return content;
@@ -117,7 +130,7 @@ export function useWebsockets() {
 
     function registerSession(session, stageIndex, stageUuid, socketIndex, callback) {
         // sessions.value[data.session].partialMessage = ref('');
-        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid , socketIndex: socketIndex};
+        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid, socketIndex: socketIndex };
         console.log("Registered session", sessions.value[session])
 
     }
@@ -148,4 +161,279 @@ export function useWebsockets() {
         updateSession,
         unregisterSession,
     };
+}
+
+
+function extractCode(answer) {
+    let codes = [];
+    try {
+        if (answer) {
+            const textCode = answer.match(/```([\s\S]+?)```/g);
+            if (textCode && textCode.length > 0) {
+                codes = textCode
+                    .join(" ")
+                    .split("```")
+                    .map((code) => code.trim())
+                    .filter((code) => code !== "")
+                    .map((c) => ({
+                        key: c.slice(0, c.indexOf("\n")),
+                        code: c.slice(c.indexOf("\n")),
+                    }));
+            }
+            console.log(codes);
+        }
+        return codes;
+    }
+    catch (error) {
+        return [];
+    }
+}
+
+function extractJSON(text) {
+    const validJSONs = [];
+
+    try {
+        if (text) {
+
+            let startIdx = text.indexOf('{');
+            while (startIdx !== -1) {
+                let endIdx = startIdx;
+                let braceCount = 1;
+
+                while (endIdx < text.length && braceCount > 0) {
+                    endIdx++;
+                    if (text[endIdx] === '{') {
+                        braceCount++;
+                    } else if (text[endIdx] === '}') {
+                        braceCount--;
+                    }
+                }
+
+                const potentialJSON = text.substring(startIdx, endIdx + 1);
+                try {
+                    const sanitizedString = potentialJSON.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+                    const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+                    const parsed = JSON.parse(replacedString);
+                    validJSONs.push(parsed);
+                } catch (e) {
+                    // Not valid JSON, skip
+                }
+
+                startIdx = text.indexOf('{', startIdx + 1);
+            }
+        }
+
+        return validJSONs;
+    }
+
+    catch (error) {
+
+        return [];
+    }
+}
+
+//This puts it all into the code?
+
+// function extractData(text) 
+// {
+//     let codes = [];
+//     let validJSONs = [];
+
+//     try {
+//         if (text) {
+//             // Step 1 & 2: Extract code blocks and remove them from the text
+//             const textCode = text.match(/```([\s\S]+?)```/g);
+//             let modifiedText = text;
+//             if (textCode && textCode.length > 0) {
+//                 codes = textCode
+//                     .join(" ")
+//                     .split("```")
+//                     .map((code) => code.trim())
+//                     .filter((code) => code !== "" && code.includes("\n"))
+//                     .map((c) => ({
+//                         key: c.slice(0, c.indexOf("\n")),
+//                         code: c.slice(c.indexOf("\n") + 1),
+//                     }));
+//                 textCode.forEach(codeBlock => {
+//                     modifiedText = modifiedText.replace(codeBlock, '');
+//                 });
+//             }
+
+//             // Step 3: Extract JSONs from the modified text
+//             let startIdx = modifiedText.indexOf('{');
+//             while (startIdx !== -1) {
+//                 let endIdx = startIdx;
+//                 let braceCount = 1;
+
+//                 while (endIdx < modifiedText.length && braceCount > 0) {
+//                     endIdx++;
+//                     if (modifiedText[endIdx] === '{') {
+//                         braceCount++;
+//                     } else if (modifiedText[endIdx] === '}') {
+//                         braceCount--;
+//                     }
+//                 }
+
+//                 const potentialJSON = modifiedText.substring(startIdx, endIdx + 1);
+//                 try {
+//                     const sanitizedString = potentialJSON.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+//                     const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+//                     const parsed = JSON.parse(replacedString);
+//                     validJSONs.push(parsed);
+//                 } catch (e) {
+//                     // Not valid JSON, skip
+//                 }
+
+//                 startIdx = modifiedText.indexOf('{', startIdx + 1);
+//             }
+//         }
+//     } catch (error) {
+//         return { json: [], code: [] };
+//     }
+
+//     // Step 4: Return the results in a single object
+//     return { json: validJSONs, code: codes };
+// }
+
+// function extractData(text) {
+//     let codes = [];
+//     let validJSONs = [];
+
+//     try {
+//         if (text) {
+//             // Step 1 & 2: Extract code blocks and remove them from the text
+//             const textCode = text.match(/```([\s\S]+?)```/g);
+//             let modifiedText = text;
+//             if (textCode && textCode.length > 0) {
+//                 textCode.forEach(codeBlock => {
+//                     const trimmedBlock = codeBlock.trim().substring(3, codeBlock.length - 3);
+//                     const lines = trimmedBlock.split("\n");
+//                     const potentialKey = lines[0].trim().toLowerCase();
+//                     const codeContent = lines.slice(1).join("\n").trim();
+
+//                     if (potentialKey === 'json') {
+//                         try {
+//                             const parsedJSON = JSON.parse(codeContent);
+//                             validJSONs.push(parsedJSON);
+//                         } catch (e) {
+//                             // Not valid JSON, add to code array
+//                             codes.push({ key: potentialKey, code: codeContent });
+//                         }
+//                     } else {
+//                         codes.push({ key: potentialKey, code: codeContent });
+//                     }
+//                     modifiedText = modifiedText.replace(codeBlock, '');
+//                 });
+//             }
+
+//             // Step 3: Extract JSONs from the modified text
+//             let startIdx = modifiedText.indexOf('{');
+//             while (startIdx !== -1) {
+//                 let endIdx = startIdx;
+//                 let braceCount = 1;
+
+//                 while (endIdx < modifiedText.length && braceCount > 0) {
+//                     endIdx++;
+//                     if (modifiedText[endIdx] === '{') {
+//                         braceCount++;
+//                     } else if (modifiedText[endIdx] === '}') {
+//                         braceCount--;
+//                     }
+//                 }
+
+//                 const potentialJSON = modifiedText.substring(startIdx, endIdx + 1);
+//                 try {
+//                     const sanitizedString = potentialJSON.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+//                     const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+//                     const parsed = JSON.parse(replacedString);
+//                     validJSONs.push(parsed);
+//                 } catch (e) {
+//                     // Not valid JSON, skip
+//                 }
+
+//                 startIdx = modifiedText.indexOf('{', endIdx + 1);  // Skip past the end of the current JSON object
+//             }
+//         }
+//     } catch (error) {
+//         return { json: [], code: [] };
+//     }
+
+//     // Step 4: Return the results in a single object
+//     return { json: validJSONs, code: codes };
+// }
+
+function extractData(text) {
+    let codes = [];
+    let validJSONs = [];
+
+    try {
+        if (text) {
+            // Step 1 & 2: Extract code blocks and remove them from the text
+            const textCode = text.match(/```([\s\S]+?)```/g);
+            let modifiedText = text;
+            if (textCode && textCode.length > 0) {
+                textCode.forEach(codeBlock => {
+                    const trimmedBlock = codeBlock.trim().substring(3, codeBlock.length - 3);
+                    const lines = trimmedBlock.split("\n");
+                    const potentialKey = lines[0].trim().toLowerCase();
+                    const codeContent = lines.slice(1).join("\n").trim();
+
+                    if (potentialKey === 'json') {
+                        try {
+                            const parsedJSON = JSON.parse(codeContent);
+                            validJSONs.push(parsedJSON);
+                        } catch (e) {
+                            // Not valid JSON, add to code array
+                            codes.push({ key: potentialKey, code: codeContent });
+                        }
+                    } else {
+                        codes.push({ key: potentialKey, code: codeContent });
+                    }
+                    modifiedText = modifiedText.replace(codeBlock, '');
+                });
+            }
+
+            // Step 3: Extract JSON objects and arrays from the modified text
+            let startIdxObj = modifiedText.indexOf('{');
+            let startIdxArr = modifiedText.indexOf('[');
+
+            while (startIdxObj !== -1 || startIdxArr !== -1) {
+                let startIdx = startIdxObj !== -1 
+                    ? (startIdxArr !== -1 ? Math.min(startIdxObj, startIdxArr) : startIdxObj)
+                    : startIdxArr;
+                
+                let endIdx = startIdx;
+                let braceCount = 1;
+                const openBrace = modifiedText[startIdx];
+                const closeBrace = openBrace === '{' ? '}' : ']';
+
+                while (endIdx < modifiedText.length && braceCount > 0) {
+                    endIdx++;
+                    if (modifiedText[endIdx] === openBrace) {
+                        braceCount++;
+                    } else if (modifiedText[endIdx] === closeBrace) {
+                        braceCount--;
+                    }
+                }
+
+                const potentialJSON = modifiedText.substring(startIdx, endIdx + 1);
+                try {
+                    const sanitizedString = potentialJSON.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+                    const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+                    const parsed = JSON.parse(replacedString);
+                    validJSONs.push(parsed);
+                } catch (e) {
+                    // Not valid JSON, skip
+                }
+
+                startIdxObj = modifiedText.indexOf('{', endIdx + 1);  // Skip past the end of the current JSON object
+                startIdxArr = modifiedText.indexOf('[', endIdx + 1);  // Skip past the end of the current JSON array
+            }
+        }
+    } catch (error) {
+        return { json: [], code: [] };
+    }
+
+    // Step 4: Return the results in a single object
+    return { json: validJSONs, code: codes };
 }

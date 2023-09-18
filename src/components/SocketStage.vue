@@ -77,6 +77,7 @@
 
             </div>
 
+
             <!-- TODO change this from the persona Roster-->
             <!-- TODO Fix the key-->
             <template v-for="(socket, index) in props.sockets" :key="'stageSocket'+index">
@@ -145,7 +146,7 @@ const customLabelModel = (option) => option ? option.label : '';
 const customLabelContent = (option) => option ? ("(" + (option.stageIndex + 1) + "." + (option.socketIndex + 1) + "): " + (option.content.length ? option.content.slice(0, 25) : "Content pending...")) : '';
 
 let sessionsContentFiltered = computed(() => {
-    return sessionsContent.value.filter((session) => { return session.stageIndex < props.stageIndex })
+    return sessionsContent.value.filter((session) => { return session.stageIndex != props.stageIndex })
 })
 
 //Lifecycle hooks

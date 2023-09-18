@@ -11,7 +11,7 @@
       <div class="relative max-w-9xl mx-auto h-0 pointer-events-none -z-1" aria-hidden="true">
         <PageIllustration />
       </div>
-<!-- stages
+      <!-- stages
 {{ stages }} -->
       <section class="relative">
         <div class="max-w-9xl mx-auto px-4 sm:px-6 relative">
@@ -40,7 +40,8 @@
                   <SocketStage :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
                     :selectedSessionsContent="stage.selectedSessionsContent" v-model:userPrompt="stage.userPrompt"
                     @deleteStage="deleteStage" @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
-                    @updateSessionContent="updateSessionContent" @moveStageUp = "moveStageUp" @moveStageDown = "moveStageDown" />
+                    @updateSessionContent="updateSessionContent" @moveStageUp="moveStageUp"
+                    @moveStageDown="moveStageDown" />
                   <!-- 
                   @addSocket = "addSocket" 
                   @removeSocket = "removeSocket"
@@ -231,7 +232,7 @@ function deleteStage(index) {
 
 function moveStageUp(index) {
   if (index > 0) {
-    var newIndex = index-1;
+    var newIndex = index - 1;
 
     //Incorrect, this is fixing the wrong thing. Need to fix all the other indexes 
     // stages.value.forEach((stage)=>{
@@ -242,6 +243,11 @@ function moveStageUp(index) {
     const itemToMoveUp = stages.value[index];
     stages.value.splice(index, 1);
     stages.value.splice(index - 1, 0, itemToMoveUp);
+
+
+    stages.value[index].selectedSessionsContent = []
+    stages.value[newIndex].selectedSessionsContent = []
+
     //TODO update selectedSessionsContent so the indexes of those change as well
 
   }
@@ -249,7 +255,7 @@ function moveStageUp(index) {
 
 function moveStageDown(index) {
   if (index < stages.value.length - 1) {
-    var newIndex = index+1;
+    var newIndex = index + 1;
 
     //Incorrect
     // stages.value.forEach((stage)=>{
@@ -263,6 +269,10 @@ function moveStageDown(index) {
     stages.value.splice(index + 1, 0, itemToMoveDown);
 
     //TODO update selectedSessionsContent so the indexes of those change as well
+    stages.value[index].selectedSessionsContent = []
+    stages.value[newIndex].selectedSessionsContent = []
+
+
   }
 }
 

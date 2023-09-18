@@ -31,11 +31,19 @@
               <router-link to="/interact"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Interact</router-link>
             </li>
+
+            <li v-if="token">
+              <router-link to="/manage"
+                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Manage</router-link>
+            </li>
+
             <li v-if="token">
               <router-link to="/createKp"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Knowledge
                 Profile</router-link>
             </li>
+
+
             <!-- <li>
               <router-link to="/testimonials" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Testimonials</router-link>
             </li>  -->
@@ -162,6 +170,10 @@
                   <li>
                     <router-link to="/interact"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>
+                  </li>
+                  <li v-if="token">
+                    <router-link to="/manage"
+                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Manage</router-link>
                   </li>
                   <li v-if="token">
                     <router-link to="/createKp"
