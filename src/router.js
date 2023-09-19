@@ -7,6 +7,7 @@ import Manage from '@/pages/Manage.vue'
 import Join from '@/pages/Join.vue'
 import Login from '@/pages/Login.vue'
 import CreateKnowledgeProfile from '@/pages/CreateKnowledgeProfile.vue'
+import LinkPersona from '@/pages/LinkPersona.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -70,6 +71,12 @@ const router = createRouter({
       path: '/login',
       name:'login',
       component: Login
+    },
+    {
+      path: '/linkPersona/:personaLink?',
+      name:'linkPersona',
+      component: LinkPersona,
+      props:true
     },
     // {
     //   path: '/testimonials',

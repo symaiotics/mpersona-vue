@@ -74,7 +74,7 @@ export function usePersonas() {
     async function createNewPersonaAvatar(description) {
         return new Promise(async (resolve, reject) => {
             try {
-                var params = { avatarPrompt:  description  }
+                var params = { avatarPrompt: description }
                 var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/avatar', params);
                 resolve(import.meta.env.VITE_STORAGE_URL + "/images/" + response.data.payload)
                 getPersonas();
@@ -105,6 +105,47 @@ export function usePersonas() {
     }
 
 
+    function addLink(personaId, personaLink, linkType) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log("Adding persona link", personaLink)
+                var params = { personaId, personaLink, linkType }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/addLink', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
+
+    function getPersonaLinkDetails(personaLink) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log("Getting Persona details", personaLink)
+                var params = { personaLink: personaLink }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/linkDetails', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
+    function acceptPersonaLink(personaLink) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                var params = { personaLink: personaLink }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/acceptLink', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
 
     // expose managed state as return value
     return {
@@ -121,6 +162,10 @@ export function usePersonas() {
         updatePersonas,
 
         createNewPersonaAvatar,
+
+        addLink,
+        getPersonaLinkDetails,
+        acceptPersonaLink,
 
     }
 }
