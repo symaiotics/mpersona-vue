@@ -18,6 +18,9 @@
                             class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-wordwrap">
                             {{ props.persona.name }}</h5>
                         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
+
+                        {{ stageOptions }}
+
                     </div>
                     <div class="flex-col flex items-start pl-3 pr-2 pt-3">
                         <div class="self-start">
@@ -89,16 +92,21 @@
         </div> -->
 
         <!-- Markdown Reveal Section -->
+        <!-- <br/>
+<br/>
 
+This session content: {{ thisSessionsContent }}
+        <br/>
+        <br/>
+Appended Content: {{ appendedContent }} -->
 
-
-        <div v-if="thisSessionsContent?.[0]">
-           Extracts: {{ thisSessionsContent[0].extracts }}
-            <br/>
-           Code: {{ thisSessionsContent[0].extracts.code }}
-            <br/>
-           JSON: {{ thisSessionsContent[0].extracts.json }}
-        </div>
+        <!-- <div v-if="thisSessionsContent?.[0]">
+            Extracts: {{ thisSessionsContent[0].extracts }}
+            <br />
+            Code: {{ thisSessionsContent[0].extracts.code }}
+            <br />
+            JSON: {{ thisSessionsContent[0].extracts.json }}
+        </div> -->
 
         <div v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
             class="w-full h-96 pointer-events-none" aria-hidden="true">
@@ -149,6 +157,7 @@ const props = defineProps({
     temperature: { type: Number, default: 0.5 },
     persona: { type: Object },
     appendedContent: { type: Array, default: [] },
+    stageOptions: { type: Object, default: null },
 
 });
 
@@ -160,8 +169,9 @@ const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
+const stageOptions = computed(() => props.stageOptions);
 
-const thisSessionsContent = computed(() => sessionsContent.value.filter((session) => { return session.sessionId = props.sessionId }));
+const thisSessionsContent = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == props.sessionId }));
 
 
 const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket']
@@ -230,8 +240,7 @@ watch(completedMessage, (newValue, oldValue) => {
     if (!oldValue.length && newValue.length) {
         processing.value = false;
 
-        if(thisSessionsContent.value.length)
-        {
+        if (thisSessionsContent.value.length) {
             // console.log(thisSessionsContent.value[0])
             // console.log(thisSessionsContent.value[0].extracts)
             // console.log(thisSessionsContent.value[0].extracts.value.json)
@@ -255,12 +264,34 @@ function sendMessage() {
     if (wsUuid?.value) {
         if (!processing.value) {
             sessions.value[sessionId.value].completedMessage = "";
-
             var combinedPrompt = props.userPrompt;
-            props.appendedContent.forEach((prompt) => {
-                combinedPrompt += "\n" + prompt.content;
-            })
-            console.log("Prompting user and appended ", combinedPrompt)
+
+            // All content - original text output
+            if (stageOptions?.value?.allContent) {
+                props.appendedContent.forEach((prompt) => {
+                    combinedPrompt += "\n" + prompt.content;
+                })
+            }
+
+            // All artifacts or code
+            if (!stageOptions?.value?.allContent && (stageOptions?.value?.allArtifacts || stageOptions?.value?.code)) {
+                props.appendedContent.forEach((prompt) => {
+                    prompt.extracts.code.forEach((code) => {
+                        combinedPrompt += "\n" + code.code;
+                    })
+                })
+            }
+
+            // All artifacts or json
+            if (!stageOptions?.value?.allContent && (stageOptions?.value?.allArtifacts || stageOptions?.value?.json)) {
+                props.appendedContent.forEach((prompt) => {
+                    prompt.extracts.json.forEach((json) => {
+                        combinedPrompt += "\n" + JSON.stringify(json);
+                    })
+                })
+            }
+
+            console.log("PROMPT: ", combinedPrompt)
             //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
             sendToServer(wsUuid.value, sessionId.value, props.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
             processing.value = true;

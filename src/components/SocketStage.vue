@@ -22,40 +22,44 @@
                     @update:modelValue='handleSessionContentInput' :options="sessionsContentFiltered" :searchable="true"
                     :close-on-select="false" :custom-label="customLabelContent" :multiple="true" :show-labels="false"
                     label="label" track-by="label" placeholder="Append previous content" />
+
+                <AppendOptions :options="props.options" @update:options="handleUpdateOptions" />
+                <!-- {{ stageOptions }} -->
             </div>
 
             <!-- Buttons -->
-            <div class="flex space-x-2">
+            <div class="flex flex-wrap items-center space-x-2 space-y-2">
 
-                <button @click="generateStage"
-                    class="whitespace-nowrap w-full self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded">
-                    Generate Stage
-                </button>
+                <div class="flex flex-wrap items-center space-y-2">
+                    <button @click="generateStage"
+                        class="whitespace-nowrap w-auto md:w-full self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold p-3 rounded ">
+                        Generate Stage
+                    </button>
 
-                <button @click="deleteStage"
-                    class="whitespace-nowrap sm:w-full md:w-auto bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold  p-3 rounded">
-                    Delete Stage
-                </button>
+                    <button @click="deleteStage"
+                        class="whitespace-nowrap w-full md:w-auto flex-grow bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold p-3 rounded md:mr-2">
+                        Delete Stage
+                    </button>
 
-                <!-- Up Chevron Button -->
-                <button v-if="props.stageIndex" @click="moveStageUp"
-                    class="bg-blue-500 text-white rounded flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -4 24 24" fill="currentColor"
-                        class="w-12 h-12">
-                        <path d="M12 6l-4 4h8z" />
-                    </svg>
-                </button>
+                    <!-- Up Chevron Button -->
+                    <button v-if="props.stageIndex" @click="moveStageUp"
+                        class="bg-blue-500 text-white rounded flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150 mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 -4 24 24"
+                            fill="currentColor" class="w-12 h-12">
+                            <path d="M12 6l-4 4h8z" />
+                        </svg> </button>
 
-                <!-- Down Chevron Button -->
-                <button @click="moveStageDown"
-                    class="bg-red-500 text-white  rounded flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 32" fill="currentColor"
-                        class="w-12 h-12">
-                        <path d="M12 18l-4-4h8z" />
-                    </svg>
-                </button>
+                    <!-- Down Chevron Button -->
+                    <button @click="moveStageDown"
+                        class="bg-red-500 text-white rounded flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 32"
+                            fill="currentColor" class="w-12 h-12">
+                            <path d="M12 18l-4-4h8z" />
+                        </svg>
+                    </button>
+                </div>
+
             </div>
-
         </div>
 
         <!-- Second Column -->
@@ -86,7 +90,8 @@
                     :sessionId="socket.sessionId" :socketIndex="index" :userPrompt="props.userPrompt"
                     :model="selectedModel.model" :temperature="0.5" :persona="socket.persona"
                     :appendedContent="props.selectedSessionsContent" @like="like(persona)" @close="removeFromSockets(index)"
-                    @edit="edit(persona)" @addSocket="addSocket" @removeSocket="removeSocket" />
+                    @edit="edit(persona)" @addSocket="addSocket" @removeSocket="removeSocket"
+                    :stageOptions="props.options" />
             </template>
         </div>
     </div>
@@ -102,6 +107,7 @@ import VueMultiselect from 'vue-multiselect'
 
 //Components
 import SocketTester from '@/components/SocketTester.vue'
+import AppendOptions from '@/components/AppendOptions.vue'
 
 //Composables
 import { useWebsockets } from '@/composables/useWebsockets.js'
@@ -120,7 +126,7 @@ const { adminModels, selectedModel } = useModels()
 // let personaRoster = ref([]);
 let triggerGeneration = ref(false);
 let localSelectedSessionsContent = ref([]);
-
+let stageOptions = ref(null);
 let props = defineProps({
 
     selectedSessionsContent: { type: Array, default: [] },
@@ -128,9 +134,11 @@ let props = defineProps({
     sockets: { type: Array, default: [] },
     stageIndex: { type: Number, default: 0 },
     stageUuid: { type: String },
+    options: { type: Object },
+
 })
 
-let emit = defineEmits(['deleteStage', 'moveStageUp', 'moveStageDown', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'updateSessionContent', 'addSocket', 'removeSocket'])
+let emit = defineEmits(['deleteStage', 'moveStageUp', 'moveStageDown', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'update:options', 'updateSessionContent', 'addSocket', 'removeSocket'])
 
 //Tabs
 let activeTab = ref(0)
@@ -214,6 +222,16 @@ const updateUserPrompt = (newValue) => {
     emit('update:userPrompt', newValue);
 };
 
+// const updateStageOptions = (newValue) => {
+//     emit('update:stageOptions', newValue);
+// };
+
+function handleUpdateOptions(newOptions) {
+    emit('update:options', { stageIndex: props.stageIndex, options: newOptions });
+}
+
+
+
 const handleSessionContentInput = (newValue) => {
     // console.log("SessionContent changed", newValue)
     emit('updateSessionContent', { newValue: newValue, stageIndex: props.stageIndex });
@@ -228,6 +246,8 @@ function removeSocket(val) {
     console.log("SocketStage removeSocket: still useful?", val)
     // emit('removeSocket', val)
 }
+
+
 
 
 </script>

@@ -37,11 +37,12 @@
                 <template v-for="(stage, index) in stages" :key="'stage' + stage.uuid">
                   <!-- {{ stage }} -->
                   <!--:personaRoster="stage.personaRoster"-->
-                  <SocketStage :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
-                    :selectedSessionsContent="stage.selectedSessionsContent" v-model:userPrompt="stage.userPrompt"
-                    @deleteStage="deleteStage" @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
-                    @updateSessionContent="updateSessionContent" @moveStageUp="moveStageUp"
-                    @moveStageDown="moveStageDown" />
+                  <SocketStage v-model:userPrompt="stage.userPrompt" :options="stage.options" :stageIndex="index"
+                    :stageUuid="stage.uuid" :sockets="stage.sockets"
+                    :selectedSessionsContent="stage.selectedSessionsContent" @deleteStage="deleteStage"
+                    @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
+                    @updateSessionContent="updateSessionContent" @moveStageUp="moveStageUp" @moveStageDown="moveStageDown"
+                    @update:options="handleUpdateOptions" />
                   <!-- 
                   @addSocket = "addSocket" 
                   @removeSocket = "removeSocket"
@@ -101,9 +102,10 @@
                 </div>
               </template>
               <template v-slot:tab-2>
+                {{ stages }}
+
                 <template v-for="(stage, index) in messages" :key="'resultsStage' + index">
                   <div class="border m-2 p-2 rounded  preserve-whitespace-pre-line" v-html="markdown(stage)"></div>
-
                 </template>
               </template>
             </Tabs>
@@ -219,6 +221,7 @@ function addStage() {
     selectedSessionsContent: [],
     uuid: uuidv4(),
     sockets: [],
+    options: null
     // personaRoster: [],
 
   }
@@ -340,7 +343,9 @@ function markdown(html) {
 
 }
 
-
+function handleUpdateOptions(val) {
+  stages.value[val.stageIndex].options = val.options;
+}
 
 
 </script>
