@@ -18,9 +18,9 @@
                             class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-wordwrap">
                             {{ props.persona.name }}</h5>
                         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
-
+                        <!-- 
                         {{ stageOptions }}
-
+                        {{ appendedContent }} -->
                     </div>
                     <div class="flex-col flex items-start pl-3 pr-2 pt-3">
                         <div class="self-start">
@@ -116,6 +116,8 @@ Appended Content: {{ appendedContent }} -->
 </template>
 
 <script setup>
+import { extractData } from '@/utils/extractJsonAndCode.js';
+
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import defaultImage from "../images/persona1.png"
@@ -153,7 +155,7 @@ const props = defineProps({
     socketIndex: { type: Number },
 
     userPrompt: { type: String, default: "" },
-    model: { type: String, default: "gpt-4" },
+    model: { type: Object, default: { maxTokens: 8192, model: "gpt-4", label: "OpenAI GPT-4" } },
     temperature: { type: Number, default: 0.5 },
     persona: { type: Object },
     appendedContent: { type: Array, default: [] },
@@ -165,6 +167,7 @@ let processing = ref(false);
 const trigger = computed(() => props.trigger);
 let isFocused = ref(false)
 
+const model = computed(() => props.model);
 const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
@@ -266,34 +269,52 @@ function sendMessage() {
             sessions.value[sessionId.value].completedMessage = "";
             var combinedPrompt = props.userPrompt;
 
+
             // All content - original text output
             if (stageOptions?.value?.allContent) {
-                props.appendedContent.forEach((prompt) => {
+                appendedContent.value.forEach((prompt) => {
                     combinedPrompt += "\n" + prompt.content;
                 })
             }
 
             // All artifacts or code
             if (!stageOptions?.value?.allContent && (stageOptions?.value?.allArtifacts || stageOptions?.value?.code)) {
-                props.appendedContent.forEach((prompt) => {
-                    prompt.extracts.code.forEach((code) => {
-                        combinedPrompt += "\n" + code.code;
-                    })
+
+                appendedContent.value.forEach((prompt, index, origArray) => {
+                    var filteredContent = sessionsContent.value.filter((session) => { return session.sessionId == prompt.sessionId })
+                    console.log("Filtered Content", filteredContent)
+                    if (filteredContent.length) {
+                        var extracts = filteredContent[0].extracts.value; //get the extracts when they are needed
+                        // console.log("sessions.value[prompt.sessionId]", sessions.value[prompt.sessionId])
+                        // console.log(index, prompt)
+                        if (extracts.code) {
+                            extracts.code.forEach((code) => {
+                                combinedPrompt += "\n" + code.code;
+                            })
+                        }
+                    }
                 })
             }
 
             // All artifacts or json
             if (!stageOptions?.value?.allContent && (stageOptions?.value?.allArtifacts || stageOptions?.value?.json)) {
-                props.appendedContent.forEach((prompt) => {
-                    prompt.extracts.json.forEach((json) => {
-                        combinedPrompt += "\n" + JSON.stringify(json);
-                    })
+                appendedContent.value.forEach((prompt) => {
+                    var filteredContent = sessionsContent.value.filter((session) => { return session.sessionId == prompt.sessionId })
+                    console.log("Filtered Content", filteredContent)
+                    if (filteredContent.length) {
+                        var extracts = filteredContent[0].extracts.value; //get the extracts when they are needed
+                        if (extracts.json) {
+                            extracts.json.forEach((json) => {
+                                combinedPrompt += "\n" + JSON.stringify(json);
+                            })
+                        }
+                    }
                 })
             }
 
             console.log("PROMPT: ", combinedPrompt)
             //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
-            sendToServer(wsUuid.value, sessionId.value, props.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
+            sendToServer(wsUuid.value, sessionId.value, model.value.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
             processing.value = true;
 
         }

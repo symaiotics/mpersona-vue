@@ -5,9 +5,11 @@
         <div class="w-full md:w-1/4 p-4">
             <p>Stage {{ props.stageIndex + 1 }}</p>
 
+            <!-- {{ localModel }} -->
             <!-- <p>Select your model</p> -->
-            <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="false" :close-on-select="false"
-                :custom-label="customLabelModel" :show-labels="false" placeholder="Pick a model" />
+            <VueMultiselect v-model="localModel" @update:modelValue='handleUpdateModel' :options="adminModels"
+                :searchable="false" :close-on-select="false" :custom-label="customLabelModel" :show-labels="false"
+                placeholder="Pick a model" />
 
             <!-- User Prompt -->
             <textarea :value="props.userPrompt" @input="updateUserPrompt($event.target.value)" id="response" rows="4"
@@ -23,21 +25,22 @@
                     :close-on-select="false" :custom-label="customLabelContent" :multiple="true" :show-labels="false"
                     label="label" track-by="label" placeholder="Append previous content" />
 
-                <AppendOptions :options="props.options" @update:options="handleUpdateOptions" />
+                <AppendOptions v-if="localSelectedSessionsContent.length" :options="props.options"
+                    @update:options="handleUpdateOptions" />
                 <!-- {{ stageOptions }} -->
             </div>
 
             <!-- Buttons -->
             <div class="flex flex-wrap items-center space-x-2 space-y-2">
 
-                <div class="flex flex-wrap items-center space-y-2">
+                <div class="flex flex-wrap items-center space-y-2 w-full">
                     <button @click="generateStage"
                         class="whitespace-nowrap w-auto md:w-full self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold p-3 rounded ">
                         Generate Stage
                     </button>
 
                     <button @click="deleteStage"
-                        class="whitespace-nowrap w-full md:w-auto flex-grow bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold p-3 rounded md:mr-2">
+                        class="whitespace-nowrap w-full md:w-auto flex-grow bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold p-3 rounded md:mr-2 ">
                         Delete Stage
                     </button>
 
@@ -88,8 +91,8 @@
                 <!-- {{ props }} -->
                 <SocketTester :trigger="triggerGeneration" :stageIndex="props.stageIndex" :stageUuid="props.stageUuid"
                     :sessionId="socket.sessionId" :socketIndex="index" :userPrompt="props.userPrompt"
-                    :model="selectedModel.model" :temperature="0.5" :persona="socket.persona"
-                    :appendedContent="props.selectedSessionsContent" @like="like(persona)" @close="removeFromSockets(index)"
+                    :model="localModel" :temperature="0.5" :persona="socket.persona"
+                    :appendedContent="localSelectedSessionsContent" @like="like(persona)" @close="removeFromSockets(index)"
                     @edit="edit(persona)" @addSocket="addSocket" @removeSocket="removeSocket"
                     :stageOptions="props.options" />
             </template>
@@ -126,6 +129,7 @@ const { adminModels, selectedModel } = useModels()
 // let personaRoster = ref([]);
 let triggerGeneration = ref(false);
 let localSelectedSessionsContent = ref([]);
+let localModel = ref(null)
 let stageOptions = ref(null);
 let props = defineProps({
 
@@ -135,10 +139,11 @@ let props = defineProps({
     stageIndex: { type: Number, default: 0 },
     stageUuid: { type: String },
     options: { type: Object },
+    model: { type: Object },
 
 })
 
-let emit = defineEmits(['deleteStage', 'moveStageUp', 'moveStageDown', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'update:options', 'updateSessionContent', 'addSocket', 'removeSocket'])
+let emit = defineEmits(['deleteStage', 'moveStageUp', 'moveStageDown', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'update:options', 'update:model', 'updateSessionContent', 'addSocket', 'removeSocket'])
 
 //Tabs
 let activeTab = ref(0)
@@ -162,6 +167,9 @@ onMounted(() => {
     getPersonas();
     getUsedCategories();
     if (props.selectedSessionsContent) localSelectedSessionsContent.value = props.selectedSessionsContent;
+    console.log("PROPS MODEL", props.model)
+    if (props.model) localModel.value = props.model;
+    // else localModel.value =  //default to the first model
 })
 
 // TODO update so the selectedSessionContent (selectedStageContent?) is saved into the stage itself
@@ -170,12 +178,16 @@ onMounted(() => {
 
 watch(sessionsContent, (newValue, oldValue) => {
     //Update the selected 
-    props.selectedSessionsContent.forEach((tag, index, origArray) => {
+    //props.selectedSessionsContent
+    localSelectedSessionsContent.value.forEach((tag, index, origArray) => {
         if (sessions.value[tag.sessionId]) {
 
             //TODO, emit instead?
             tag.content = (sessions.value[tag.sessionId].partialMessage || sessions.value[tag.sessionId].completedMessage)
             tag.completed = sessions.value[tag.sessionId].completedMessage.length > 0 ? true : false;
+            // console.log(tag)
+            // tag.extracts = sessions.value[tag.sessionId].extracts;
+            // tag.extracts = tag.completed? extractData(tag.content) : {json:[], code:[]};
         }
         else {
             emit('removeSessionContent', index)
@@ -186,7 +198,6 @@ watch(sessionsContent, (newValue, oldValue) => {
 
 //Functions
 function addToSockets() {
-    // console.log("Add to Roster", selectedPersona.value)
     if (selectedPersona.value) emit('addToSockets', { persona: JSON.parse(JSON.stringify(selectedPersona.value)), stageIndex: props.stageIndex, stageUuid: props.stageUuid })
 }
 
@@ -222,15 +233,13 @@ const updateUserPrompt = (newValue) => {
     emit('update:userPrompt', newValue);
 };
 
-// const updateStageOptions = (newValue) => {
-//     emit('update:stageOptions', newValue);
-// };
-
 function handleUpdateOptions(newOptions) {
     emit('update:options', { stageIndex: props.stageIndex, options: newOptions });
 }
 
-
+function handleUpdateModel(currentModel) {
+    emit('update:model', { stageIndex: props.stageIndex, model: currentModel });
+}
 
 const handleSessionContentInput = (newValue) => {
     // console.log("SessionContent changed", newValue)

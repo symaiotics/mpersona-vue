@@ -14,8 +14,8 @@ export function useTokens() {
     //WHen the page reloads, try to get the token
     function recallTokens() {
         try {
-            var t = localStorage.getItem('token');
-            var tD = localStorage.getItem('tokenDecoded');
+            var t = sessionStorage.getItem('token');
+            var tD = sessionStorage.getItem('tokenDecoded');
             if (t && tD) {
                 token.value = t;
                 tokenDecoded.value = JSON.parse(tD);
@@ -30,16 +30,16 @@ export function useTokens() {
     }
 
     function setTokens(t, tD) {
-        localStorage.setItem('token', t)
-        localStorage.setItem('tokenDecoded', tD)
+        sessionStorage.setItem('token', t)
+        sessionStorage.setItem('tokenDecoded', tD)
         token.value = t;
         tokenDecoded.value = JSON.parse(tD);
         tokenSet.value = true;
     }
 
     function unsetTokens() {
-        localStorage.removeItem('token')
-        localStorage.removeItem('tokenDecoded')
+        sessionStorage.removeItem('token')
+        sessionStorage.removeItem('tokenDecoded')
         token.value = null;
         tokenDecoded.value = null;
         tokenSet.value = false;

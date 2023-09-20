@@ -37,16 +37,28 @@
                 <template v-for="(stage, index) in stages" :key="'stage' + stage.uuid">
                   <!-- {{ stage }} -->
                   <!--:personaRoster="stage.personaRoster"-->
-                  <SocketStage v-model:userPrompt="stage.userPrompt" :options="stage.options" :stageIndex="index"
-                    :stageUuid="stage.uuid" :sockets="stage.sockets"
-                    :selectedSessionsContent="stage.selectedSessionsContent" @deleteStage="deleteStage"
-                    @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
-                    @updateSessionContent="updateSessionContent" @moveStageUp="moveStageUp" @moveStageDown="moveStageDown"
-                    @update:options="handleUpdateOptions" />
+                  <SocketStage 
+                  v-model:userPrompt="stage.userPrompt" 
+                  :options="stage.options" 
+                  :model="stage.model" 
+                  :stageIndex="index"
+                  :stageUuid="stage.uuid" 
+                  :sockets="stage.sockets"
+                  :selectedSessionsContent="stage.selectedSessionsContent" 
+                  @deleteStage="deleteStage"
+                  @addToSockets='addToSockets' 
+                  @removeFromSockets='removeFromSockets'
+                  @updateSessionContent="updateSessionContent" 
+                  @moveStageUp="moveStageUp" 
+                  @moveStageDown="moveStageDown"
+                  @update:options="handleUpdateOptions" 
+                  @update:model="handleUpdateModel" />
+
                   <!-- 
                   @addSocket = "addSocket" 
                   @removeSocket = "removeSocket"
                   -->
+
                 </template>
 
               </template>
@@ -150,14 +162,14 @@ const { getWorkStreams, createWorkStreams, updateWorkStreams, workStreams, selec
 
 import MarkdownIt from 'markdown-it';
 
-// import { useModels } from '@/composables/useModels.js'
+import { useModels } from '@/composables/useModels.js'
 // import { usePrompts } from '@/composables/usePrompts.js'
 // import { usePersonas } from '@/composables/usePersonas.js'
 // import { useCategories } from '@/composables/useCategories.js'
 // const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkills, getUsedCategories, updatePersonas } = usePersonas()
 // const { categories, selectedCategory, getCategories, createAdminCategories } = useCategories()
 // const { promptOpenAI, promptResponse, promptResponseCode } = usePrompts()
-// const { adminModels, selectedModel } = useModels()
+const { adminModels, selectedModel } = useModels()
 
 //Definitions
 // let userPrompt = ref("");
@@ -221,7 +233,8 @@ function addStage() {
     selectedSessionsContent: [],
     uuid: uuidv4(),
     sockets: [],
-    options: null
+    options: null,
+    model:adminModels.value[0],
     // personaRoster: [],
 
   }
@@ -347,6 +360,9 @@ function handleUpdateOptions(val) {
   stages.value[val.stageIndex].options = val.options;
 }
 
+function handleUpdateModel(val) {
+  stages.value[val.stageIndex].model = val.model;
+}
 
 </script>
 

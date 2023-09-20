@@ -17,28 +17,33 @@
           <div class="pt-32 pb-12 md:pt-40 md:pb-20">
 
             <!-- Page header -->
-            <div class="max-w-3xl mx-auto text-center pb-12 md:pb-16">
+            <div class="max-w-3xl mx-auto text-center pb-6 md:pb-6">
               <h1 class="h1 font-red-hat-display mb-4">Accept Link</h1>
               <p class="text-xl text-gray-600 dark:text-gray-400">Add a shared link to your account.</p>
+              <p v-if = "offeredPersona?.isViewer" class="text-xl text-gray-600 dark:text-gray-400">You will have a <b>viewer</b> role.</p>
+              <p v-if = "offeredPersona?.isEditor" class="text-xl text-gray-600 dark:text-gray-400">You will have an <b>editor</b> role.</p>
               <!-- <p>{{ props.personaLink }}</p> -->
             </div>
 
             <!-- Contact form -->
 
-            <div v-if="tokenDecoded && !linkInvalid" class="flex flex-wrap -mx-3 items-center justify-center">
-              <div class="w-full px-3 mb-4 text-center">
-                <div>
+            <div v-if="!linkInvalid" class="flex flex-wrap -mx-3 items-center justify-center">
+              <div class="w-full px-3 text-center">
+                <div class = "border rounded-lg p-6 pt-10">
                   <DisplayPersona alignment="center" :persona="offeredPersona"  />
-                  Accepting this link will add the Persona into your account. You will then be able to view and interact
-                  with it.
                 </div>
               </div>
 
 
-              <div class="flex flex-wrap mx-auto -mx-3 mt-6 ">
-                <div class="w-full px-3">
+              <div v-if = "tokenDecoded" class="flex flex-wrap mx-auto -mx-3 mt-6 ">
+                <div class="w-full px-3 text-center">
+
+                  Accepting this link will add the Persona into your account. You will then be able to view and interact
+                  with it.
+
+
                   <button @click="acceptLink"
-                    class="btn text-black bg-teal-500 hover:bg-teal-400 w-full flex items-center mb-3">
+                    class="btn text-black bg-teal-500 hover:bg-teal-400 w-full flex items-center m-3">
                     <span>Accept Link</span>
                   </button>
 
@@ -49,17 +54,17 @@
 
             </div>
 
-            <div v-if="!tokenDecoded && !linkInvalid" class=" flex flex-wrap mx-auto -mx-3 ">
+            <div v-if="!tokenDecoded" class=" flex flex-wrap mx-auto -mx-3 pt-6 ">
               <div class="w-full  px-3 mb-4  text-center ">
                 You have to be logged in to accept this link. Please login and follow the link again.
               </div>
             </div>
 
-            <div v-if="linkInvalid" class=" flex flex-wrap mx-auto -mx-3 ">
+            <!-- <div v-if="linkInvalid" class=" flex flex-wrap mx-auto -mx-3 ">
               <div class="w-full  px-3 mb-4  text-center ">
                 Sorry, this link does not appear to be valid. Request a new link from the Persona owner.
               </div>
-            </div>
+            </div> -->
 
 
           </div>

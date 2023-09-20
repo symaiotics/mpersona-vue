@@ -1,8 +1,8 @@
 <template>
-    <div class="flex dark:bg-gray-800">
+    <div class="flex flex-col-reverse md:flex-row dark:bg-gray-800">
         <!-- Left Column for displaying personas -->
-        <div class="w-1/2  p-4 dark:border-gray-700">
-            <table class="min-w-full">
+        <div class="w-full md:w-1/2 p-4 dark:border-gray-700 md:order-2" ref="editPersona">
+            <table class="w-full">
                 <thead>
                     <tr>
                         <th class="border dark:border-gray-700 dark:text-gray-300">Name</th>
@@ -16,7 +16,7 @@
                         <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ persona.name }}</td>
                         <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ persona.description.en }}</td>
                         <td class="border dark:border-gray-700 p-3">
-                            <img :src="persona.url || defaultImage" alt="Persona Image" class="w-16 h-16" />
+                            <img :src="persona.url || defaultImage" alt="Persona Image" class="w-16 h-16 object-cover" />
                         </td>
                     </tr>
                 </tbody>
@@ -24,7 +24,7 @@
         </div>
 
         <!-- Right Column for displaying selected persona details in a form -->
-        <div class="w-1/2 p-4 dark:bg-gray-900" v-if="selectedPersona">
+        <div class="w-full md:w-1/2 p-4 dark:bg-gray-900 md:order-1" v-if="selectedPersona">
             <form @submit.prevent>
                 <div class="mb-4">
                     <label for="name" class="block mb-2 dark:text-gray-300">Name</label>
@@ -98,7 +98,7 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref , nextTick} from 'vue';
 
 import { generate, count } from "random-words";
 import { notify } from "notiwind"
@@ -108,11 +108,18 @@ import defaultImage from "../images/persona1.png"
 import { usePersonas } from '@/composables/usePersonas.js';
 const { selectedPersona, personas, updatePersonas, addLink } = usePersonas();
 
+
+const editPersona = ref(null);
+
 // let props = defineProps({ personas: { type: Array, default: [] } })
 // let emit = defineEmits(['createViewerLink', 'createEditorLink', 'updatePersona', 'deletePersona']);
 
+
 const selectPersona = (index) => {
     selectedPersona.value = { ...personas.value[index] };
+    nextTick(() => {
+        editPersona.value.scrollIntoView({ behavior: 'smooth' , block:"start"});
+    });
 };
 
 function createLink(linkType) {
