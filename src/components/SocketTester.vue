@@ -21,6 +21,7 @@
                         <!-- 
                         {{ stageOptions }}
                         {{ appendedContent }} -->
+                        <!-- Model {{ props.model }} -->
                     </div>
                     <div class="flex-col flex items-start pl-3 pr-2 pt-3">
                         <div class="self-start">
@@ -264,7 +265,10 @@ onBeforeUnmount(() => {
 })
 
 function sendMessage() {
+
+
     if (wsUuid?.value) {
+
         if (!processing.value) {
             sessions.value[sessionId.value].completedMessage = "";
             var combinedPrompt = props.userPrompt;
@@ -312,9 +316,12 @@ function sendMessage() {
                 })
             }
 
-            console.log("PROMPT: ", combinedPrompt)
+            var useModel = "gpt-4";
+            if (props?.model?.model) useModel =props.model.model;
+            if (model?.value?.model) useModel =model.value.model;
+            console.log("PROMPT: ", {combinedPrompt, useModel})
             //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
-            sendToServer(wsUuid.value, sessionId.value, model.value.model, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
+            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
             processing.value = true;
 
         }
