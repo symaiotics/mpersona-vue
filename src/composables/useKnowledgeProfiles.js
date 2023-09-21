@@ -58,32 +58,6 @@ export function useKnowledgeProfiles() {
         }
     }
 
-    async function processKnowledgeProfileFiles() {
-        try {
-
-            //Check the files
-            if (newKnowledgeProfile?.value?.files?.length === 0) {
-                console.log('No files selected!');
-                return;
-            }
-
-            //Create a FormData
-            const formData = new FormData();
-            newKnowledgeProfile.value.files.forEach((file) => {
-                formData.append('files', file);
-            });
-
-            //Get the results
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files', formData);
-            newKnowledgeProfile.value.processedFiles = response.data.payload;
-            console.log("Saved Knowledge Profile Files", response.data.payload)
-        }
-        catch (error) {
-            console.log("Error", error)
-        }
-    }
-
-
 
     // async function getSkills() {
     //     try {

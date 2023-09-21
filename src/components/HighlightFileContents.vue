@@ -1,5 +1,5 @@
 <template>
-    <div class="relative p-4">
+    <div class="relative p-4" v-if = "originalText">
         <div class="flex space-x-4 mb-4">
             <button @click="highlight('context')" class="px-4 py-2 bg-red-500 text-white rounded">Context</button>
             <button @click="highlight('structure')" class="px-4 py-2 bg-blue-500 text-white rounded">Structure</button>
