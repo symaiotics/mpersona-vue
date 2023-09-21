@@ -90,7 +90,7 @@ websocketConnection()
     }
 
     .multiselect__tag {
-        @apply  bg-green-100 dark:bg-green-800 rounded-t;
+        @apply  text-black dark:text-white bg-green-100 dark:bg-green-800 rounded-t;
 
     }
 
