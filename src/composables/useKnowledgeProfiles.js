@@ -145,7 +145,7 @@ export function useKnowledgeProfiles() {
         resetKnowledgeProfile,
         getKnowledgeProfiles,
         createKnowledgeProfiles,
-        processKnowledgeProfileFiles
+        // processKnowledgeProfileFiles
 
 
         // personas,

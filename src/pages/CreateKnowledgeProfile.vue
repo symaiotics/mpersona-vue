@@ -206,7 +206,7 @@ const tabs = ref([
 
 
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
-const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles, processKnowledgeProfileFiles } = useKnowledgeProfiles()
+const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles } = useKnowledgeProfiles()
 
 // let newKnowledgeProfile = ref({
 //   name: "",
