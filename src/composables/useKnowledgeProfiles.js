@@ -46,15 +46,20 @@ export function useKnowledgeProfiles() {
         }
     }
 
-    async function createKnowledgeProfiles() {
+    async function createKnowledgeProfiles(newKnowledgeProfiles) {
         try {
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles');
-            // knowledgeProfiles.value = response.data.payload;
-            //TODO enhance to receive the code as well
+            if (!Array.isArray(newKnowledgeProfiles)) newKnowledgeProfiles = [newKnowledgeProfiles]
+            var params = { knowledgeProfiles: newKnowledgeProfiles }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles', params);
             console.log("Saved Knowledge Profiles", response)
+            notify({ group: "success", title: "Success", text: "Knowledge Profile created successfully" }, 4000) // 4s
+            getKnowledgeProfiles();
+
         }
         catch (error) {
             console.log("Error", error)
+            notify({ group: "failure", title: "Error", text: "Error creating Knowledge Profile. Try again" }, 4000) // 4s
+
         }
     }
 
@@ -140,6 +145,8 @@ export function useKnowledgeProfiles() {
     // expose managed state as return value
     return {
 
+        knowledgeProfiles,
+        selectedKnowledgeProfile,
         newKnowledgeProfile,
 
         resetKnowledgeProfile,

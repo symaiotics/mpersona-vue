@@ -49,6 +49,20 @@
                     Select Persona 
                 </button> -->
 
+                    <VueMultiselect v-if="knowledgeProfiles" v-model="selectedKnowledgeProfile"
+                        placeholder="Select a Knowledge Profile" label="name" track-by="name" :options="knowledgeProfiles"
+                        :option-height="104" :custom-label="customLabel" :show-labels="false" />
+
+                        <button @click="addKnowledgeProfile(file.uuid)"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                        Select Knowledge Profile
+                    </button>
+                    <br/>
+                    {{ file.knowledgeProfile.name }}<br/>
+                    {{ file.knowledgeProfile.description.en }}<br/>
+                    {{ file.knowledgeProfile.description.fr }}<br/>
+
+
                     <VueMultiselect v-if="personas" v-model="selectedPersona" placeholder="Select a persona" label="name"
                         track-by="name" :options="personas" :option-height="104" :custom-label="customLabel"
                         :show-labels="false" />
@@ -94,18 +108,21 @@ import HighlightFileContents from '@/components/HighlightFileContents.vue';
 import DisplayPersona from '@/components/DisplayPersona.vue';
 import Socket from '@/components/Socket.vue';
 
+import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
 import { useFiles } from '@/composables/useFiles.js'
 import { useFacts } from '@/composables/useFacts.js'
 import { useWebsockets } from '@/composables/useWebsockets.js'
 import { usePersonas } from '@/composables/usePersonas.js'
+const { knowledgeProfiles,selectedKnowledgeProfile, getKnowledgeProfiles } = useKnowledgeProfiles()
 const { files, selectedFile, captureSelection, highlight, highlightedSegments, updateFiles } = useFiles()
-const { getFacts, createFacts } =useFacts()
+const { getFacts, createFacts } = useFacts()
 const { sessions, sessionContent } = useWebsockets()
 const { personas, selectedPersona, getPersonas } = usePersonas()
 
 let triggerGeneration = ref(false);
 onMounted(() => {
-    if (!personas.value) getPersonas();
+    if (!personas?.value) getPersonas();
+    if (!knowledgeProfiles?.value) getKnowledgeProfiles();
 })
 
 const customLabel = (option) => option ? option.name : '';
@@ -122,8 +139,15 @@ const selectFile = (file) => {
     selectedFile.value = file
 }
 
+
 function addPersona(fileUuid) {
     files.value[fileUuid].persona = selectedPersona.value
+    // emit('setPersona', selectedPersona.value)
+}
+
+function addKnowledgeProfile(fileUuid) {
+    files.value[fileUuid].knowledgeProfileUuid = selectedKnowledgeProfile.value.uuid
+    files.value[fileUuid].knowledgeProfile = selectedKnowledgeProfile.value;
     // emit('setPersona', selectedPersona.value)
 }
 
@@ -229,6 +253,8 @@ function saveFacts(fileUuid) {
     parsedObjects.forEach((fact) => {
         fact.fileUuid = file.uuid;
         fact.storageUrl = file.storageUrl;
+        fact.knowledgeProfileUuid = file.knowledgeProfileUuid;
+        fact.knowledgeProfile = file.knowledgeProfile;
         fact.context = file.context;
         fact.structures = structures;
         fact.contexts = contexts;

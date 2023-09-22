@@ -25,8 +25,8 @@
 
             <Tabs :tabs="tabs" v-model="activeTab">
               <template v-slot:tab-0>
-                </template> 
-                <template v-slot:tab-1>
+              </template>
+              <template v-slot:tab-1>
 
                 <!-- Page header -->
                 <div class="max-w-3xl mx-auto text-center pb-3 md:pb-4">
@@ -103,7 +103,7 @@
                     </button>
                   </div>
 
-                  <div v-if="!token" class = "w-full  text-center">
+                  <div v-if="!token" class="w-full  text-center">
                     <p>
                       Note: You are <b>not</b> logged in, so any knowledge profiles you create will be visible and usable
                       by
@@ -114,8 +114,8 @@
                         account.</router-link></p>
                   </div>
 
-                  <div v-if="token" class = "w-full text-center">
-                    <p >Since you are logged in, your knowledge profile will only be visible to you and anyone you share it
+                  <div v-if="token" class="w-full text-center">
+                    <p>Since you are logged in, your knowledge profile will only be visible to you and anyone you share it
                       with.</p>
                   </div>
                 </div>
@@ -143,9 +143,9 @@
                   </div>
                 </div>
 
-                <FileViewer/>
+                <FileViewer />
 
- 
+
 
               </template>
 
@@ -206,7 +206,7 @@ const tabs = ref([
 
 
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
-const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles } = useKnowledgeProfiles()
+const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles, createKnowledgeProfiles } = useKnowledgeProfiles()
 
 // let newKnowledgeProfile = ref({
 //   name: "",
@@ -218,6 +218,7 @@ const router = useRouter()
 
 onMounted(() => {
   // getCategories();
+  getKnowledgeProfiles();
 })
 
 function createNewKnowledgeProfile() {
@@ -225,8 +226,7 @@ function createNewKnowledgeProfile() {
   // router.push({ name: 'home' })
 }
 
-function beginProcessFiles()
-{
+function beginProcessFiles() {
   //Begin processing the stages files
   processFiles();
 }
