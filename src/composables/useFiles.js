@@ -3,6 +3,7 @@ import axios from "axios";
 import configuredAxios from "@/utils/axios.js"
 
 import { v4 as uuidv4 } from 'uuid';
+import { notify } from "notiwind"
 
 
 let files = ref(null)
@@ -38,14 +39,15 @@ const defaultFile = {
     status: null,
 
     highlights: null,// array
-    highlightedText: null,// computed
-    highlightedSegmentsArray: null,// computed
+    // highlightedText: null,// computed
+    // highlightedSegmentsArray: null,// computed
     lastSelection: null, //Set by captureSelection
 
-    knowledgeProfile: null, //Associated knowledge profile for additional context
+    knowledgeProfileUuid: null, //Associated knowledge profile for additional context
     persona: null, //Persona processing the file
+    sockets:[], //Track the socketId of all of the sockets created to monitor when they are complete
     facts: [], //Returned by the persona
-
+    triggerGeneration:false,
 };
 
 
@@ -66,6 +68,7 @@ export function useFiles() {
             createFile.file = newFile;
             createFile.status = "unprocessed"
             createFile.name = newFile.name;
+            createFile.index = Object.keys(files.value).length;
             files.value[createFile.uuid] = createFile;
         })
     };
@@ -102,6 +105,8 @@ export function useFiles() {
                         files.value[responseFile.uuid].status = 'extracted';
                     }
                 });
+
+                createFiles(files.value)
             }
         } catch (error) {
             console.log("Error", error);
@@ -109,6 +114,41 @@ export function useFiles() {
             // throw error;
         }
     }
+
+
+    async function createFiles(newFiles) {
+        try {
+            // if (!Array.isArray(newFiles)) newFiles = [newFiles]
+            //Files is an object, not an array
+            var params = { files: Object.values(newFiles) }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files/create', params);
+            // currentPersona.value = response;    
+            notify({ group: "success", title: "Success", text: "Files created successfully" }, 4000) // 4s
+        }
+        catch (error) {
+            console.log("Error", error)
+            notify({ group: "failure", title: "Error", text: "Error creating facts. Try again" }, 4000) // 4s
+        }
+    }
+
+
+    async function updateFiles(files) {
+        try {
+            // if (!Array.isArray(files)) files = [files]
+            var params = { files: Object.values(files) }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files/update', params);
+            console.log(response.data.payload)
+            // currentPersona.value = response;    
+            notify({ group: "success", title: "Success", text: "Files updated successfully" }, 4000) // 4s
+            // getPersonas();
+        }
+        catch (error) {
+            console.log("Error", error)
+            notify({ group: "failure", title: "Error", text: "Error updating persona(s). Try again" }, 4000) // 4s
+
+        }
+    }
+
 
     //Process the files content
     const captureSelection = () => {
@@ -125,7 +165,8 @@ export function useFiles() {
         if (!lastSelection) return;
 
         const newHighlight = { ...lastSelection, type };
-
+        if(!highlights) highlights = [];
+        // if (!Array.isArray(highlights)) highlights = [highlights]
         for (let i = 0; i < highlights.length; i++) {
             const highlight = highlights[i];
 
@@ -161,6 +202,44 @@ export function useFiles() {
         return highlights;
     };
 
+    function highlightedText(originalText, highlights) {
+        if (highlights?.length) {
+            const sortedHighlights = [...highlights].sort((a, b) => a.start - b.start);
+            let result = '';
+            let textPointer = 0;
+            let highlightPointer = 0;
+
+            while (textPointer < originalText.length) {
+                if (highlightPointer < sortedHighlights.length && textPointer === sortedHighlights[highlightPointer].start) {
+                    const highlight = sortedHighlights[highlightPointer];
+                    const highlightClass = `highlight-${highlight.type}`;
+                    result += `<span class="${highlightClass}">${originalText.substring(highlight.start, highlight.end)}</span>`;
+                    textPointer = highlight.end;
+                    highlightPointer++;
+                } else {
+                    result += originalText[textPointer];
+                    textPointer++;
+                }
+            }
+            return result;
+        }
+        else return [];
+
+    }
+
+
+    function highlightedSegments(originalText, highlights) {
+        let allSegments = [];
+        if (highlights?.length) {
+            for (const highlight of highlights) {
+                var segment = { "content": originalText.substring(highlight.start, highlight.end), "type": highlight.type };
+                allSegments.push(segment)
+            }
+            return allSegments;
+        }
+        else return [];
+    }
+
 
     // expose managed state as return value
     return {
@@ -170,6 +249,12 @@ export function useFiles() {
         captureSelection,
         highlight,
         processFiles,
+
+        highlightedText,
+        highlightedSegments,
+
+        createFiles,
+        updateFiles,
 
     }
 }

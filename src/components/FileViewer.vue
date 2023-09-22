@@ -9,60 +9,243 @@
         </div>
 
         <!-- Right Column for File Details Form -->
-        <div class="w-2/3 p-4" v-if="selectedFile">
-            <form @submit.prevent>
-                <div class="mb-4">
-                    <label for="name" class="block mb-2">Name</label>
-                    <input id="name" v-model="selectedFile.name" class="w-full p-2 bg-gray-700 rounded" type="text"
-                        placeholder="Enter name" />
-                </div>
 
-                <div class="mb-4">
-                    <label for="description-en" class="block mb-2">Description (EN)</label>
-                    <input id="description-en" v-model="selectedFile.description.en" class="w-full p-2 bg-gray-700 rounded"
-                        type="text" placeholder="Enter description in English" />
-                </div>
+        <!-- TODO -->
+        <template v-for="(file, index) in files" :key="file.uuid">
+            <div class="w-2/3 p-4" v-show="selectedFile?.uuid && file.uuid == selectedFile.uuid">
+                <form @submit.prevent>
+                    <div class="mb-4">
+                        <label for="name" class="block mb-2">Name</label>
+                        <input id="name" v-model="file.name" class="w-full p-2 bg-gray-700 rounded" type="text"
+                            placeholder="Enter name" />
+                    </div>
 
-                <div class="mb-4">
-                    <label for="description-fr" class="block mb-2">Description (FR)</label>
-                    <input id="description-fr" v-model="selectedFile.description.fr" class="w-full p-2 bg-gray-700 rounded"
-                        type="text" placeholder="Enter description in French" />
-                </div>
+                    <div class="mb-4">
+                        <label for="description-en" class="block mb-2">Description (EN)</label>
+                        <input id="description-en" v-model="file.description.en" class="w-full p-2 bg-gray-700 rounded"
+                            type="text" placeholder="Enter description in English" />
+                    </div>
 
-                <div class="mb-4">
-                    <label for="context" class="block mb-2">Context</label>
-                    <textarea id="context" v-model="selectedFile.context" class="w-full p-2 bg-gray-700 rounded"
-                        placeholder="Enter context"></textarea>
-                </div>
+                    <div class="mb-4">
+                        <label for="description-fr" class="block mb-2">Description (FR)</label>
+                        <input id="description-fr" v-model="file.description.fr" class="w-full p-2 bg-gray-700 rounded"
+                            type="text" placeholder="Enter description in French" />
+                    </div>
 
-                <HighlightFileContents :originalText="selectedFile.extractedFileText" />
+                    <div class="mb-4">
+                        <label for="context" class="block mb-2">Context</label>
+                        <textarea id="context" v-model="file.context" class="w-full p-2 bg-gray-700 rounded"
+                            placeholder="Enter context"></textarea>
+                    </div>
 
-                <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">Save</button>
-            </form>
-        </div>
+
+                    <!-- Knowledge Profile -->
+                    <!-- <VueMultiselect v-if="personas" v-model="selectedPersona" placeholder="Select a persona" label="name"
+                    track-by="name" :options="personas" :option-height="104" :custom-label="customLabel"
+                    :show-labels="false" />
+
+                <button @click="addPersona"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Select Persona 
+                </button> -->
+
+                    <VueMultiselect v-if="personas" v-model="selectedPersona" placeholder="Select a persona" label="name"
+                        track-by="name" :options="personas" :option-height="104" :custom-label="customLabel"
+                        :show-labels="false" />
+
+                    <button @click="addPersona(file.uuid)"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                        Select Persona
+                    </button>
+
+                    <DisplayPersona :persona="file.persona" alignment="center" />
+
+
+                    <HighlightFileContents :fileUuid="file.uuid" :originalText="file.extractedFileText"
+                        :highlights="file.highlights" :lastSelection="file.lastSelection"
+                        @setLastSelection="setLastSelection" @addHighlight="addHighlight" @deleteHighlight="deleteHighlight"
+                        @generateFacts="generateFacts" />
+
+                    <div v-if="file.persona">
+                        <div v-for="(socket, index) in file.sockets" :key="socket.sessionId">
+                            <Socket :trigger="file.triggerGeneration" :stageIndex="file.index" :stageUuid="file.uuid"
+                                :sessionId="socket.sessionId" :socketIndex="index" :userPrompt="socket.userPrompt"
+                                :persona="file.persona" />
+                        </div>
+                    </div>
+
+
+                    <button @click="saveFacts(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">Save
+                        Facts</button>
+                </form>
+            </div>
+        </template>
     </div>
 </template>
   
 <script setup>
-import { ref, toRefs, reactive } from 'vue'
+import { ref, toRefs, reactive, onMounted, nextTick } from 'vue'
+import VueMultiselect from 'vue-multiselect'
+import { v4 as uuidv4 } from 'uuid';
+import { extractData } from '@/utils/extractJsonAndCode.js';
+
 
 import HighlightFileContents from '@/components/HighlightFileContents.vue';
+import DisplayPersona from '@/components/DisplayPersona.vue';
+import Socket from '@/components/Socket.vue';
 
 import { useFiles } from '@/composables/useFiles.js'
-const { files, selectedFile, processFiles } = useFiles()
+import { useFacts } from '@/composables/useFacts.js'
+import { useWebsockets } from '@/composables/useWebsockets.js'
+import { usePersonas } from '@/composables/usePersonas.js'
+const { files, selectedFile, captureSelection, highlight, highlightedSegments, updateFiles } = useFiles()
+const { getFacts, createFacts } =useFacts()
+const { sessions, sessionContent } = useWebsockets()
+const { personas, selectedPersona, getPersonas } = usePersonas()
 
+let triggerGeneration = ref(false);
+onMounted(() => {
+    if (!personas.value) getPersonas();
+})
+
+const customLabel = (option) => option ? option.name : '';
 
 const hoverFile = (file) => {
     // Implement logic for mouseover if needed
 }
 
+
+
+// let emit = defineEmits(['setPersona'])
+
 const selectFile = (file) => {
     selectedFile.value = file
 }
 
+function addPersona(fileUuid) {
+    files.value[fileUuid].persona = selectedPersona.value
+    // emit('setPersona', selectedPersona.value)
+}
+
+function setLastSelection(fileUuid) {
+    console.log("EMIT REceived Set Selection")
+    files.value[fileUuid].lastSelection = captureSelection();
+}
+
+function addHighlight({ type, fileUuid }) {
+    // console.log({ highlights: selectedFile.value.highlights, lastSelection: selectedFile.value.lastSelection, type })
+    files.value[fileUuid].highlights = highlight(files.value[fileUuid].highlights, files.value[fileUuid].lastSelection, type)
+}
+function deleteHighlight({ index, fileUuid }) {
+    if (files.value[fileUuid].highlights) files.value[fileUuid].highlights.splice(index, 1)
+}
+
+function generateFacts(fileUuid) {
+
+    files.value[fileUuid].sockets = [];
+    var highlights = highlightedSegments(files.value[fileUuid].extractedFileText, files.value[fileUuid].highlights)
+
+    //Extract the structure and the context
+    var structures = [];
+    var contexts = [];
+    var contents = [];
+    highlights.forEach((highlight) => {
+        if (highlight.type == 'structure') structures.push(highlight.content + "\n");
+        else if (highlight.type == 'context') contexts.push(highlight.content + "\n");
+        else if (highlight.type == 'content') contents.push(highlight.content)
+    })
+
+    var integratedPrompt = ""
+    if (structures.length) {
+        integratedPrompt += "The structure for this content is often represented in this format: "
+        structures.forEach((structure) => {
+            integratedPrompt += structure + "\n"
+        })
+    }
+
+    if (contexts.length) {
+        integratedPrompt += "Some additional context specifically includes: " + "\n";
+        contexts.forEach((context) => {
+            integratedPrompt += context + "\n"
+        })
+    }
+
+    if (contents.length) {
+        contents.forEach((content) => {
+            var userPrompt = "";
+            if (files.value[fileUuid]?.context?.length) userPrompt = "The overall context of the following information is: " + files.value[fileUuid].context + "\n";
+            userPrompt += "The content to analyze is as follows: " + "\n" + content + "\n"
+            userPrompt += integratedPrompt;
+            var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt };
+            console.log("Socket Payload", socketPayload)
+            files.value[fileUuid].sockets.push(socketPayload)
+        })
+    }
+
+    nextTick(() => {
+        files.value[fileUuid].triggerGeneration = !files.value[fileUuid].triggerGeneration;
+    })
+
+    // return selectedFile.value.sockets;
+
+}
+
+
+function saveFacts(fileUuid) {
+    let file = files.value[fileUuid];
+    let rawFacts = [];
+    let parsedObjects = [];
+
+    file.sockets.forEach((socket) => {
+        var extracts = extractData(sessions.value[socket.sessionId].partialMessage || sessions.value[socket.sessionId].completedMessage)
+        if (extracts.json) {
+            rawFacts.push(extracts.json);
+        }
+    });
+
+    function parseArray(arr) {
+        arr.forEach(item => {
+            if (Array.isArray(item)) {
+                parseArray(item);
+            } else if (typeof item === 'object' && item !== null) {
+                parsedObjects.push(item);
+            }
+        });
+    }
+
+    parseArray(rawFacts);
+
+
+    var highlights = highlightedSegments(files.value[fileUuid].extractedFileText, files.value[fileUuid].highlights)
+
+    //Extract the structure and the context
+    var structures = [];
+    var contexts = [];
+    highlights.forEach((highlight) => {
+        if (highlight.type == 'structure') structures.push(highlight.content + "\n");
+        else if (highlight.type == 'context') contexts.push(highlight.content + "\n");
+    })
+
+    parsedObjects.forEach((fact) => {
+        fact.fileUuid = file.uuid;
+        fact.storageUrl = file.storageUrl;
+        fact.context = file.context;
+        fact.structures = structures;
+        fact.contexts = contexts;
+    })
+
+    createFacts(parsedObjects)
+    updateFiles([file])
+    file.status = "complete";
+
+    // Now, `parsedObjects` contains all the extracted objects from `rawFacts`
+    // You can proceed to use or return the `parsedObjects` array as needed
+}
+
+
 const submitForm = () => {
     // Implement form submission logic
-    console.log('Form Submitted:', selectedFileDetails)
+    // console.log('Form Submitted:', selectedFileDetails)
 }
 </script>
   

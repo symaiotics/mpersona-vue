@@ -90,12 +90,23 @@
             <template v-for="(socket, index) in props.sockets" :key="'stageSocket'+index">
                 <!-- {{ props }} -->
                 <!-- {{ localModel }} -->
-                <SocketTester :trigger="triggerGeneration" :stageIndex="props.stageIndex" :stageUuid="props.stageUuid"
-                    :sessionId="socket.sessionId" :socketIndex="index" :userPrompt="props.userPrompt"
-                    :model="localModel" :temperature="0.5" :persona="socket.persona"
-                    :appendedContent="localSelectedSessionsContent" @like="like(persona)" @close="removeFromSockets(index)"
-                    @edit="edit(persona)" @addSocket="addSocket" @removeSocket="removeSocket"
-                    :stageOptions="props.options" />
+                <Socket 
+                :trigger="triggerGeneration" 
+                :stageIndex="props.stageIndex" 
+                :stageUuid="props.stageUuid"
+                :sessionId="socket.sessionId" 
+                :socketIndex="index" 
+                :userPrompt="props.userPrompt"
+                :model="localModel" 
+                :temperature="0.5" 
+                :persona="socket.persona"
+                :appendedContent="localSelectedSessionsContent" 
+                @like="like(persona)" 
+                @close="removeFromSockets(index)"
+                @edit="edit(persona)" 
+                @addSocket="addSocket" 
+                @removeSocket="removeSocket"
+                :stageOptions="props.options" />
             </template>
         </div>
     </div>
@@ -110,7 +121,7 @@ import VueMultiselect from 'vue-multiselect'
 // import '@symaiotics/d3-graph-creator-tailwind/dist/style.css';
 
 //Components
-import SocketTester from '@/components/SocketTester.vue'
+import Socket from '@/components/Socket.vue'
 import AppendOptions from '@/components/AppendOptions.vue'
 
 //Composables
