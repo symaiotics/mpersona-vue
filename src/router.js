@@ -3,10 +3,10 @@ import Home from '@/pages/Home.vue'
 import Create from '@/pages/Create.vue'
 import Interact from '@/pages/Interact.vue'
 import InteractLive from '@/pages/InteractLive.vue'
-import Manage from '@/pages/Manage.vue'
+import Personas from '@/pages/Personas.vue'
 import Join from '@/pages/Join.vue'
 import Login from '@/pages/Login.vue'
-import CreateKnowledgeProfile from '@/pages/CreateKnowledgeProfile.vue'
+import KnowledgeProfiles from '@/pages/KnowledgeProfiles.vue'
 import LinkPersona from '@/pages/LinkPersona.vue'
 
 
@@ -43,9 +43,9 @@ const router = createRouter({
       component: Create
     },
     {
-      path: '/createKp',
-      name:'createKp',
-      component: CreateKnowledgeProfile
+      path: '/knowledgeProfiles',
+      name:'knowledgeProfiles',
+      component: KnowledgeProfiles
     },
     {
       path: '/interact',
@@ -58,9 +58,9 @@ const router = createRouter({
       component: InteractLive
     },
     {
-      path: '/manage',
-      name:'manage',
-      component: Manage
+      path: '/personas',
+      name:'personas',
+      component: Personas
     },
     {
       path: '/join',

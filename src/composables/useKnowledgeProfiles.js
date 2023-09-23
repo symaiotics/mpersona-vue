@@ -63,6 +63,20 @@ export function useKnowledgeProfiles() {
         }
     }
 
+    
+    function addLink(kpId, kpLink, linkType) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                var params = { kpId, kpLink, linkType }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/addLink', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
 
     // async function getSkills() {
     //     try {
@@ -152,6 +166,7 @@ export function useKnowledgeProfiles() {
         resetKnowledgeProfile,
         getKnowledgeProfiles,
         createKnowledgeProfiles,
+        addLink
         // processKnowledgeProfileFiles
 
 

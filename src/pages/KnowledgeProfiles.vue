@@ -25,19 +25,22 @@
 
             <Tabs :tabs="tabs" v-model="activeTab">
               <template v-slot:tab-0>
-              </template>
-              <template v-slot:tab-1>
+
 
                 <!-- Page header -->
                 <div class="max-w-3xl mx-auto text-center pb-3 md:pb-4">
-                  <h1 class="h2 font-red-hat-display mb-4">Create a Knowledge Profile</h1>
-                  <p class="text-xl text-gray-600 dark:text-gray-400">A knowledge profile creates a context set of
-                    reference data. One or more Knowledge Profiles can be added to your persona to superchange its
-                    capabilities with custom knowledge.</p>
+                  <h1 class="h3 font-red-hat-display mb-4">Knowledge Profiles</h1>
+                  <p class="text-lg text-gray-600 dark:text-gray-400">A knowledge profiles define specific knowledge sets
+                    for your personas.</p>
                   <br />
 
 
                 </div>
+
+
+                <ManageKnowledgeProfiles @changeTab="activeTab = 1" />
+              </template>
+              <template v-slot:tab-1>
 
                 <div class="flex flex-wrap -mx-3 mb-1">
 
@@ -150,6 +153,43 @@
               </template>
 
 
+              <template v-slot:tab-3>
+                Search
+                <input v-model="factSearchString" id="factSearchString" type="text" class="form-input w-full"
+                  placeholder="Search Facts" required @keyup.enter="searchFacts(factSearchString)" />
+
+
+                <table class="w-full">
+                  <thead>
+                    <tr>
+                      <th class="border dark:border-gray-700 dark:text-gray-300">Fact / Questions</th>
+                      <th class="border dark:border-gray-700 dark:text-gray-300">Score</th>
+                      <th class="border dark:border-gray-700 dark:text-gray-300">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template v-for="(fact, index) in factSearchResults" :key="'searchFact' + index">
+
+                      <tr class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <td  class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.fact }}</td>
+                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.score }}</td>
+                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3"><a :href = "'https://mpersona.blob.core.windows.net/' + fact.storageUrl" target = "_blank"> {{ fact.storageUrl }}</a></td>
+                      </tr>
+
+                      <tr v-for="(question, index2) in fact.questions" :key="'question' + index + index2"
+                        class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <td colspan=3 class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ question }}</td>
+                      </tr>
+
+
+                    </template>
+
+                  </tbody>
+                </table>
+
+              </template>
+
+
             </Tabs>
 
 
@@ -187,26 +227,30 @@ import PageIllustration from '@/partials/PageIllustration.vue'
 import Footer from '@/partials/Footer.vue'
 import Tabs from '@/components/Tabs.vue';
 import FileViewer from '@/components/FileViewer.vue';
+import ManageKnowledgeProfiles from '@/components/ManageKnowledgeProfiles.vue';
 
 //Composables
 import { useTokens } from '@/composables/useTokens.js'
 import { useFiles } from '@/composables/useFiles.js'
+import { useFacts } from '@/composables/useFacts.js'
+import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
+const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles, createKnowledgeProfiles } = useKnowledgeProfiles()
 
 //Variables
 const { token, tokenDecoded } = useTokens()
 const { files, processFiles } = useFiles()
+const { factSearchString, searchFacts, factSearchResults } = useFacts()
 
 let activeTab = ref(0)
 const tabs = ref([
   { label: 'Knowledge Profiles' },
-  { label: 'Create KP' },
-  { label: 'Files' },
+  { label: 'Create/Edit' },
+  { label: 'Files and Facts' },
+  { label: 'Search' },
   // { label: '' },
 ]);
 
 
-import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
-const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles, createKnowledgeProfiles } = useKnowledgeProfiles()
 
 // let newKnowledgeProfile = ref({
 //   name: "",

@@ -73,8 +73,7 @@ const { getPersonas, selectedPersona, personas } = usePersonas();
 let activeTab = ref(0)
 const tabs = ref([
   { label: 'Personas' },
-  { label: 'Work Streams' },
-  { label: 'Knowledge Profiles' },
+  { label: 'Create/Edit' },
 ]);
 
 //Multiselect

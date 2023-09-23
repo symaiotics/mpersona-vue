@@ -5,7 +5,7 @@ import { notify } from "notiwind"
 
 
 let facts = ref(null);
-let factSearch = ref(null);
+let factSearchString = ref(null);
 let factSearchResults = ref(null);
 
 // by convention, composable function names start with "use"
@@ -38,10 +38,26 @@ export function useFacts() {
         }
     }
 
+    async function searchFacts(searchString) {
+        try {
+            var params = { searchString: searchString }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/facts/search', params);
+            // currentPersona.value = response;
+            factSearchResults.value = response.data.payload;
+            // notify({ group: "success", title: "Success", text: "Facts created successfully" }, 4000) // 4s
+            // getFacts();
+        }
+        catch (error) {
+            console.log("Error", error)
+            // notify({ group: "failure", title: "Error", text: "Error creating facts. Try again" }, 4000) // 4s
+        }
+    }
+
     // expose managed state as return value
     return {
-        facts, factSearch, factSearchResults,
+        facts, factSearchString, factSearchResults,
         getFacts,
-        createFacts
+        createFacts,
+        searchFacts
     }
 }

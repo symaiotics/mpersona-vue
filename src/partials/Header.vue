@@ -33,14 +33,14 @@
             </li>
 
             <li v-if="token">
-              <router-link to="/manage"
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Manage</router-link>
+              <router-link to="/personas"
+                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Personas</router-link>
             </li>
 
             <li v-if="token">
-              <router-link to="/createKp"
+              <router-link to="/knowledgeProfiles"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Knowledge
-                Profile</router-link>
+                Profiles</router-link>
             </li>
 
 
@@ -172,13 +172,13 @@
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>
                   </li>
                   <li v-if="token">
-                    <router-link to="/manage"
-                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Manage</router-link>
+                    <router-link to="/personas"
+                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Personas</router-link>
                   </li>
                   <li v-if="token">
-                    <router-link to="/createKp"
+                    <router-link to="/knowledgeProfiles"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Knowledge
-                      Profile</router-link>
+                      Profiles</router-link>
                   </li>
                   <li v-if="!token">
                     <router-link to="/login"
