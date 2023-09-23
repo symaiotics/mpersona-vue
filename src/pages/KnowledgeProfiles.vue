@@ -154,9 +154,13 @@
 
 
               <template v-slot:tab-3>
-                Search
+                Evaluate
                 <input v-model="factSearchString" id="factSearchString" type="text" class="form-input w-full"
                   placeholder="Search Facts" required @keyup.enter="searchFacts(factSearchString)" />
+
+
+                personas
+                
 
 
                 <table class="w-full">
@@ -246,7 +250,7 @@ const tabs = ref([
   { label: 'Knowledge Profiles' },
   { label: 'Create/Edit' },
   { label: 'Files and Facts' },
-  { label: 'Search' },
+  { label: 'Evaluate' },
   // { label: '' },
 ]);
 
