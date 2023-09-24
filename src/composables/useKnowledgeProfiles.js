@@ -34,6 +34,12 @@ export function useKnowledgeProfiles() {
         Object.assign(newKnowledgeProfile.value, defaultKnowledgeProfile);
     };
 
+    const addNewKnowledgeProfile = () => {
+        resetKnowledgeProfile();
+        selectedKnowledgeProfile.value = null;        
+    };
+
+
     async function getKnowledgeProfiles() {
         try {
             var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/knowledgeProfiles');
@@ -163,6 +169,7 @@ export function useKnowledgeProfiles() {
         selectedKnowledgeProfile,
         newKnowledgeProfile,
 
+        addNewKnowledgeProfile,
         resetKnowledgeProfile,
         getKnowledgeProfiles,
         createKnowledgeProfiles,

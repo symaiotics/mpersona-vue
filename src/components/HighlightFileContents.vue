@@ -6,7 +6,7 @@
             <button @click="addHighlight('content')" class="px-4 py-2 bg-yellow-500 text-black rounded">Content</button>
             <button @click="generateFacts" class="px-4 py-2 bg-green-500 text-black rounded">Generate Facts</button>
         </div>
-
+<!-- {{ fileUuid }} -->
         <div class="flex min-h-48 overflow-y-auto">
             <!-- Left Column -->
             <div class="w-2/3  p-4 overflow-y-auto h-screen custom-scrollbar">

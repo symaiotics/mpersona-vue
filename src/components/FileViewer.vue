@@ -1,5 +1,5 @@
 <template>
-    <div class="flex h-auto bg-gray-800 text-white">
+    <div class="flex h-auto dark:bg-gray-800 text-white dark:text-gray-100">
         <!-- Left Column for File List -->
         <div class="w-1/3 p-4 overflow-y-auto border-r border-gray-600">
             <div v-for="(file, key) in files" :key="key" class="py-2 px-4 my-2 hover:bg-gray-700 cursor-pointer"
@@ -9,32 +9,33 @@
         </div>
 
         <!-- Right Column for File Details Form -->
-
+        <!-- {{ files }} -->
         <!-- TODO -->
         <template v-for="(file, index) in files" :key="file.uuid">
+            <!-- <pre>{{ file }}</pre> -->
             <div class="w-2/3 p-4" v-show="selectedFile?.uuid && file.uuid == selectedFile.uuid">
                 <form @submit.prevent>
                     <div class="mb-4">
-                        <label for="name" class="block mb-2">Name</label>
-                        <input id="name" v-model="file.name" class="w-full p-2 bg-gray-700 rounded" type="text"
+                        <label for="name" class="block mb-2 dark:text-gray-300">Name</label>
+                        <input id="name" v-model="file.name" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" type="text"
                             placeholder="Enter name" />
                     </div>
 
                     <div class="mb-4">
-                        <label for="description-en" class="block mb-2">Description (EN)</label>
-                        <input id="description-en" v-model="file.description.en" class="w-full p-2 bg-gray-700 rounded"
+                        <label for="description-en" class="block mb-2 dark:text-gray-300">Description (EN)</label>
+                        <input id="description-en" v-model="file.description.en" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                             type="text" placeholder="Enter description in English" />
                     </div>
 
                     <div class="mb-4">
-                        <label for="description-fr" class="block mb-2">Description (FR)</label>
-                        <input id="description-fr" v-model="file.description.fr" class="w-full p-2 bg-gray-700 rounded"
+                        <label for="description-fr" class="block mb-2 dark:text-gray-300">Description (FR)</label>
+                        <input id="description-fr" v-model="file.description.fr" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                             type="text" placeholder="Enter description in French" />
                     </div>
 
                     <div class="mb-4">
-                        <label for="context" class="block mb-2">Context</label>
-                        <textarea id="context" v-model="file.context" class="w-full p-2 bg-gray-700 rounded"
+                        <label for="context" class="block mb-2 dark:text-gray-300">Context</label>
+                        <textarea id="context" v-model="file.context" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                             placeholder="Enter context"></textarea>
                     </div>
 
@@ -89,9 +90,16 @@
                         </div>
                     </div>
 
+                    <div class="space-x-2">
+                        <button @click="saveFacts(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">
+                            Save Facts
+                        </button>
 
-                    <button @click="saveFacts(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">Save
-                        Facts</button>
+                        <button @click="saveFile(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">
+                            Update File
+                        </button>
+                    </div>
+
                 </form>
             </div>
         </template>
@@ -166,6 +174,7 @@ function deleteHighlight({ index, fileUuid }) {
 }
 
 function generateFacts(fileUuid) {
+
 
     files.value[fileUuid].sockets = [];
     var highlights = highlightedSegments(files.value[fileUuid].extractedFileText, files.value[fileUuid].highlights)
@@ -262,13 +271,17 @@ function saveFacts(fileUuid) {
     })
 
     createFacts(parsedObjects)
-    updateFiles([file])
     file.status = "complete";
 
     // Now, `parsedObjects` contains all the extracted objects from `rawFacts`
     // You can proceed to use or return the `parsedObjects` array as needed
 }
 
+function saveFile(fileUuid) {
+    let file = files.value[fileUuid];
+    updateFiles([file])
+
+}
 
 const submitForm = () => {
     // Implement form submission logic

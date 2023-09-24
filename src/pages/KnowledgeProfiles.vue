@@ -38,11 +38,26 @@
                 </div>
 
 
+
+                <div class="w-full px-3">
+                  <button @click="add" class="btn text-white bg-teal-500 hover:bg-teal-400 flex items-center mb-3">
+                    <span>Add New</span>
+                  </button>
+                </div>
+
+
                 <ManageKnowledgeProfiles @changeTab="activeTab = 1" />
               </template>
               <template v-slot:tab-1>
 
                 <div class="flex flex-wrap -mx-3 mb-1">
+
+                  <div class="w-full px-3">
+                    <button @click="add" class="btn text-white bg-teal-500 hover:bg-teal-400 flex items-center mb-3">
+                      <span>Add New</span>
+                    </button>
+                  </div>
+
 
                   <div class="w-full  px-3 mb-4 md:mb-1">
                     <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="first-name">
@@ -154,13 +169,34 @@
 
 
               <template v-slot:tab-3>
-                Evaluate
+
+
+                <div class="flex items-center">
+
+                  <!-- {{ personas }} -->
+                  <VueMultiselect v-if="personas" v-model="selectedPersona" placeholder="Select a persona" label="name"
+                    track-by="name" :options="personas" :option-height="104" :custom-label="customLabel"
+                    :show-labels="false" />
+
+                  <button @click="addEvaluator"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Add Persona to Evaluate
+                  </button>
+
+                </div>
+
+                <!-- {{ evaluationSet }} -->
+
+                <EvaluatePersonas :evaluationSet="evaluationSet" 
+                  @deleteEvaluator="deleteEvaluator" @knowledgeProfilesUpdate="knowledgeProfilesUpdate"
+                  @triggerSearch="triggerSearch" />
+
+
+                  <!--:triggerGeneration="triggerGeneration"-->
+
+                <!-- Evaluate
                 <input v-model="factSearchString" id="factSearchString" type="text" class="form-input w-full"
                   placeholder="Search Facts" required @keyup.enter="searchFacts(factSearchString)" />
-
-
-                personas
-                
 
 
                 <table class="w-full">
@@ -175,9 +211,15 @@
                     <template v-for="(fact, index) in factSearchResults" :key="'searchFact' + index">
 
                       <tr class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <td  class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.fact }}</td>
+                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.fact }}</td>
                         <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.score }}</td>
-                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3"><a :href = "'https://mpersona.blob.core.windows.net/' + fact.storageUrl" target = "_blank"> {{ fact.storageUrl }}</a></td>
+                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3"><a
+                            :href="'https://mpersona.blob.core.windows.net/' + fact.storageUrl" target="_blank"> {{
+                              fact.storageUrl }}</a></td>
+                      </tr>
+
+                      <tr class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.keywords }}</td>
                       </tr>
 
                       <tr v-for="(question, index2) in fact.questions" :key="'question' + index + index2"
@@ -189,7 +231,7 @@
                     </template>
 
                   </tbody>
-                </table>
+                </table> -->
 
               </template>
 
@@ -221,6 +263,9 @@
 //Plugins
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router'
+import VueMultiselect from 'vue-multiselect'
+import { v4 as uuidv4 } from 'uuid';
+
 
 //Components
 import DragAndDropFiles from '@/components/DragAndDropFiles.vue';
@@ -232,18 +277,23 @@ import Footer from '@/partials/Footer.vue'
 import Tabs from '@/components/Tabs.vue';
 import FileViewer from '@/components/FileViewer.vue';
 import ManageKnowledgeProfiles from '@/components/ManageKnowledgeProfiles.vue';
+import EvaluatePersonas from '@/components/EvaluatePersonas.vue';
 
 //Composables
 import { useTokens } from '@/composables/useTokens.js'
+import { usePersonas } from '@/composables/usePersonas.js'
 import { useFiles } from '@/composables/useFiles.js'
 import { useFacts } from '@/composables/useFacts.js'
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
-const { newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles, createKnowledgeProfiles } = useKnowledgeProfiles()
+// import { nextTick } from 'proceknowledgeProfilesUpdatess';
+// import { randomUUID } from 'crypto';
+const { addNewKnowledgeProfile, newKnowledgeProfile, resetKnowledgeProfile, getKnowledgeProfiles, createKnowledgeProfiles } = useKnowledgeProfiles()
 
 //Variables
+const { personas, selectedPersona } = usePersonas()
 const { token, tokenDecoded } = useTokens()
-const { files, processFiles } = useFiles()
-const { factSearchString, searchFacts, factSearchResults } = useFacts()
+const { files, processFiles, getFiles } = useFiles()
+const { factSearchString, searchFacts } = useFacts()
 
 let activeTab = ref(0)
 const tabs = ref([
@@ -255,7 +305,8 @@ const tabs = ref([
 ]);
 
 
-
+let evaluationSet = ref([])
+// let triggerGeneration = ref(false);
 // let newKnowledgeProfile = ref({
 //   name: "",
 //   description: { en: "", fr: "" },
@@ -264,23 +315,82 @@ const tabs = ref([
 
 const router = useRouter()
 
+//Multiselect
+const customLabel = (option) => option ? option.name : '';
+
 onMounted(() => {
   // getCategories();
   getKnowledgeProfiles();
+  getFiles();
 })
+
+function add() {
+  addNewKnowledgeProfile();
+  activeTab.value = 1;
+  // router.push({ name: 'home' })
+}
 
 function createNewKnowledgeProfile() {
   createKnowledgeProfiles(newKnowledgeProfile.value);
   // router.push({ name: 'home' })
 }
 
-function beginProcessFiles() {
-  //Begin processing the stages files
-  processFiles();
+function addEvaluator() {
+  if (selectedPersona.value) {
+    var newEval = {
+      trigger: false,
+      sessionId: uuidv4(),
+      persona: JSON.parse(JSON.stringify(selectedPersona.value)),
+      knowledgeProfiles: [],
+      useKnowledgeProfiles: false,
+      facts: [],
+    }
+    evaluationSet.value.push(newEval)
+  }
 }
 
-function handleCommand(command) {
-  console.log("Command", command)
+//Remove the evaluator
+function deleteEvaluator(index) {
+  evaluationSet.value.splice(index, 1)
 }
+
+
+function knowledgeProfilesUpdate(val) {
+  evaluationSet.value[val.index].knowledgeProfiles = val.knowledgeProfiles;
+}
+//Trigger Search Results for each Persona
+async function triggerSearch() {
+
+  //Perform the search if it is relevant
+  evaluationSet.value.forEach(async (evaluation, index, origArray) => {
+    var knowledgeProfileUuids = evaluation.knowledgeProfiles.map((kp) => { return kp.uuid });
+    console.log("knowledgeProfileUuids " + index, knowledgeProfileUuids)
+    if (knowledgeProfileUuids.length) {
+      
+      evaluation.facts = await searchFacts(factSearchString.value, knowledgeProfileUuids)
+      console.log(index, evaluation.facts)
+      evaluation.trigger = !evaluation.trigger;
+    }
+    else {
+      evaluation.trigger = !evaluation.trigger;
+    }
+
+    // We COULD alternatively search against all facts, regardless of knowledgeProfile
+    // else searchFacts(factSearchString.value)
+
+  })
+
+}
+
+
+
+// function beginProcessFiles() {
+//   //Begin processing the stages files
+//   processFiles();
+// }
+
+// function handleCommand(command) {
+//   console.log("Command", command)
+// }
 
 </script>

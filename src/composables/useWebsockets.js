@@ -88,13 +88,30 @@ export function useWebsockets() {
                     // Reset the partial message
                     sessions.value[data.session].messages = []; // Reset messages for the session
                     sessions.value[data.session].partialMessage = '';
-                } else {
+                }
+                else if (data.type === 'ERROR') {
+
+                    var errorMessage = "Error: ";
+                    try{
+                        var parsedError = JSON.parse(data.message);
+                        errorMessage +=  parsedError.status + " " + parsedError.statusText;
+                        if(parsedError.status == 429 || parsedError.status == "429") errorMessage += ". Try again in a minute."                         
+                    }
+                    catch(err)
+                    {
+                        //Not JSON, just leave as error
+                    }
+                    
+                    sessions.value[data.session].errorMessage = errorMessage;
+                    // Reset the partial and completed message
+                    sessions.value[data.session].messages = []; // Reset messages for the session
+                    sessions.value[data.session].partialMessage = '';
+                    sessions.value[data.session].completedMessage = '';
+                }                
+                
+                else {
                     // Update the partial message with the new fragment
                     sessions.value[data.session].messages.push(data.message);
-
-                    // Concatenate the new fragment to the existing partial message
-                    // console.log(data.message)
-                    // console.log(typeof sessions.value[data.session].partialMessage);
                     sessions.value[data.session].partialMessage += data.message;
                 }
             }
@@ -132,7 +149,7 @@ export function useWebsockets() {
     function registerSession(session, stageIndex, stageUuid, socketIndex, callback) {
         // sessions.value[data.session].partialMessage = ref('');
         sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid, socketIndex: socketIndex };
-        console.log("Registered session", sessions.value[session])
+        // console.log("Registered session", sessions.value[session])
 
     }
 

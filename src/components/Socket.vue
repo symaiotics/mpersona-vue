@@ -121,6 +121,7 @@ Appended Content: {{ appendedContent }} -->
 
 <script setup>
 import { extractData } from '@/utils/extractJsonAndCode.js';
+import { notify } from "notiwind"
 
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
@@ -163,6 +164,7 @@ const props = defineProps({
     temperature: { type: Number, default: 0.5 },
     persona: { type: Object },
     appendedContent: { type: Array, default: [] },
+    facts: { type: Array, default: [] },
     stageOptions: { type: Object, default: null },
 
 });
@@ -171,6 +173,7 @@ let processing = ref(false);
 const trigger = computed(() => props.trigger);
 let isFocused = ref(false)
 
+const facts = computed(() => props.facts);
 const model = computed(() => props.model);
 const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
@@ -209,6 +212,15 @@ const completedMessage = computed(() => {
     else return "";
 });
 
+const errorMessage = computed(() => {
+    if (sessions?.value) {
+        const session = sessions.value[sessionId.value];  // Use the sessionId prop to access the correct session
+        return session ? session?.errorMessage : '';
+    }
+    else return "";
+});
+
+
 
 watch(stageIndex, (newValue, oldValue) => {
     updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
@@ -237,8 +249,6 @@ watch(appendedContent, (newValue, oldValue) => {
     if (appendedContent.value.length && contentCompleted) sendMessage();
 }, { deep: true });
 
-
-
 watch(completedMessage, (newValue, oldValue) => {
     console.log("Completed Change")
     console.log(completedMessage)
@@ -257,6 +267,15 @@ watch(completedMessage, (newValue, oldValue) => {
     // updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
 });
 
+watch(errorMessage, (newValue, oldValue) => {
+    // console.log("Error message", newValue);
+    if (!oldValue?.length && newValue?.length) {
+        notify({ group: "failure", title: "Error", text: newValue }, 4000) // 4s
+        sessions.value[sessionId.value].errorMessage = "";
+        processing.value = false;
+    }
+});
+
 onMounted(() => {
     registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
     emit('addSocket', { persona: props.persona, sessionId: sessionId.value, stageIndex: props.stageIndex, stageUuid: props.stageUuid, socketIndex: props.socketIndex })
@@ -273,6 +292,11 @@ function sendMessage() {
     if (wsUuid?.value) {
 
         if (!processing.value) {
+
+            console.log("SessionId", sessionId.value)
+            console.log("Facts for this socket", facts.value)
+
+
             sessions.value[sessionId.value].completedMessage = "";
             var combinedPrompt = props.userPrompt;
 
@@ -320,11 +344,34 @@ function sendMessage() {
             }
 
             var useModel = "gpt-4";
-            if (props?.model?.model) useModel =props.model.model;
-            if (model?.value?.model) useModel =model.value.model;
-            console.log("PROMPT: ", {combinedPrompt, useModel})
+            if (props?.model?.model) useModel = props.model.model;
+            if (model?.value?.model) useModel = model.value.model;
+            console.log("PROMPT: ", { combinedPrompt, useModel })
+            var basePrompt = props?.persona?.basePrompt || "";
+
+
+            //Include any facts if relevant 
+            var factPrompt = ""
+            if (facts?.value?.length) {
+                factPrompt += "\n\nReference Information:\n\nOnly if applicable to the prompt, use these facts and questions in your answer where applicable:\n\n"
+                facts.value.forEach((fact, index, origArray) => {
+                    if (index < 5) {
+                        factPrompt += fact.fact + "\n";
+                        fact.questions.forEach((question) => {
+                            factPrompt += question;
+                        })
+
+                    }
+                })
+                basePrompt = factPrompt + basePrompt;
+            }
+
+            console.log("combinedPrompt", combinedPrompt)
+            console.log("basePrompt", basePrompt)
+
+
             //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
-            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, props.persona.basePrompt, combinedPrompt, 'prompt')
+            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, 'prompt')
             processing.value = true;
 
         }

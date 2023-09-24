@@ -45,9 +45,9 @@ const defaultFile = {
 
     knowledgeProfileUuid: null, //Associated knowledge profile for additional context
     persona: null, //Persona processing the file
-    sockets:[], //Track the socketId of all of the sockets created to monitor when they are complete
+    sockets: [], //Track the socketId of all of the sockets created to monitor when they are complete
     facts: [], //Returned by the persona
-    triggerGeneration:false,
+    triggerGeneration: false,
 };
 
 
@@ -116,11 +116,34 @@ export function useFiles() {
     }
 
 
+    async function getFiles(knowledgeProfileUuid) {
+        try {
+            var params = { params: { knowledgeProfileUuid: knowledgeProfileUuid } }
+            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/files', params);
+
+            //Transpose the array of results to a string based object array (object)
+            if (!files.value) files.value = {};
+            response.data.payload.forEach((file) => {
+                files.value[file.uuid] = file;
+            })
+            // files.value = response.data.payload;
+            //TODO enhance to receive the code as well
+            console.log("Loaded Files", files.value)
+        }
+        catch (error) {
+            console.log("Error", error)
+        }
+    }
+
+
     async function createFiles(newFiles) {
         try {
             // if (!Array.isArray(newFiles)) newFiles = [newFiles]
             //Files is an object, not an array
-            var params = { files: Object.values(newFiles) }
+
+            var files = Object.values(newFiles);
+            files = files.filter((file) => { return !file._id })
+            var params = { files: files }
             var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files/create', params);
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Files created successfully" }, 4000) // 4s
@@ -165,7 +188,7 @@ export function useFiles() {
         if (!lastSelection) return;
 
         const newHighlight = { ...lastSelection, type };
-        if(!highlights) highlights = [];
+        if (!highlights) highlights = [];
         // if (!Array.isArray(highlights)) highlights = [highlights]
         for (let i = 0; i < highlights.length; i++) {
             const highlight = highlights[i];
@@ -253,6 +276,7 @@ export function useFiles() {
         highlightedText,
         highlightedSegments,
 
+        getFiles,
         createFiles,
         updateFiles,
 
