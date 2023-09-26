@@ -352,10 +352,12 @@ function sendMessage() {
 
             //Include any facts if relevant 
             var factPrompt = ""
+            var topScore = 0;
             if (facts?.value?.length) {
-                factPrompt += "\n\nReference Information:\n\nOnly if applicable to the prompt, use these facts and questions in your answer where applicable:\n\n"
+                factPrompt += "Your instructions are found below this reference information.\n\nReference Information:\n\nOnly if applicable to the prompt, use these facts and questions in your answer where applicable:\n\n"
                 facts.value.forEach((fact, index, origArray) => {
-                    if (index < 5) {
+                    if (index == 0) topScore = fact.score;
+                    if ( fact.score > topScore / 2) { //Needs to be in the top 50% of scores
                         factPrompt += fact.fact + "\n";
                         fact.questions.forEach((question) => {
                             factPrompt += question;
@@ -363,7 +365,7 @@ function sendMessage() {
 
                     }
                 })
-                basePrompt = factPrompt + basePrompt;
+                basePrompt = factPrompt + basePrompt + "\n\n";
             }
 
             console.log("combinedPrompt", combinedPrompt)
