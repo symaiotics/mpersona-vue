@@ -69,11 +69,28 @@ export function useKnowledgeProfiles() {
         }
     }
 
+    async function updateKnowledgeProfiles(updateArr) {
+        try {
+            if (!Array.isArray(updateArr)) updateArr = [updateArr]
+            var params = { knowledgeProfiles: updateArr }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/update', params);
+            console.log(response.data.payload)
+            // currentPersona.value = response;    
+            notify({ group: "success", title: "Success", text: "Knowledge profile(s) updated successfully" }, 4000) // 4s
+            getKnowledgeProfiles();
+        }
+        catch (error) {
+            console.log("Error", error)
+            notify({ group: "failure", title: "Error", text: "Error updating knowledge profiles(s). Try again" }, 4000) // 4s
+
+        }
+    }
+
     
-    function addLink(kpId, kpLink, linkType) {
+    function addLink(knowledgeProfileUuid, knowledgeProfileLink, linkType) {
         return new Promise(async (resolve, reject) => {
             try {
-                var params = { kpId, kpLink, linkType }
+                var params = { knowledgeProfileUuid, knowledgeProfileLink, linkType }
                 var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/addLink', params);
                 resolve(response.data.payload)
             }
@@ -164,7 +181,7 @@ export function useKnowledgeProfiles() {
 
     // expose managed state as return value
     return {
-
+        defaultKnowledgeProfile,
         knowledgeProfiles,
         selectedKnowledgeProfile,
         newKnowledgeProfile,
@@ -173,7 +190,8 @@ export function useKnowledgeProfiles() {
         resetKnowledgeProfile,
         getKnowledgeProfiles,
         createKnowledgeProfiles,
-        addLink
+        updateKnowledgeProfiles,
+        addLink,
         // processKnowledgeProfileFiles
 
 
