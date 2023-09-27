@@ -13,7 +13,7 @@
         <!-- TODO -->
         <template v-for="(file, index) in files" :key="file.uuid">
             <!-- <pre>{{ file }}</pre> -->
-            <div class="w-2/3 p-4" v-show="selectedFile?.uuid && file.uuid == selectedFile.uuid">
+            <div class="w-2/3 p-4" v-if="selectedFile?.uuid && file.uuid == selectedFile.uuid">
                 <form @submit.prevent>
                     <div class="mb-4">
                         <label for="name" class="block mb-2 dark:text-gray-300">Name</label>
@@ -123,7 +123,7 @@ import { useFacts } from '@/composables/useFacts.js'
 import { useWebsockets } from '@/composables/useWebsockets.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 const { knowledgeProfiles, selectedKnowledgeProfile, getKnowledgeProfiles } = useKnowledgeProfiles()
-const { files, selectedFile, captureSelection, highlight, highlightedSegments, updateFiles } = useFiles()
+const { files, selectedFile, highlight, highlightedSegments, updateFiles } = useFiles()
 const { getFacts, createFacts } = useFacts()
 const { sessions, sessionContent } = useWebsockets()
 const { personas, selectedPersona, getPersonas } = usePersonas()
@@ -160,9 +160,9 @@ function addKnowledgeProfile(fileUuid) {
     // emit('setPersona', selectedPersona.value)
 }
 
-function setLastSelection(fileUuid) {
-    console.log("EMIT REceived Set Selection")
-    files.value[fileUuid].lastSelection = captureSelection();
+function setLastSelection(val) {
+    // console.log("EMIT REceived Set Selection")
+    files.value[val.fileUuid].lastSelection = {start:val.start, end:val.end}
 }
 
 function addHighlight({ type, fileUuid }) {

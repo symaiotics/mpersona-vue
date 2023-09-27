@@ -9,7 +9,7 @@
 <!-- {{ fileUuid }} -->
         <div class="flex min-h-48 overflow-y-auto">
             <!-- Left Column -->
-            <div class="w-2/3  p-4 overflow-y-auto h-screen custom-scrollbar">
+            <div class="w-2/3  p-4 overflow-y-auto h-screen md:h-[66.6667vh] ">
 
                 <div class="relative  ">
                     <!-- Wrapper div -->
@@ -17,8 +17,8 @@
                     <!-- {{ props.lastSelection }}
                     {{ props.highlights }} -->
                     <!-- Original text -->
-                    <div ref="textContent" class="z-10 font-sans text-base leading-normal p-0 preserve-newlines"
-                        @mouseup="setSelection" v-html="props.originalText"></div>
+                    <div ref="parentNodeRef" class="z-10 font-sans text-base leading-normal p-0 preserve-newlines"
+                        @mouseup="captureSelection" v-html="props.originalText"></div>
 
                     <!-- Highlighted text overlay -->
                     <div ref="highlightedContent"
@@ -31,7 +31,7 @@
             </div>
 
             <!-- Right Column -->
-            <div class="w-1/3 p-4 overflow-y-auto h-screen custom-scrollbar">
+            <div class="w-1/3 p-4 overflow-y-auto h-screen md:h-[66.6667vh] ">
                 <div>
                     <div v-for="(segment, index) in getHighlightedSegmentsArray" class="relative" :key="'segments' + index">
                         <div class="m-2 rounded p-2" :class="`highlight-${segment.type}`">
@@ -74,9 +74,18 @@ let props = defineProps({
 
 let emit = defineEmits(['setLastSelection', "addHighlight", "deleteHighlight", "generateFacts"])
 
-function setSelection() {
-    emit("setLastSelection", props.fileUuid);
-}
+
+
+const parentNodeRef = ref(null);
+
+onMounted(() => {
+    parentNodeRef.value.id = uuidv4(); // Assigning unique id to the parent node
+});
+
+
+// function setSelection() {
+//     emit("setLastSelection", props.fileUuid);
+// }
 
 const addHighlight = (type) => {
     emit("addHighlight", {type, fileUuid: props.fileUuid});
@@ -102,6 +111,49 @@ const getHighlightedText = computed(() => {
     return highlightedText(props.originalText, props.highlights)
 });
 
+
+const captureSelection = () => {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+
+  const range = selection.getRangeAt(0);
+  let startNode = range.startContainer;
+  let endNode = range.endContainer;
+
+  if (startNode.nodeType !== Node.TEXT_NODE && startNode.firstChild) {
+    startNode = startNode.firstChild;
+  }
+
+  if (endNode.nodeType !== Node.TEXT_NODE && endNode.lastChild) {
+    endNode = endNode.lastChild;
+  }
+
+  const start = calculateOffset(parentNodeRef.value, startNode) + range.startOffset;
+  const end = calculateOffset(parentNodeRef.value, endNode) + range.endOffset;
+  
+  if (start > end) [start, end] = [end, start];
+
+//   console.log({ start, end });
+
+    emit("setLastSelection", {fileUuid: props.fileUuid, start, end});
+
+};
+
+const calculateOffset = (parentNode, targetNode) => {
+  let offset = 0;
+
+  const traverseNodes = (node) => {
+    for (let child of node.childNodes) {
+      if (child === targetNode || (child.contains && child.contains(targetNode))) return true;
+      if (child.nodeType === Node.TEXT_NODE) offset += child.textContent.length;
+      if (child.childNodes.length > 0 && traverseNodes(child)) return true;
+    }
+    return false;
+  };
+
+  traverseNodes(parentNode);
+  return offset;
+};
 
 // const scrollId = ref('id-' + uuidv4())
 // const highlights = ref([]);

@@ -173,15 +173,15 @@ export function useFiles() {
     }
 
 
-    //Process the files content
-    const captureSelection = () => {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const range = selection.getRangeAt(0);
-        const start = range.startOffset;
-        const end = range.endOffset;
-        return { start, end };
-    };
+    // //Process the files content
+    // const captureSelection = () => {
+    //     const selection = window.getSelection();
+    //     if (!selection.rangeCount) return;
+    //     const range = selection.getRangeAt(0);
+    //     const start = range.startOffset;
+    //     const end = range.endOffset;
+    //     return { start, end };
+    // };
 
     //Create a highlight
     const highlight = (highlights, lastSelection, type) => {
@@ -269,7 +269,7 @@ export function useFiles() {
         files,
         selectedFile, //May not be used
         stageFiles,
-        captureSelection,
+        // captureSelection,
         highlight,
         processFiles,
 

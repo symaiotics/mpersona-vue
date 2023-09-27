@@ -347,6 +347,8 @@ function sendMessage() {
             if (props?.model?.model) useModel = props.model.model;
             if (model?.value?.model) useModel = model.value.model;
             console.log("PROMPT: ", { combinedPrompt, useModel })
+
+
             var basePrompt = props?.persona?.basePrompt || "";
 
 
@@ -357,15 +359,13 @@ function sendMessage() {
                 factPrompt += "Your instructions are found below this reference information.\n\nReference Information:\n\nOnly if applicable to the prompt, use these facts and questions in your answer where applicable:\n\n"
                 facts.value.forEach((fact, index, origArray) => {
                     if (index == 0) topScore = fact.score;
-                    if ( fact.score > topScore / 2) { //Needs to be in the top 50% of scores
-                        factPrompt += fact.fact + "\n";
-                        fact.questions.forEach((question) => {
-                            factPrompt += question;
-                        })
 
+                    //ONly take the top X results and only if they are in the top 50%
+                    if (index < 20 && fact.score >= (topScore / 2)) {
+                        factPrompt += fact.fact + "\n";
                     }
                 })
-                basePrompt = factPrompt + basePrompt + "\n\n";
+                basePrompt = factPrompt + "\n\nYour instructions are as follows: \n\n" + basePrompt; 
             }
 
             console.log("combinedPrompt", combinedPrompt)

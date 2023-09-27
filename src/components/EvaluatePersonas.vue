@@ -55,7 +55,7 @@
     </tbody>
   </table>
 
-    Search Results
+    Search Results: Displaying {{ showResults }} of {{ factSearchResults.length }}
     <table class="w-full">
         <thead>
             <tr>
@@ -65,7 +65,7 @@
             </tr>
         </thead>
         <tbody>
-            <template v-for="(fact, index) in factSearchResults" :key="'searchFact' + index">
+            <template v-for="(fact, index) in topSearchResults" :key="'searchFact' + index">
 
                 <tr class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
                     <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.fact }}</td>
@@ -75,14 +75,14 @@
                                 fact.storageUrl }}</a></td>
                 </tr>
 
-                <tr class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
+                <!-- <tr class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
                     <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ fact.keywords }}</td>
                 </tr>
 
                 <tr v-for="(question, index2) in fact.questions" :key="'question' + index + index2"
                     class="cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700">
                     <td colspan=3 class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ question }}</td>
-                </tr>
+                </tr> -->
 
 
             </template>
@@ -92,7 +92,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import VueMultiselect from 'vue-multiselect'
 import { v4 as uuidv4 } from 'uuid';
 
@@ -112,6 +112,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['triggerSearch', 'deleteEvaluator', 'knowledgeProfilesUpdate'])
 
+let showResults = ref(20);
+
 //Multiselect
 const customLabel = (option) => option ? option.name : '';
 
@@ -119,6 +121,10 @@ const customLabel = (option) => option ? option.name : '';
 async function triggerSearch() {
     emit("triggerSearch")
 }
+
+let topSearchResults = computed(()=>{
+  return factSearchResults.value.slice(0, showResults.value);
+})
 
 function handleKnowledgeProfilesUpdate(newValue, index) {
     emit("knowledgeProfilesUpdate", { knowledgeProfiles: newValue, index: index })
