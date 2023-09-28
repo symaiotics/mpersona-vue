@@ -10,7 +10,7 @@
 
         <!-- {{ localPersona.description.en }} -->
         <template v-if="localPersona">
-            <div  class="w-full m-2">
+            <div class="w-full m-2">
 
                 <div v-if="!statusCreatingAvatar && localPersona.url">
                     <img :src="localPersona.url" alt="Avatar Image" class="object-cover mb-4 rounded-md w-48 h-48">
@@ -22,7 +22,8 @@
                 </div>
 
 
-                <button  v-if = "localPersona.isEditor || !localPersona._id" @click="createNewAvatar(avatarPrompt)" :disabled="statusCreatingAvatar"
+                <button v-if="localPersona.isEditor || !localPersona._id" @click="createNewAvatar(avatarPrompt)"
+                    :disabled="statusCreatingAvatar"
                     class="btn text-white bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded">Generate
                     New Avatar</button>
 
@@ -64,23 +65,20 @@
                 </label>
                 <input v-model="localPersona.url" id="persona-url" type="text" class="form-input w-full"
                     placeholder="The link to your persona avatar" required />
-                
+
             </div>
 
 
-            <div class="flex flex-wrap -mx-3 mb-1">
-                <div class="w-full px-3">
-                    <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="category">Category
-                        <span class="text-sm text-gray-500">Optional</span></label>
-                    <select v-model="localPersona.categories" id="category" class="form-select w-full" required>
-                        <option v-for="(category, index) in categories" :key="'category' + index" :value="[category]">{{
-                            category.label.en }}
-                        </option>
-                    </select>
-                </div>
+            <div class="w-full px-3">
+                <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="category">Category
+                    <span class="text-sm text-gray-500">Optional</span></label>
+                <select v-model="localPersona.categories" id="category" class="form-select w-full" required>
+                    <option v-for="(category, index) in categories" :key="'category' + index" :value="[category]">{{
+                        category.label.en }}
+                    </option>
+                </select>
             </div>
 
-            <div class="flex flex-wrap -mx-3 mb-5">
                 <div class="w-full px-3">
                     <div class="flex justify-between items-center mb-1">
                         <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
@@ -94,7 +92,7 @@
                         you can define the rules by which it should operate, how it identifies itself, and the functions it
                         provides.</p>
                 </div>
-            </div>
+            
 
             <div class="m-4 spacing-x-2">
                 <div v-if="localPersona.isOwner || localPersona.isEditor">

@@ -84,6 +84,7 @@ onMounted(() => {
 
 function add() {
   resetPersona();
+  selectedPersona.value = null;
   activeTab.value = 1;
 }
 
