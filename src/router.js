@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/pages/Home.vue'
-import Create from '@/pages/Create.vue'
+// import Create from '@/pages/Create.vue'
 import Interact from '@/pages/Interact.vue'
 import InteractLive from '@/pages/InteractLive.vue'
 import NewPersonas from '@/pages/NewPersonas.vue'
@@ -37,11 +37,6 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: Home
-    },
-    {
-      path: '/create',
-      name: 'create',
-      component: Create
     },
     {
       path: '/knowledgeProfiles',
