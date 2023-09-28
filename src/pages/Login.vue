@@ -35,7 +35,7 @@
                 <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="password">Password
                   <span class="text-red-600">*</span></label>
                 <input v-model="password" id="password" type="password" class="form-input w-full"
-                  placeholder="Enter your password" required />
+                  placeholder="Enter your password" required  @keyup.enter="doLogin" />
               </div>
             </div>
 
