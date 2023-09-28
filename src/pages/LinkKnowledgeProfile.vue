@@ -20,27 +20,24 @@
             <div class="max-w-3xl mx-auto text-center pb-6 md:pb-6">
               <h1 class="h1 font-red-hat-display mb-4">Accept Link</h1>
               <p class="text-xl text-gray-600 dark:text-gray-400">Add a shared link to your account.</p>
-              <p v-if="offeredPersona?.isViewer" class="text-xl text-gray-600 dark:text-gray-400">You will have a
-                <b>viewer</b> role.</p>
-              <p v-if="offeredPersona?.isEditor" class="text-xl text-gray-600 dark:text-gray-400">You will have an
-                <b>editor</b> role.</p>
-              <!-- <p>{{ props.link }}</p> -->
+              <p v-if = "offeredRecord?.isViewer" class="text-xl text-gray-600 dark:text-gray-400">You will have a <b>viewer</b> role.</p>
+              <p v-if = "offeredRecord?.isEditor" class="text-xl text-gray-600 dark:text-gray-400">You will have an <b>editor</b> role.</p>
+              <!-- <p>{{ props.personaLink }}</p> -->
             </div>
 
             <!-- Contact form -->
 
             <div v-if="!linkInvalid" class="flex flex-wrap -mx-3 items-center justify-center">
               <div class="w-full px-3 text-center">
-                <div class="border rounded-lg p-6 pt-10">
-                  <DisplayPersona alignment="center" :persona="offeredPersona" />
+                <div class = "border rounded-lg p-6 pt-10">
+                  <DisplayRecord alignment="center" :record="offeredRecord"  />
                 </div>
               </div>
 
-
-              <div v-if="tokenDecoded" class="flex flex-wrap mx-auto -mx-3 mt-6 ">
+              <div v-if = "tokenDecoded" class="flex flex-wrap mx-auto -mx-3 mt-6 ">
                 <div class="w-full px-3 text-center">
 
-                  Accepting this link will add the Persona into your account. You will then be able to view and interact
+                  Accepting this link will add this Knowledge Profile into your account. You will then be able to view and interact
                   with it.
 
 
@@ -91,25 +88,25 @@ import { useRouter, useRoute } from 'vue-router'
 import Header from './../partials/Header.vue'
 import PageIllustration from './../partials/PageIllustration.vue'
 import Footer from './../partials/Footer.vue'
-import DisplayPersona from '@/components/DisplayPersona.vue';
+import DisplayRecord from '@/components/DisplayRecord.vue';
 
 //Composables
 import { notify } from "notiwind"
 
 import { useTokens } from '@/composables/useTokens.js'
-import { usePersonas } from '@/composables/usePersonas.js'
+import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
 const { tokenDecoded } = useTokens()
-const { getLinkDetails, acceptLink } = usePersonas()
+const { getLinkDetails, acceptLink } = useKnowledgeProfiles()
 
 const router = useRouter()
 let props = defineProps({ link: { type: String, default: null } })
-let offeredPersona = ref(null)
+let offeredRecord = ref(null)
 let linkInvalid = ref(false)
 
 onMounted(() => {
   if (props.link)
     getLinkDetails(props.link).then((results) => {
-      offeredPersona.value = results;
+      offeredRecord.value = results;
     }).catch((error) => {
       linkInvalid.value = true;
     })
@@ -117,11 +114,11 @@ onMounted(() => {
 
 function accept() {
   acceptLink(props.link).then((results) => {
-    notify({ group: "success", title: "Success", text: "Persona accepted successfully" }, 4000) // 4s
+    notify({ group: "success", title: "Success", text: "Knowledge Profile accepted successfully" }, 4000) // 4s
     router.push({ name: 'home' })
   }).catch((error) => {
     console.log("Error", error)
-    notify({ group: "failure", title: "Error", text: "Error accepting persona. Please try again or request a new link." }, 4000) // 4s
+    notify({ group: "failure", title: "Error", text: "Error accepting Knowledge Profile. Please try again or request a new link." }, 4000) // 4s
   })
 }
 </script>

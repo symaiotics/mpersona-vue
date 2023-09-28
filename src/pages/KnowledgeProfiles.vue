@@ -46,7 +46,7 @@
                 </div>
 
 
-                <ManageKnowledgeProfiles @changeTab="activeTab = 1" />
+                <KnowledgeProfileTable @changeTab="activeTab = 1" />
               </template>
               <template v-slot:tab-1>
 
@@ -191,7 +191,7 @@ import PageIllustration from '@/partials/PageIllustration.vue'
 import Footer from '@/partials/Footer.vue'
 import Tabs from '@/components/Tabs.vue';
 import FileViewer from '@/components/FileViewer.vue';
-import ManageKnowledgeProfiles from '@/components/ManageKnowledgeProfiles.vue';
+import KnowledgeProfileTable from '@/components/KnowledgeProfileTable.vue';
 import EvaluatePersonas from '@/components/EvaluatePersonas.vue';
 import KnowledgeProfileCreateEdit from '@/components/KnowledgeProfileCreateEdit.vue';
 
@@ -240,6 +240,11 @@ onMounted(() => {
   getFiles();
 })
 
+
+function add()
+{
+activeTab.value = 1;
+}
 
 
 function addEvaluator() {

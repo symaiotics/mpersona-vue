@@ -3,11 +3,12 @@ import Home from '@/pages/Home.vue'
 import Create from '@/pages/Create.vue'
 import Interact from '@/pages/Interact.vue'
 import InteractLive from '@/pages/InteractLive.vue'
-import Personas from '@/pages/Personas.vue'
+import NewPersonas from '@/pages/NewPersonas.vue'
 import Join from '@/pages/Join.vue'
 import Login from '@/pages/Login.vue'
 import KnowledgeProfiles from '@/pages/KnowledgeProfiles.vue'
 import LinkPersona from '@/pages/LinkPersona.vue'
+import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -34,49 +35,55 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name:'home',
+      name: 'home',
       component: Home
     },
     {
       path: '/create',
-      name:'create',
+      name: 'create',
       component: Create
     },
     {
       path: '/knowledgeProfiles',
-      name:'knowledgeProfiles',
+      name: 'knowledgeProfiles',
       component: KnowledgeProfiles
     },
     {
       path: '/interact',
-      name:'interact',
+      name: 'interact',
       component: InteractLive
     },
     {
       path: '/interactLive',
-      name:'interactLive',
+      name: 'interactLive',
       component: InteractLive
     },
     {
       path: '/personas',
-      name:'personas',
-      component: Personas
+      name: 'personas',
+      component: NewPersonas
     },
     {
       path: '/join',
-      name:'join',
+      name: 'join',
       component: Join
     },
     {
       path: '/login',
-      name:'login',
+      name: 'login',
       component: Login
     },
     {
-      path: '/linkPersona/:personaLink?',
-      name:'linkPersona',
+      path: '/linkPersona/:link?',
+      name: 'linkPersona',
       component: LinkPersona,
-      props:true
+      props: true
+    },
+    {
+      path: '/linkKnowledgeProfile/:link?',
+      name: 'linkKnowledgeProfile',
+      component: LinkKnowledgeProfile,
+      props: true
     },
     // {
     //   path: '/testimonials',

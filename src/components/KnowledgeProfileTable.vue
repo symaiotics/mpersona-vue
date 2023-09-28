@@ -1,7 +1,7 @@
 <template>
     <div class="flex flex-col-reverse md:flex-row dark:bg-gray-800">
         <!-- Left Column for displaying list -->
-        <div class="w-full  p-4 dark:border-gray-700 md:order-2" >
+        <div class="w-full  p-4 dark:border-gray-700 md:order-2">
             <table class="w-full">
                 <thead>
                     <tr>
@@ -23,18 +23,12 @@
             </table>
         </div>
 
-        
+
     </div>
 </template>
   
 <script setup>
-import { ref , nextTick} from 'vue';
 
-import { generate, count } from "random-words";
-import { notify } from "notiwind"
-import { v4 as uuidv4 } from 'uuid';
-
-import defaultImage from "../images/persona1.png"
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js';
 const { knowledgeProfiles, selectedKnowledgeProfile, updateKnowledgeProfiles, addLink } = useKnowledgeProfiles();
 
@@ -44,47 +38,8 @@ let emit = defineEmits(['changeTab']);
 const selectKp = (index) => {
     selectedKnowledgeProfile.value = { ...knowledgeProfiles.value[index] };
     emit('changeTab', 1)
-        // nextTick(() => {
-    //     editPersona.value.scrollIntoView({ behavior: 'smooth' , block:"start"});
-    // });
 };
 
-function createLink(linkType) {
-    if (selectedKnowledgeProfile.value.isEditor) {
-        var words = generate({ exactly: 2, minLength: 5, maxLength: 20 }).join('-') + "_" + uuidv4();
-        addLink(selectedKnowledgeProfile.value._id, words, linkType).then((response) => {
-            notify({ group: "success", title: "Success", text: "Link added successfully" }, 4000) // 4s
-            if (linkType == 'viewerLink') selectedKnowledgeProfile.value.viewerLink = words;
-            if (linkType == 'editorLink') selectedKnowledgeProfile.value.editorLink = words;
-        }).catch((error) => {
-            notify({ group: "failure", title: "Error", text: "Link creation unsuccessful. Please try again." }, 4000) // 4s
-        });
-    }
-}
-
-function updateKp() {
-    updateKnowledgeProfiles([selectedKnowledgeProfile.value])
-}
-
-function deleteKp(kp) {
-}
-
-async function copyToClipboard(text) {
-
-    text = import.meta.env.VITE_SELF + "/linkKp/" + text;
-    try {
-        await navigator.clipboard.writeText(text);
-        notify({ group: "success", title: "Success", text: "Link copied" }, 4000) // 4s
-    } catch (err) {
-        notify({ group: "failure", title: "Error", text: "Error. Please try again." }, 4000) // 4s
-    }
-}
-
-
-
-// const emitUpdate = (type) => {
-//     if (selectedPersona.value) emit(type, selectedPersona.value)
-// };
 
 </script>
   

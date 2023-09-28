@@ -1,20 +1,42 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-// import axios from "axios";
+import { ref } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 import { notify } from "notiwind"
 
-import { useTokens } from '@/composables/useTokens.js'
-const { tokenDecoded } = useTokens();
-
-
+//Global Variables
 let personas = ref(null)
 let usedCategories = ref(null)
 let skills = ref(null)
 
 let selectedPersona = ref(null) //the actively selected persona
 
+let defaultPersona = {
+    name: "",
+    url: "",
+    description: { en: "", fr: "" },
+    basePrompt: "",
+
+    //Arrays
+    skills: [],
+    categories: [],
+    knowledgeProfiles: [],
+    createdBy: 'public',
+};
+
+const newPersona = ref({ ...defaultPersona });
+
+
 // by convention, composable function names start with "use"
 export function usePersonas() {
+
+    const resetPersona = () => {
+        // Object.assign(newPersona.value, defaultPersona);
+        newPersona.value = JSON.parse(JSON.stringify(defaultPersona))
+    };
+
+    const addNewPersona = () => {
+        resetPersona();
+        selectedPersona.value = null;
+    };
 
     async function getPersonas() {
         try {
@@ -40,7 +62,6 @@ export function usePersonas() {
             console.log("Error", error)
         }
     }
-
 
     async function getUsedCategories() {
         try {
@@ -104,12 +125,11 @@ export function usePersonas() {
         }
     }
 
-
-    function addLink(personaId, personaLink, linkType) {
+    function addLink(personaUuid, personaLink, linkType) {
         return new Promise(async (resolve, reject) => {
             try {
                 console.log("Adding persona link", personaLink)
-                var params = { personaId, personaLink, linkType }
+                var params = { personaUuid, personaLink, linkType }
                 var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/addLink', params);
                 resolve(response.data.payload)
             }
@@ -120,7 +140,7 @@ export function usePersonas() {
     }
 
 
-    function getPersonaLinkDetails(personaLink) {
+    function getLinkDetails(personaLink) {
         return new Promise(async (resolve, reject) => {
             try {
                 console.log("Getting Persona details", personaLink)
@@ -134,7 +154,7 @@ export function usePersonas() {
         })
     }
 
-    function acceptPersonaLink(personaLink) {
+    function acceptLink(personaLink) {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { personaLink: personaLink }
@@ -154,6 +174,10 @@ export function usePersonas() {
         selectedPersona,
         usedCategories,
         skills,
+        newPersona,
+
+        resetPersona,
+        addNewPersona,
 
         getPersonas,
         getSkills,
@@ -164,8 +188,8 @@ export function usePersonas() {
         createNewPersonaAvatar,
 
         addLink,
-        getPersonaLinkDetails,
-        acceptPersonaLink,
+        getLinkDetails,
+        acceptLink,
 
     }
 }

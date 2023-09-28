@@ -23,10 +23,10 @@
               <router-link to="/join"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Join</router-link>
             </li>
-            <li>
+            <!-- <li>
               <router-link to="/create"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Create</router-link>
-            </li>
+            </li> -->
             <li>
               <router-link to="/interact"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Interact</router-link>
@@ -163,10 +163,10 @@
                     <router-link to="/join"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Join</router-link>
                   </li>
-                  <li>
+                  <!-- <li>
                     <router-link to="/create"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Create</router-link>
-                  </li>
+                  </li> -->
                   <li>
                     <router-link to="/interact"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>

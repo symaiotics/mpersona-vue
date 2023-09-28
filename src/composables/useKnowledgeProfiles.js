@@ -100,6 +100,33 @@ export function useKnowledgeProfiles() {
         })
     }
 
+    function getLinkDetails(link) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log("Getting Knowledge Profile details", link)
+                var params = { link: link }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/linkDetails', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
+    function acceptLink(link) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                var params = { link: link }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/acceptLink', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
 
     // async function getSkills() {
     //     try {
@@ -192,6 +219,8 @@ export function useKnowledgeProfiles() {
         createKnowledgeProfiles,
         updateKnowledgeProfiles,
         addLink,
+        getLinkDetails,
+        acceptLink,
         // processKnowledgeProfileFiles
 
 
