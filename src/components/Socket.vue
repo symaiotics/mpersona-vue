@@ -67,6 +67,47 @@
             <ButtonGenerate v-if="!partialMessage" @generate="sendMessage" />
             <ButtonEdit @edit="onEditClick" />
             <ButtonClose @close="onCloseClick" />
+
+
+
+            <!-- <label class="">
+                <FileWord class="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300" :size="48" />
+                Word
+            </label> -->
+
+            <div class="flex flex-wrap space-x-1" v-if = "thisSessionsContent?.[0].content.length">
+                <!-- {{ thisSessionsContent }} -->
+                <ClipboardPlus @click="copyToClipboard(stripHtmlTags(completedMessageMarkdown))"
+                    class="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300" :size="48" />
+
+                <template v-if="thisSessionsContent?.[0]?.extracts?.value?.json">
+                    <div v-for="(json, index) in thisSessionsContent[0].extracts.value.json"
+                        :key="'socket' + sessionId + index">
+
+                        <CodeJson @click="copyToClipboard(json)" class="text-black dark:text-white" :size="48" />
+                        <!-- JSON {{ index }} -->
+
+                    </div>
+                </template>
+
+                <!-- {{ Object.keys(thisSessionsContent[0].extracts.value) }} -->
+
+                <template v-if="thisSessionsContent?.[0]?.extracts?.value?.code">
+                    <div v-for="(code, index) in thisSessionsContent[0].extracts.value.code"
+                        :key="'socket' + sessionId + index">
+                    
+                        <LanguageJavascript v-if = "code.key == 'javascript'" @click="copyToClipboard(code.code)" class="text-black dark:text-white" :size="48" />
+                        <LanguageHtml v-else-if = "code.key == 'html'" @click="copyToClipboard(code.code)" class="text-black dark:text-white" :size="48" />
+                        <LanguageMarkdown v-else @click="copyToClipboard(code.code)" class="text-black dark:text-white" :size="48" />
+
+
+                        <!-- Javascript {{ index }} -->
+
+                    </div>
+                </template>
+            </div>
+
+            <!-- <LanguageJavascript class="text-black dark:text-white" :size="48" /> -->
         </div>
 
         <!-- Edit Content and Icons Section -->
@@ -126,6 +167,13 @@ import { notify } from "notiwind"
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import defaultImage from "../images/persona1.png"
+
+import CodeJson from 'vue-material-design-icons/CodeJson.vue';
+import LanguageJavascript from 'vue-material-design-icons/LanguageJavascript.vue';
+import LanguageHtml from 'vue-material-design-icons/LanguageHtml5.vue';
+import LanguageMarkdown from 'vue-material-design-icons/LanguageMarkdown.vue';
+import FileWord from 'vue-material-design-icons/FileWord.vue';
+import ClipboardPlus from 'vue-material-design-icons/ClipboardPlus.vue';
 
 // import { StarIcon } from '@heroicons/vue/outline';
 import { StarIcon } from '@heroicons/vue/24/solid'
@@ -365,7 +413,7 @@ function sendMessage() {
                         factPrompt += fact.fact + "\n";
                     }
                 })
-                basePrompt = factPrompt + "\n\nYour instructions are as follows: \n\n" + basePrompt; 
+                basePrompt = factPrompt + "\n\nYour instructions are as follows: \n\n" + basePrompt;
             }
 
             console.log("combinedPrompt", combinedPrompt)
@@ -407,8 +455,8 @@ const partialMessageMarkdown = computed(() => {
     return md.render(partialMessage.value);
 });
 
+const md = new MarkdownIt();
 const completedMessageMarkdown = computed(() => {
-    const md = new MarkdownIt();
     return md.render(completedMessage.value);
 });
 
@@ -423,6 +471,25 @@ function updateContent(event) {
     // console.log(event)
     // sessions.value[sessionId.value].completedMessage = "";
 }
+
+
+async function copyToClipboard(text) {
+
+    if (typeof text == 'object') text = JSON.stringify(text);
+    try {
+        await navigator.clipboard.writeText(text);
+        notify({ group: "success", title: "Success", text: "Content copied" }, 4000) // 4s
+    } catch (err) {
+        notify({ group: "failure", title: "Error", text: "Error. Please try again." }, 4000) // 4s
+    }
+}
+
+function stripHtmlTags(htmlString) {
+    const temporaryDiv = document.createElement('div');
+    temporaryDiv.innerHTML = htmlString;
+    return temporaryDiv.textContent || temporaryDiv.innerText || '';
+}
+
 
 </script>
 

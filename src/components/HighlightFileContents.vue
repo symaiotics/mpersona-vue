@@ -128,8 +128,8 @@ const captureSelection = () => {
     endNode = endNode.lastChild;
   }
 
-  const start = calculateOffset(parentNodeRef.value, startNode) + range.startOffset;
-  const end = calculateOffset(parentNodeRef.value, endNode) + range.endOffset;
+  var start = calculateOffset(parentNodeRef.value, startNode) + range.startOffset;
+  var end = calculateOffset(parentNodeRef.value, endNode) + range.endOffset;
   
   if (start > end) [start, end] = [end, start];
 
