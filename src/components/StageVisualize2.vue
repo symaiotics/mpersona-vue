@@ -145,6 +145,7 @@ const initializeNodePositions = () => {
     }
 };
 const renderNodes = () => {
+    g.selectAll(".node").raise()
     g.selectAll(".node")
         .data(props.treeNodes, d => d.id)
         .join(
@@ -158,9 +159,11 @@ const renderNodes = () => {
                 .style("fill", isDarkMode.value ? '#2D3748' : '#FFFFFF') // Explicitly set fill color
                 .style("stroke", isDarkMode.value ? '#E2E8F0' : '#4A5568') // Explicitly set stroke color
                 .call(drag)
+                //.raise()
         );
 };
 const renderText = () => {
+    g.selectAll(".node-text").raise()
     g.selectAll(".node-text")
         .data(props.treeNodes, d => d.id)
         .join(
@@ -174,6 +177,7 @@ const renderText = () => {
                 .style("fill", isDarkMode.value ? '#FFFFFF' : '#000000') // Explicitly set text color
                 .text(d => d.name)
         );
+
 };
 const renderLinks = () => {
     const updatedLinks = props.treeEdges.map((link, index) => ({
@@ -221,13 +225,10 @@ const renderLinks = () => {
 watch(() => [props.treeNodes, props.treeEdges], () => {
     // console.log('Child received updated treeNodes:', props.treeNodes);
     // console.log('Child received updated treeEdges:', props.treeEdges);
-    simulation.nodes(props.treeNodes);
     simulation.force("link").links(props.treeEdges);
+    simulation.nodes(props.treeNodes);
     renderGraph();
 }, { deep: true });
-
-
-
  
 function updateDarkMode() {
     const darkModeSession = sessionStorage.getItem('dark-mode');
