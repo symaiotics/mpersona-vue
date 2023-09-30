@@ -8,7 +8,7 @@
   
 <script setup>
 import { ref, onMounted } from 'vue';
-import { defineExpose } from 'vue';
+// import { defineExpose } from 'vue';
 import Markdown from 'reveal.js/plugin/markdown/markdown.esm.js';
 import Reveal from 'reveal.js';
 import 'reveal.js/dist/reveal.css';

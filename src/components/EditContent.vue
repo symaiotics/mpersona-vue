@@ -21,7 +21,7 @@
   </template>
   
   <script setup>
-  import { ref, defineProps, defineEmits, onMounted, watch, toRef, nextTick, onUnmounted } from 'vue';
+  import { ref,  onMounted, watch, toRef, nextTick, onUnmounted } from 'vue';
   import MarkdownIt from 'markdown-it';
   
   const props = defineProps(['content']);

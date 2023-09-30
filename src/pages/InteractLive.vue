@@ -21,6 +21,17 @@
               <template v-slot:tab-0>
 
 
+
+                <Tabs :tabs="subTabs" v-model="activeSubTab">
+                  <template v-slot:tab-0>
+                         <!-- <StageVisualize :hierarchyData="hierarchyData" @update:node="updateNode" />  -->
+
+
+                <!--@dragend="onDragEnd"-->
+
+
+
+
                 <p v-if="!stages.length" class="p-1"> Add a stage to get started. A stage allows you to interact with a
                   set of personas on a specific prompt.</p>
                 <p v-if="!stages.length" class="p-1"> Each additional stage can have a unique prompt or use the output
@@ -37,22 +48,12 @@
                 <template v-for="(stage, index) in stages" :key="'stage' + stage.uuid">
                   <!-- {{ stage }} -->
                   <!--:personaRoster="stage.personaRoster"-->
-                  <SocketStage 
-                  v-model:userPrompt="stage.userPrompt" 
-                  :options="stage.options" 
-                  :model="stage.model" 
-                  :stageIndex="index"
-                  :stageUuid="stage.uuid" 
-                  :sockets="stage.sockets"
-                  :selectedSessionsContent="stage.selectedSessionsContent" 
-                  @deleteStage="deleteStage"
-                  @addToSockets='addToSockets' 
-                  @removeFromSockets='removeFromSockets'
-                  @updateSessionContent="updateSessionContent" 
-                  @moveStageUp="moveStageUp" 
-                  @moveStageDown="moveStageDown"
-                  @update:options="handleUpdateOptions" 
-                  @update:model="handleUpdateModel" />
+                  <SocketStage v-model:userPrompt="stage.userPrompt" :options="stage.options" :model="stage.model"
+                    :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
+                    :selectedSessionsContent="stage.selectedSessionsContent" @deleteStage="deleteStage"
+                    @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
+                    @updateSessionContent="updateSessionContent" @moveStageUp="moveStageUp" @moveStageDown="moveStageDown"
+                    @update:options="handleUpdateOptions" @update:model="handleUpdateModel" />
 
                   <!-- 
                   @addSocket = "addSocket" 
@@ -60,6 +61,26 @@
                   -->
 
                 </template>
+                    </template>
+
+
+                  
+
+                    <template v-slot:tab-1>
+                      <button @click="addChildren"
+                  class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-3 p-3 rounded">
+                  Add Children
+                </button>
+
+
+                      <StageVisualize2 :treeNodes="treeNodes" :treeEdges="treeEdges" @update:node="updateNode"
+                  @update:edges="updateEdges" />
+
+                    </template>
+
+                  </Tabs>
+
+             
 
               </template>
               <template v-slot:tab-1>
@@ -152,6 +173,8 @@ import PageIllustration from '@/partials/PageIllustration.vue'
 import SocketStage from '@/components/SocketStage.vue'
 import Tabs from '@/components/Tabs.vue';
 import MarkdownReveal from '@/components/MarkdownReveal.vue';
+// import StageVisualize from '@/components/StageVisualize.vue';
+import StageVisualize2 from '@/components/StageVisualize2.vue';
 
 
 //Composables
@@ -181,7 +204,23 @@ const { adminModels, selectedModel } = useModels()
 
 const customLabel = (option) => option ? option.name : '';
 
+let treeNodes = ref([
+  { id: 'aaa000', stage: 0, name: "Parent A" },
+  { id: 'aaa001', stage: 1, name: "Child A" },
+  { id: 'aaa002', stage: 1, name: "Child B" },
+  { id: 'aaa003', stage: 2, name: "Child C" },
+  { id: 'aaa004', stage: 2, name: "Child D" },
+  { id: 'aaa005', stage: 3, name: "Child E" },
+])
 
+let treeEdges = ref([
+  { source: 'aaa000', target: "aaa001" },
+  { source: 'aaa001', target: "aaa002" },
+  { source: 'aaa001', target: "aaa003" },
+  { source: 'aaa002', target: "aaa004" },
+  { source: 'aaa002', target: "aaa005" },
+  { source: 'aaa001', target: "aaa005" },
+])
 
 //Tabs
 let activeTab = ref(0)
@@ -189,6 +228,13 @@ const tabs = ref([
   { label: 'Interact' },
   { label: 'Work Streams' },
   { label: 'Results' },
+]);
+
+
+let activeSubTab = ref(0)
+const subTabs = ref([
+  { label: 'Build Stages' },
+  { label: 'Visualize' },
 ]);
 
 let newWorkStream = ref({
@@ -199,14 +245,58 @@ let newWorkStream = ref({
 //Multiselect
 // const customLabel = (option) => option ? option.name : '';
 // const customLabelModel = (option) => option ? option.label : '';
+function addChildren() {
+  const width = 1000;
+  const height = 800;
+  
+  // Adding new node
+  const randomInteger = Math.floor(Math.random() * 11);
 
+  const newNode = { id: uuidv4(), stage: randomInteger, name: "Child Z" };
+  
+  // Initializing position of new node
+  const stageNodes = treeNodes.value.filter(n => n.stage === newNode.stage);
+  const horizontalSpacing = 160; // Assuming 200 as horizontalSpacing
+  
+  if (stageNodes.length === 0) {
+    // If there are no nodes in this stage, start from the center
+    newNode.x = width / 2;
+  } else {
+    // If there are nodes in this stage, place the new node to the right of the rightmost node in this stage
+    const maxExistingX = Math.max(...stageNodes.map(n => n.x));
+    newNode.x = maxExistingX + horizontalSpacing;
+  }
+  
+  newNode.y = newNode.stage * 150; // set the y attribute correctly assuming 150 as verticalDistance
+  
+  // Add the node with updated x, y attributes
+  treeNodes.value.push(newNode);
+
+  // Adding new edge
+  const newEdge = { source: 'aaa000', target: newNode.id };
+  treeEdges.value.push(newEdge);
+
+  // Update source and target of the new edge to point to the correct node objects
+  newEdge.source = treeNodes.value.find(node => node.id === newEdge.source) || newEdge.source;
+  newEdge.target = treeNodes.value.find(node => node.id === newEdge.target) || newEdge.target;
+}
+
+
+const updateNode = (updatedNode) => {
+  treeNodes.value = treeNodes.value.map(node =>
+    node.id === updatedNode.id ? { ...node, x: updatedNode.px, y: updatedNode.py } : node
+  );
+};
+
+
+function updateEdges(updatedEdges) {
+  treeEdges.value = updatedEdges;
+}
 
 const messages = computed(() => {
-
   var combinedResults = [];
   var keys = Object.keys(sessions.value)
   keys.forEach((key, index, origArray) => {
-
     var text = sessions.value[key].completedMessage || sessions.value[key].partialMessage;
     if (text.length) combinedResults.push(text)
 
@@ -234,7 +324,7 @@ function addStage() {
     uuid: uuidv4(),
     sockets: [],
     options: null,
-    model:adminModels.value[0],
+    model: adminModels.value[0],
     // personaRoster: [],
 
   }

@@ -75,7 +75,7 @@
                 Word
             </label> -->
 
-            <div class="flex flex-wrap space-x-1" v-if = "thisSessionsContent?.[0].content.length">
+            <div class="flex flex-wrap space-x-1" v-if = "thisSessionsContent?.[0]?.content?.length">
                 <!-- {{ thisSessionsContent }} -->
                 <ClipboardPlus @click="copyToClipboard(stripHtmlTags(completedMessageMarkdown))"
                     class="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300" :size="48" />

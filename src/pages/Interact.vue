@@ -15,6 +15,7 @@
       </div>
 
       <section class="relative">
+
         <div class="max-w-9xl mx-auto px-4 sm:px-6 relative">
           <div class="pt-32 pb-12 md:pt-40 md:pb-20">
 
@@ -34,6 +35,8 @@
 
 
                   <div class="max-w-3xl mx-auto text-center  ">
+
+
                     <h2 class="h2 font-red-hat-display mb-4">Interact</h2>
                     <p class="text-xl text-gray-600 dark:text-gray-400">Begin chatting with {{
                       selectedPersona?.name }} </p>
