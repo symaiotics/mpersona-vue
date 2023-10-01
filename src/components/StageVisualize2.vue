@@ -1,5 +1,5 @@
 <template>
-    <div ref="d3Container"></div>
+    <div class="bg-gray-200 border rounded-sm" ref="d3Container"></div>
 </template>
   
 <script setup>
@@ -23,7 +23,8 @@ const isDarkMode = ref(false);
 let svg = null;
 let g = null;
 let simulation = null;
-
+let zoom = null;
+let resizeObserver = null;
 // Create simulation and stop it immediately
 // Create simulation and stop it immediately
 onMounted(() => {
@@ -32,25 +33,61 @@ onMounted(() => {
     // Add event listener to update styles on storage change
     window.addEventListener('storage', updateDarkMode);
 
-
     svg = d3.select(d3Container.value).append("svg")
         .attr("width", width)
         .attr("height", height);
     g = svg.append('g');
 
-    const zoom = d3.zoom().on("zoom", (event) => {
-        g.attr("transform", event.transform);
-    });
+    // Define your zoom
+    zoom = d3.zoom()
+        .on("zoom", (event) => {
+            g.attr("transform", event.transform);
+        });
+
+    // Call your zoom on the svg
     svg.call(zoom);
-    
+
+
+    window.addEventListener('resize', resize);
+    resize(); // initial sizing
+
+     resizeObserver = new ResizeObserver(() => {
+        resize();
+    });
+    resizeObserver.observe(d3Container.value);
+
+
+    // Set initial transform to center the g element and zoom out slightly
+    const initialTransform = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(0.9);
+
+    // Call the zoom transform on the svg
+    svg.call(zoom.transform, initialTransform);
+
+
     simulation = d3.forceSimulation(props.treeNodes)
         .force("link", d3.forceLink(props.treeEdges).id(d => d.id))
         .stop(); // Stop the simulation immediately
-    
+
     createArrowHead();
     initializeNodePositions();
     renderGraph();
+
+    // console.log("PROPS.treeNodes", props.treeNodes)
+    // console.log("PROPS.treeEdges", props.treeEdges)
 });
+
+
+const resize = () => {
+    // Only resize if the component is visible
+    if (d3Container.value.clientWidth > 0) {
+        const resizeWidth = d3Container.value.clientWidth;
+        const resizeHeight = window.innerHeight;
+
+        svg.attr("width", resizeWidth).attr("height", resizeHeight);
+    }
+};
 
 
 function createArrowHead() {
@@ -87,11 +124,17 @@ function dragged(event, d) {
         d.y = event.y;
         d.px = event.x;
         d.py = event.y;
-        
+
         // Update only the dragged node and text
         d3.select(`#node-${d.id}`).attr("x", d.x - 60).attr("y", d.y - 30);
-        d3.select(`#text-${d.id}`).attr("x", d.x).attr("y", d.y);
-        
+        // d3.select(`#text-${d.id}`).attr("x", d.x).attr("y", d.y);
+
+        d3.select(`#text-${d.id}`)
+            .attr("x", d.x)
+            .attr("y", d.y)
+            .selectAll('tspan')
+            .attr('x', d.x); // Ensure the x value of tspan is same as the parent text element
+
         // Update only the links connected to the dragged node
         g.selectAll(".link")
             .filter(link => link.source.id === d.id || link.target.id === d.id)
@@ -99,17 +142,9 @@ function dragged(event, d) {
             .attr("d", d => {
                 const controlPoint1 = { x: d.source.x, y: d.source.y + 160 }; // Control point 1
                 const controlPoint2 = { x: d.target.x, y: d.target.y - 160 }; // Control point 2
-                return `M${d.source.x},${d.source.y - 30}C${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${d.target.x},${d.target.y - 30}`;})
-            // .attr("d", link => {
-            //     const linkGenerator = d3.linkVertical()
-            //         .x(d => d.x)
-            //         .y(d => d.y - 30);
-                
-            //     return linkGenerator({
-            //         source: { x: link.source.x, y: link.source.y },
-            //         target: { x: link.target.x, y: link.target.y }
-            //     });
-            // });
+                return `M${d.source.x},${d.source.y - 30}C${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${d.target.x},${d.target.y - 30}`;
+            })
+
     });
 }
 
@@ -156,10 +191,24 @@ const renderNodes = () => {
                 .attr("height", 60)
                 .attr("x", d => d.x - 60)
                 .attr("y", d => d.y - 30)
-                .style("fill", isDarkMode.value ? '#2D3748' : '#FFFFFF') // Explicitly set fill color
+
+                .style("fill", (d) => {
+
+                    if (d.status == 'idle') return "#ffffff";
+                    if (d.status == 'complete') return "#00ff00";
+                    if (d.status == 'inProgress') return "#ffff00";
+                    if (d.status == 'error') return "#ff0000";
+                    if (d.status == 'missing') return "#0000ff";
+                    console.log("d.status", d)
+                    // isDarkMode.value ? '#2D3748' : '#FFFFFF'
+
+                })
+                // Explicitly set fill color
+
+                // .style("fill", isDarkMode.value ? '#2D3748' : '#FFFFFF') // Explicitly set fill color
                 .style("stroke", isDarkMode.value ? '#E2E8F0' : '#4A5568') // Explicitly set stroke color
                 .call(drag)
-                //.raise()
+            //.raise()
         );
 };
 const renderText = () => {
@@ -175,10 +224,21 @@ const renderText = () => {
                 .attr("text-anchor", "middle")
                 .attr("alignment-baseline", "middle")
                 .style("fill", isDarkMode.value ? '#FFFFFF' : '#000000') // Explicitly set text color
-                .text(d => d.name)
+                .style("user-select", "none")
+                .call(text => text.append("tspan")
+                    .attr("x", d => d.x) // X remains constant to keep the text centered
+                    .attr("dy", "-0.5em") // Adjust Y for the first line of text
+                    .text(d => d.name)
+                )
+                .call(text => text.append("tspan")
+                    .attr("x", d => d.x) // X remains constant to keep the text centered
+                    .attr("dy", "1.5em") // Adjust Y for the second line of text
+                    .text(d => d.personaName || "")
+                )
         );
-
 };
+
+
 const renderLinks = () => {
     const updatedLinks = props.treeEdges.map((link, index) => ({
         ...link,
@@ -196,12 +256,12 @@ const renderLinks = () => {
         .attr("d", d => {
             // const tolerance = 10; // Adjust this value as needed
             // if (d.source.y > d.target.y + tolerance) {
-                // Source node is significantly lower than the target node
-                // Create a cubic Bézier curve
-                const controlPoint1 = { x: d.source.x, y: d.source.y + 160 }; // Control point 1
-                const controlPoint2 = { x: d.target.x, y: d.target.y - 160 }; // Control point 2
-                
-                return `M${d.source.x},${d.source.y - 30}C${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${d.target.x},${d.target.y - 30}`;
+            // Source node is significantly lower than the target node
+            // Create a cubic Bézier curve
+            const controlPoint1 = { x: d.source.x, y: d.source.y + 160 }; // Control point 1
+            const controlPoint2 = { x: d.target.x, y: d.target.y - 160 }; // Control point 2
+
+            return `M${d.source.x},${d.source.y - 30}C${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${d.target.x},${d.target.y - 30}`;
             // } else {
             //     // console.log(d.source, d.target)
             //     // Source node is not significantly lower than the target node
@@ -209,7 +269,7 @@ const renderLinks = () => {
             //     const linkGenerator = d3.linkVertical()
             //         .x(d => d.x)
             //         .y(d => d.y - 30);
-                
+
             //     return linkGenerator({
             //         source: { x: d.source.x, y: d.source.y },
             //         target: { x: d.target.x, y: d.target.y }
@@ -223,13 +283,14 @@ const renderLinks = () => {
 
 
 watch(() => [props.treeNodes, props.treeEdges], () => {
-    // console.log('Child received updated treeNodes:', props.treeNodes);
-    // console.log('Child received updated treeEdges:', props.treeEdges);
+    console.log('Child received updated treeNodes:', props.treeNodes);
+    console.log('Child received updated treeEdges:', props.treeEdges);
     simulation.force("link").links(props.treeEdges);
     simulation.nodes(props.treeNodes);
+    // initializeNodePositions();
     renderGraph();
 }, { deep: true });
- 
+
 function updateDarkMode() {
     const darkModeSession = sessionStorage.getItem('dark-mode');
     console.log("darkModeSession", darkModeSession)
@@ -241,6 +302,9 @@ function updateDarkMode() {
 
 onBeforeUnmount(() => {
     window.removeEventListener('storage', updateDarkMode);
+    window.removeEventListener('resize', resize);
+    resizeObserver.unobserve(d3Container.value);
+
 });
 
 

@@ -1,16 +1,17 @@
 
 import { ref, computed } from 'vue';
 import { extractData } from '@/utils/extractJsonAndCode.js';
+import { v4 as uuidv4 } from 'uuid';
 
 let ws = null;
 let wsUuid = ref(null);
 
 let pingInterval;
 let pongTimeout;
-const stages = ref([]); //Manages all the stages within the app. However, this will need to revamped if we enable multiple workstreams
-const sessions = ref({}); //Sessions - Does not need a rework, would work across all
+let stages = ref([]); //Manages all the stages within the app. However, this will need to revamped if we enable multiple workstreams
+let sessions = ref({}); //Sessions - Does not need a rework, would work across all
 
-const sessionsContent = computed(() => {
+let sessionsContent = computed(() => {
     var content = [];
     var keys = Object.keys(sessions.value);
     keys.forEach((key, index, origArray) => {
@@ -24,7 +25,7 @@ const sessionsContent = computed(() => {
                 stageIndex: sessions.value[key].stageIndex,
                 socketIndex: sessions.value[key].socketIndex,
                 extracts: computed(()=>{
-                    return extractData(sessions.value[key].completedMessage || sessions.value[key].partialMessage || "")
+                    return extractData(sessions?.value?.[key]?.completedMessage || sessions?.value?.[key]?.partialMessage || "")
                 })
                 
                 // {
@@ -88,6 +89,7 @@ export function useWebsockets() {
                     // Reset the partial message
                     sessions.value[data.session].messages = []; // Reset messages for the session
                     sessions.value[data.session].partialMessage = '';
+                    sessions.value[data.session].status = 'complete'
                 }
                 else if (data.type === 'ERROR') {
 
@@ -107,12 +109,16 @@ export function useWebsockets() {
                     sessions.value[data.session].messages = []; // Reset messages for the session
                     sessions.value[data.session].partialMessage = '';
                     sessions.value[data.session].completedMessage = '';
+                    sessions.value[data.session].status = 'error';
+
                 }                
                 
                 else {
                     // Update the partial message with the new fragment
                     sessions.value[data.session].messages.push(data.message);
                     sessions.value[data.session].partialMessage += data.message;
+                    sessions.value[data.session].status = 'inProgress';
+
                 }
             }
             // Handle other messages
@@ -146,9 +152,9 @@ export function useWebsockets() {
         }
     }
 
-    function registerSession(session, stageIndex, stageUuid, socketIndex, callback) {
+    function registerSession(session, stageIndex, stageUuid, socketIndex, persona, callback) {
         // sessions.value[data.session].partialMessage = ref('');
-        sessions.value[session] = { callback, messages: [], partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid, socketIndex: socketIndex };
+        sessions.value[session] = { callback, messages: [], status:'idle', partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid, socketIndex: socketIndex, persona:persona };
         // console.log("Registered session", sessions.value[session])
 
     }
@@ -172,6 +178,10 @@ export function useWebsockets() {
         sessions,
         sessionsContent,
         stages,
+        
+        
+        // stageNodes,
+        // stageLinks,
 
         websocketConnection,
         sendToServer,

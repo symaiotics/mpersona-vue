@@ -325,7 +325,7 @@ watch(errorMessage, (newValue, oldValue) => {
 });
 
 onMounted(() => {
-    registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex)
+    registerSession(sessionId.value, props.stageIndex, props.stageUuid, props.socketIndex, props.persona)
     emit('addSocket', { persona: props.persona, sessionId: sessionId.value, stageIndex: props.stageIndex, stageUuid: props.stageUuid, socketIndex: props.socketIndex })
 })
 
@@ -345,7 +345,7 @@ function sendMessage() {
             console.log("Facts for this socket", facts.value)
 
 
-            sessions.value[sessionId.value].completedMessage = "";
+            if(sessions?.value?.[sessionId?.value])sessions.value[sessionId.value].completedMessage = "";
             var combinedPrompt = props.userPrompt;
 
 
@@ -434,7 +434,8 @@ function like() {
 
 function clear() {
 
-    sessions.value[sessionId.value].completedMessage = "";
+    // sessions.value[sessionId.value].completedMessage = "";
+    if(sessions?.value?.[sessionId?.value])sessions.value[sessionId.value].completedMessage = "";
 
     // emit('clearCompletedMessage', sessionId);
 }
