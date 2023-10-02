@@ -72,14 +72,26 @@
                   class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-3 p-3 rounded">
                   Add Children
                 </button> -->
-                    <!-- {{ stages }}-->
-                <!-- {{ stageNodes }}<br/><br/> -->
-                <!-- {{ localNodes }}<br/><br/> -->
-                <!-- {{ stageEdges }}  -->
+ 
+                    <StageVisualize2 
+                    :treeNodes="stageNodes" 
+                    :treeEdges="stageEdges" 
 
-                    <StageVisualize2 :treeNodes="stageNodes" :treeEdges="localEdges" @update:node="updateNode"
-                      @update:edges="updateEdges" :key = "updateVisual"/>
+                    
+                    />
 
+
+                  <!--
+
+                    :nodeUpdateType="nodeUpdateType" 
+                    :nodeUpdateValue="nodeUpdateValue" 
+                    :edgeUpdateType="edgeUpdateType" 
+                    :edgeUpdateValue="edgeUpdateValue" 
+
+                    @update:node="updateNode"
+                    @update:edges="updateEdges" 
+
+                  -->
                   </template>
 
                 </Tabs>
@@ -201,7 +213,6 @@ const customLabel = (option) => option ? option.name : '';
 //   { source: 'aaa001', target: "aaa005" },
 // ])
 
-let updateVisual= ref(0);
 
 let stageNodes = computed(() => {
   var nodes = [];
@@ -211,8 +222,8 @@ let stageNodes = computed(() => {
         id: socket.sessionId,
         name: "Stage." + (index + 1) + "." + (sIndex + 1),
         stage: index,
-        status:sessions?.value?.[socket.sessionId]?.status || "missing",
-        personaName:sessions?.value?.[socket.sessionId]?.persona?.name || null,
+        status: sessions?.value?.[socket.sessionId]?.status || "missing",
+        personaName: sessions?.value?.[socket.sessionId]?.persona?.name || null,
       })
     })
   })
@@ -228,104 +239,121 @@ let stageEdges = computed(() => {
       sources.forEach((source) => {
         targets.forEach((target) => {
           edges.push({ source, target })
-          console.log("Edges updated", edges)
+          // console.log("Edges updated", edges)
         })
       })
   })
   return edges;
 })
 
+// let localNodes = ref([])
+// let localEdges = ref([])
+// var nodeUpdateType = ref("")
+// var nodeUpdateValue = ref(0)
+// var edgeUpdateType = ref("")
+// var edgeUpdateValue = ref(0)
 
-let localNodes = ref([])
-let localEdges = ref([])
+// function syncNodeArrays(localNodesRef, computedNodesVal) {
+//   let localNodesVal = [...localNodesRef.value];
 
-function syncNodeArrays(localNodesRef, computedNodesVal) {
-  let localNodesVal = [...localNodesRef.value];
+
+//   //Inherit statuses
+//   computedNodesVal.forEach((computedNode) => {
+//     localNodesVal.forEach((localNode) => {
+//       if (localNode.id == computedNode.id) localNode.status = computedNode.status;
+//       nodeUpdateType.value = "inheritStatus";
+//     })
+//   });
+
+
+//   // Add missing nodes to localNodes
+//   computedNodesVal.forEach((computedNode) => {
+//     if (!localNodesVal.some((localNode) => localNode.id === computedNode.id)) {
+//       nodeUpdateType.value = "add";
+//       localNodesVal.push(computedNode);
+//     }
+//   });
+
+//   // Remove nodes from localNodes that are not in computedNodes
+//   let filteredNodes = localNodesVal.filter((localNode) => {
+//     nodeUpdateType.value = "remove";
+//     computedNodesVal.some((computedNode) => computedNode.id === localNode.id)
+//   }
+//   );
+
+//   // Only update the ref if there is an actual change in the array
+//   const isDifferent = !isEqual(localNodesRef.value, filteredNodes);
+//   if (isDifferent) {
+//     localNodesRef.value = filteredNodes;
+//   }
+
+//   //Reset the visuals if it was an addRemove operation
+//   //Otherwise, just provide the updates to status etc.
+//     nodeUpdateValue.value++;
   
-  // Add missing nodes to localNodes
-  computedNodesVal.forEach((computedNode) => {
-    if (!localNodesVal.some((localNode) => localNode.id === computedNode.id)) {
-      localNodesVal.push(computedNode);
-    }
+// }
 
-    //Inherit statuses
-    localNodesVal.forEach((localNode)=>{
-      if(localNode.id == computedNode.id) localNode.status = computedNode.status;
-    })
-  });
-  
-  // Remove nodes from localNodes that are not in computedNodes
-  let filteredNodes = localNodesVal.filter((localNode) =>
-    computedNodesVal.some((computedNode) => computedNode.id === localNode.id)
-  );
+// function syncEdgeArrays(localEdgesRef, computedEdgesVal) {
+//   let localEdgesVal = [...localEdgesRef.value];
 
-  // Only update the ref if there is an actual change in the array
-  const isDifferent = !isEqual(localNodesRef.value, filteredNodes);
-  if (isDifferent) {
-    localNodesRef.value = filteredNodes;
-  }
+//   // Add missing edges to localEdges
+//   computedEdgesVal.forEach((computedEdge) => {
+//     if (!localEdgesVal.some((localEdge) =>
+//       localEdge.source === computedEdge.source && localEdge.target === computedEdge.target)) {
+//       localEdgesVal.push(computedEdge);
+//       edgeUpdateType.value = "add"
 
+//     }
+//   });
 
-}
+//   // Remove edges from localEdges that are not in computedEdges
+//   let filteredEdges = localEdgesVal.filter((localEdge) => {
+//     computedEdgesVal.some((computedEdge) => {
+//       computedEdge.source === localEdge.source && computedEdge.target === localEdge.target;
+//       edgeUpdateType.value = "remove"
+//     })
+//   });
 
-function syncEdgeArrays(localEdgesRef, computedEdgesVal) {
-  let localEdgesVal = [...localEdgesRef.value];
+//   // Only update the ref if there is an actual change in the array
+//   const isDifferent = !isEqual(localEdgesRef.value, filteredEdges);
+//   if (isDifferent) {
+//     localEdgesRef.value = filteredEdges;
+//   }
 
-  // Add missing edges to localEdges
-  computedEdgesVal.forEach((computedEdge) => {
-    if (!localEdgesVal.some((localEdge) => 
-        localEdge.source === computedEdge.source && localEdge.target === computedEdge.target)) {
-      localEdgesVal.push(computedEdge);
-    }
-  });
-  
-  // Remove edges from localEdges that are not in computedEdges
-  let filteredEdges = localEdgesVal.filter((localEdge) =>
-    computedEdgesVal.some((computedEdge) => 
-      computedEdge.source === localEdge.source && computedEdge.target === localEdge.target)
-  );
+//   edgeUpdateValue.value++
+// }
 
-  // Only update the ref if there is an actual change in the array
-  const isDifferent = !isEqual(localEdgesRef.value, filteredEdges);
-  if (isDifferent) {
-    localEdgesRef.value = filteredEdges;
-  }
-}
-
-function isEqual(arr1, arr2) {
-  if (arr1.length !== arr2.length) return false;
-  return arr1.every((elem1, index) => {
-    const elem2 = arr2[index];
-    if (elem1.id) {
-      // For nodes, compare id property
-      return elem1.id === elem2.id;
-    } else {
-      // For edges, compare source and target properties
-      return elem1.source === elem2.source && elem1.target === elem2.target;
-    }
-  });
-}
+// function isEqual(arr1, arr2) {
+//   if (arr1.length !== arr2.length) return false;
+//   return arr1.every((elem1, index) => {
+//     const elem2 = arr2[index];
+//     if (elem1.id) {
+//       // For nodes, compare id property
+//       return elem1.id === elem2.id;
+//     } else {
+//       // For edges, compare source and target properties
+//       return elem1.source === elem2.source && elem1.target === elem2.target;
+//     }
+//   });
+// }
 
 
- 
-// Updated watchers
-watch(
-  () => stageNodes.value,
-  (newStageNodes) => {
-    syncNodeArrays(localNodes, newStageNodes);
-    updateVisual.value++;
-  }
-);
+
+// // Updated watchers
+// watch(
+//   () => stageNodes.value,
+//   (newStageNodes) => {
+//     syncNodeArrays(localNodes, newStageNodes);
+//   }
+// );
 
 
-watch(
-  () => stageEdges.value,
-  (newstageEdges) => {
-    syncEdgeArrays(localEdges, newstageEdges);
-    updateVisual.value++;
-
-  }
-);
+// watch(
+//   () => stageEdges.value,
+//   (newstageEdges) => {
+//     syncEdgeArrays(localEdges, newstageEdges);
+//   }
+// );
 
 
 //Tabs
@@ -388,16 +416,16 @@ let newWorkStream = ref({
 // }
 
 
-const updateNode = (updatedNode) => {
-  localNodes.value = localNodes.value.map(node =>
-    node.id === updatedNode.id ? { ...node, x: updatedNode.px, y: updatedNode.py } : node
-  );
-};
+// const updateNode = (updatedNode) => {
+//   localNodes.value = localNodes.value.map(node =>
+//     node.id === updatedNode.id ? { ...node, x: updatedNode.px, y: updatedNode.py } : node
+//   );
+// };
 
 
-function updateEdges(updatedEdges) {
-  localEdges.value = updatedEdges;
-}
+// function updateEdges(updatedEdges) {
+//   localEdges.value = updatedEdges;
+// }
 
 const messages = computed(() => {
   var combinedResults = [];
