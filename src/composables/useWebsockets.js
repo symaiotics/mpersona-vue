@@ -42,6 +42,42 @@ let sessionsContent = computed(() => {
     return content;
 })
 
+
+
+let stageNodes = computed(() => {
+    var nodes = [];
+    stages.value.forEach((stage, index, origArray) => {
+      stage.sockets.forEach((socket, sIndex, sOrigArray) => {
+        nodes.push({
+          id: socket.sessionId,
+          name: "Stage." + (index + 1) + "." + (sIndex + 1),
+          stage: index,
+          status: sessions?.value?.[socket.sessionId]?.status || "missing",
+          personaName: sessions?.value?.[socket.sessionId]?.persona?.name || null,
+        })
+      })
+    })
+    return nodes;
+  })
+  
+  let stageEdges = computed(() => {
+    var edges = [];
+    stages.value.forEach((stage, index, origArray) => {
+      let sources = stage.selectedSessionsContent.map((ssc) => { return ssc.sessionId })
+      let targets = stage.sockets.map((socket) => { return socket.sessionId })
+      if (sources?.length && targets?.length)
+        sources.forEach((source) => {
+          targets.forEach((target) => {
+            edges.push({ source, target })
+            // console.log("Edges updated", edges)
+          })
+        })
+    })
+    return edges;
+  })
+  
+
+
 export function useWebsockets() {
 
     async function websocketConnection() {
@@ -178,7 +214,7 @@ export function useWebsockets() {
         sessions,
         sessionsContent,
         stages,
-        
+        stageNodes, stageEdges,
         
         // stageNodes,
         // stageLinks,

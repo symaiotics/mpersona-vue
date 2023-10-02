@@ -14,12 +14,6 @@ let localEdges = ref([])
 const props = defineProps({
     treeNodes: Array,
     treeEdges: Array,
-
-    nodeUpdateType: { type: String },
-    nodeUpdateValue: { type: Number },
-    edgeUpdateType: { type: String },
-    edgeUpdateValue: { type: Number },
-
 });
 
 // Define Emits
@@ -166,7 +160,7 @@ const initializeNodePositions = (instigator) => {
     const verticalDistance = 250; // distance between nodes vertically
     const horizontalSpacing = 200; // distance between nodes horizontally
     const blockHeight = 60; // replace with the actual height of your block
-    
+
     if (localNodes.value) {
         const maxStage = Math.max(...localNodes.value.map(node => node.stage));
         localNodes.value.forEach(node => {
@@ -174,8 +168,8 @@ const initializeNodePositions = (instigator) => {
             const totalWidth = (stageNodes.length - 1) * horizontalSpacing;
             const startX = (width - totalWidth) / 2;
             node.x = startX + stageNodes.indexOf(node) * horizontalSpacing;
-            
-            if(node.stage === 0){
+
+            if (node.stage === 0) {
                 node.y = (node.stage * verticalDistance) + (blockHeight / 2); // adjust y for nodes at stage 0
             } else {
                 node.y = node.stage * verticalDistance;
@@ -329,19 +323,64 @@ const computePath = (d) => {
     return `M${d.source.x},${d.source.y + 30}C${controlPoint1.x},${controlPoint1.y} ${controlPoint2.x},${controlPoint2.y} ${d.target.x},${d.target.y - 30}`;
 }
 
-watch(() => props.treeNodes, (newValue) => {
-    // console.log('Child received updated treeNodes:', props.treeNodes);
-    localNodes.value = newValue;
-    initializeNodePositions('watchNodes');
-    renderGraph('watchNodes');
+//Watch Nodes
+watch(() => props.treeNodes, (newValue, oldValue) => {
+    if (areArraysSimilar(props.treeNodes, oldValue)) {
+        localNodes.value = mergeArrays(newValue, localNodes.value)
+        renderGraph('watchNodes');
+    }
+    else {
+        //TODO Instead of replacing, add or delete changed nodes
+        localNodes.value = newValue;
+        initializeNodePositions('watchNodes');
+    }
 }, { deep: true });
 
+//Watch Edges
 watch(() => props.treeEdges, (newValue) => {
-    // console.log('Child received updated treeEdges:', props.treeEdges);
+    //TODO Just add or remove edges, 
     localEdges.value = newValue;
     initializeNodePositions('watchEdges');
     renderGraph('watchEdges');
 }, { deep: true });
+
+//Evaluate if the Nodes arrays are similar
+function areArraysSimilar(array1, array2) {
+    if (array1.length !== array2.length) {
+        return false; // The arrays have different lengths, so they are not similar.
+    }
+
+    // Extract the id values and sort them.
+    const ids1 = array1.map(obj => obj.id).sort();
+    const ids2 = array2.map(obj => obj.id).sort();
+
+    // Compare the sorted id arrays.
+    for (let i = 0; i < ids1.length; i++) {
+        if (ids1[i] !== ids2[i]) {
+            return false; // The id values are different, so the arrays are not similar.
+        }
+    }
+
+    return true; // The arrays are similar.
+}
+
+
+//Merge the nodes arrays
+function mergeArrays(array1, array2) {
+ 
+    return array1.map(obj1 => {
+        const obj2 = array2.find(o => o.id === obj1.id);
+        // Create a new object that contains all properties from obj2 and obj1
+        // Properties from obj1 will overwrite the ones from obj2 due to the order of spreading
+        return {
+            ...obj2,
+            ...obj1,
+        };
+    });
+}
+
+
+
 
 function updateDarkMode() {
     // console.log("darkModeSession", darkModeSession)
