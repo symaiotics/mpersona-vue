@@ -9,7 +9,7 @@
           <h1 class="h2 font-red-hat-display mb-4">Personas drive Large Language Model (LLM) Interactions</h1>
           <p class="text-xl text-gray-600 dark:text-gray-400">Leverage sophisticated community-built personas to support your interactions.</p>
           <br/>
-          <p class="text-xl text-gray-600 dark:text-gray-400">Best of all this is 100% open source. </p>
+          <!-- <p class="text-xl text-gray-600 dark:text-gray-400">Best of all this is 100% open source. </p> -->
           <p class="text-xl text-gray-600 dark:text-gray-400"> Deploy to your own Cloud or to your secure data centre.</p>
         </div>
 
