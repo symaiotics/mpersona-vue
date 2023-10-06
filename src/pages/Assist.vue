@@ -66,6 +66,22 @@
                   </div>
                 </div>
 
+        
+
+                <template v-if="selectedEmail?.payload?.parts?.length">
+
+                  <div class="border rounded-sm p-3" v-html="emailParts"></div>
+                  <!-- {{ emailPrompt }} -->
+                </template>
+
+                <div class="flex flex-col mb-3  ">
+                  <button @click="triggerGeneration = !triggerGeneration"
+                    class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 p-3 rounded">
+                    Reply
+                  </button>
+                </div>
+
+
                 <template v-for="(socket, index) in sockets" :key="'stageSocket'+index">
                   <Socket :trigger="triggerGeneration" :stageIndex="0" stageUuid="0" :socketIndex="index"
                     :sessionId="sockets.sessionId" :userPrompt="emailPrompt" :persona="socket.persona"
@@ -76,12 +92,6 @@
                   class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 p-3 rounded">
                   Send
                 </button>
-
-                <template v-if="selectedEmail?.payload?.parts?.length">
-
-                  <div class="border rounded-sm p-3" v-html="emailParts"></div>
-                  <!-- {{ emailPrompt }} -->
-                </template>
 
 
               </template>
@@ -143,7 +153,7 @@ let stageOptions = ref(null);
 
 let sockets = ref([])
 let emailPrompt = computed(() => {
-  return stripHtml(emailParts.value);
+  return stripHtml(emailParts.value) + "\n\n Today's date is " + new Date();
 
 })
 
