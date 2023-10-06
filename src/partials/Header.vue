@@ -43,7 +43,6 @@
                 Profiles</router-link>
             </li>
 
-
             <!-- <li>
               <router-link to="/testimonials" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Testimonials</router-link>
             </li>  -->
@@ -64,6 +63,7 @@
             <p v-if="wsUuid">(Connected)</p>
           </div>
 
+          <AuthenticateGoogle  class = "pl-3" />
           <div class="form-switch flex flex-col justify-left ml-3 pt-2">
             <router-link v-if="token" to="/login">Logout</router-link>
             <router-link v-if="!token" to="/login">Login</router-link>
@@ -220,6 +220,7 @@
 <script setup>
 import Dropdown from '@/utils/Dropdown.vue'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import AuthenticateGoogle from '@/components/AuthenticateGoogle.vue';
 
 import { useTokens } from '@/composables/useTokens.js'
 import { useWebsockets } from '@/composables/useWebsockets.js'

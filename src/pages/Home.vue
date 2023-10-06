@@ -14,6 +14,8 @@
 
       <!-- Page sections -->
       <HeroHome />
+     
+
       <Stats />
       <Carousel />
       <Personas />
@@ -34,6 +36,7 @@
 <script setup>
 
 import { ref, onMounted } from 'vue';
+
 import Header from '@/partials/Header.vue'
 import PageIllustration from '@/partials/PageIllustration.vue'
 import HeroHome from '@/partials/HeroHome.vue'

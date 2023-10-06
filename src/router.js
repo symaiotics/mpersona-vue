@@ -9,6 +9,7 @@ import Login from '@/pages/Login.vue'
 import KnowledgeProfiles from '@/pages/KnowledgeProfiles.vue'
 import LinkPersona from '@/pages/LinkPersona.vue'
 import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
+import Assist from '@/pages/Assist.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -72,6 +73,11 @@ const router = createRouter({
       path: '/linkPersona/:link?',
       name: 'linkPersona',
       component: LinkPersona,
+      props: true
+    },{
+      path: '/assist/:code?',
+      name: 'assist',
+      component: Assist,
       props: true
     },
     {

@@ -20,6 +20,7 @@ let resetPassword = ref({
     password2: null,
 })
 
+
 // by convention, composable function names start with "use"
 export function useAccounts() {
 
@@ -51,6 +52,7 @@ export function useAccounts() {
             password2: null,
         }
     }
+
     function newAccount() {
 
         return new Promise(async (resolve, reject) => {
@@ -73,6 +75,7 @@ export function useAccounts() {
             }
         })
     }
+
 
     function login(username, password) {
         return new Promise(async (resolve, reject) => {
@@ -115,5 +118,6 @@ export function useAccounts() {
         logout,
         sendPasswordResetRequest,
         attemptPasswordReset,
+
     }
 }

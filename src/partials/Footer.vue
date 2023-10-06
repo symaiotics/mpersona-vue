@@ -44,7 +44,7 @@
           <div class="md:col-span-10 lg:col-span-9 grid grid-cols-2 md:grid-cols-4 gap-8">
 
             <!-- 2nd block -->
-            <div class="text-sm">
+            <!-- <div class="text-sm">
               <h6 class="font-medium uppercase mb-2">Open Source Repos</h6>
               <ul>
                 <li class="mb-1">
@@ -54,7 +54,7 @@
                   <a href = "https://github.com/symaiotics/mpersona-node" target = "_blank" class="text-gray-600 dark:text-gray-400 hover:underline transition duration-150 ease-in-out" to="#">mPersona - Node.js</a>
                 </li>
               </ul>
-            </div>
+            </div> -->
 
             <!-- 3rd block -->
             <!-- <div class="text-sm">

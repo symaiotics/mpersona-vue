@@ -343,7 +343,7 @@ function sendMessage() {
 
             console.log("SessionId", sessionId.value)
             console.log("Facts for this socket", facts.value)
-
+            // console.log("UserPrompt", userPrompt)
 
             if(sessions?.value?.[sessionId?.value])sessions.value[sessionId.value].completedMessage = "";
             var combinedPrompt = props.userPrompt;
@@ -441,7 +441,7 @@ function clear() {
 }
 
 const onCloseClick = () => {
-    emit('close');
+    emit('close', props.socketIndex);
 };
 
 const onEditClick = () => {

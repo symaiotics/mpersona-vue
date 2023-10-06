@@ -7,6 +7,16 @@ export default defineConfig({
   define: {
     'process.env': process.env
   },
+  
+  server: {
+    cors: true,
+    strictPort: true,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin'
+    }
+  },
+
+
   plugins: [vue()],
   resolve: {
     alias: [
@@ -24,3 +34,4 @@ export default defineConfig({
     ],
   },
 })
+
