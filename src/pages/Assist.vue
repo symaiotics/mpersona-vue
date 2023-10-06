@@ -36,11 +36,11 @@
               <template v-slot:tab-0>
 
                 <div class="flex flex-col  ">
-                    <button @click="getEmails"
-                      class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 p-3 rounded">
-                      Check Inbox
-                    </button>
-                  </div>
+                  <button @click="getEmails"
+                    class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 p-3 rounded">
+                    Check Inbox
+                  </button>
+                </div>
 
                 <!-- 
                 <template v-for="(socket, index) in sockets" :key="'stageSocket'+index">
@@ -67,16 +67,22 @@
                 </div>
 
                 <template v-for="(socket, index) in sockets" :key="'stageSocket'+index">
-                  <Socket :trigger="triggerGeneration" :stageIndex="0" stageUuid="0" :socketIndex="index" :sessionId = "sockets.sessionId"
-                    :userPrompt="emailPrompt" :persona="socket.persona" @close="removeSocket" />
+                  <Socket :trigger="triggerGeneration" :stageIndex="0" stageUuid="0" :socketIndex="index"
+                    :sessionId="sockets.sessionId" :userPrompt="emailPrompt" :persona="socket.persona"
+                    @close="removeSocket" />
                 </template>
 
+                <button
+                  class=" whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 p-3 rounded">
+                  Send
+                </button>
 
                 <template v-if="selectedEmail?.payload?.parts?.length">
 
-                  <div v-html="emailParts"></div>
-                  {{ emailPrompt }}
+                  <div class="border rounded-sm p-3" v-html="emailParts"></div>
+                  <!-- {{ emailPrompt }} -->
                 </template>
+
 
               </template>
             </Tabs>
@@ -202,9 +208,9 @@ onMounted(async () => {
 })
 
 function add() {
-  if (selectedPersona.value) sockets.value.push({ sessionId:uuidv4(), persona: selectedPersona.value })
+  if (selectedPersona.value) sockets.value.push({ sessionId: uuidv4(), persona: selectedPersona.value })
 }
 
 function changeActiveTab(val) { activeTab.value = val; }
-function respondToEmail(val) {  activeTab.value = val; }
+function respondToEmail(val) { activeTab.value = val; }
 </script>
