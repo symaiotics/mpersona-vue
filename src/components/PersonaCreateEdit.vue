@@ -22,8 +22,8 @@
                 </div>
 
 
-                <button v-if="localPersona.isEditor || !localPersona._id" @click="createNewAvatar(avatarPrompt)"
-                    :disabled="statusCreatingAvatar"
+                <button v-if="localPersona.isAdmin || localPersona.isEditor || !localPersona._id"
+                    @click="createNewAvatar(avatarPrompt)" :disabled="statusCreatingAvatar"
                     class="btn text-white bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded">Generate
                     New Avatar</button>
 
@@ -79,23 +79,50 @@
                 </select>
             </div>
 
-                <div class="w-full px-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
-                            Persona Instructions
-                        </label>
-                        <span class="text-red-600">*</span>
-                    </div>
-                    <textarea v-model="localPersona.basePrompt" id="message" rows="8" class="form-textarea w-full"
-                        placeholder="Define the persona instructions" required></textarea>
-                    <p> The Persona Instructions determine how the Large Language Model will conduct its interactions. Here,
-                        you can define the rules by which it should operate, how it identifies itself, and the functions it
-                        provides.</p>
+            <div class="w-full px-3">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
+                        Persona Instructions
+                    </label>
+                    <span class="text-red-600">*</span>
                 </div>
-            
+                <textarea v-model="localPersona.basePrompt" id="message" rows="8" class="form-textarea w-full"
+                    placeholder="Define the persona instructions" required></textarea>
+                <p> The Persona Instructions determine how the Large Language Model will conduct its interactions. Here,
+                    you can define the rules by which it should operate, how it identifies itself, and the functions it
+                    provides.</p>
+            </div>
+
+
+            <div class="w-full px-3 pt-3" v-if="localPersona._id">
+                <p> See all contributors.</p>
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="border dark:border-gray-700 dark:text-gray-300">Owners</th>
+                            <th class="border dark:border-gray-700 dark:text-gray-300">Editors</th>
+                            <th class="border dark:border-gray-700 dark:text-gray-300">Viewers</th>
+                            <th class="border dark:border-gray-700 dark:text-gray-300">Created By</th>
+                            <th class="border dark:border-gray-700 dark:text-gray-300">Is Public</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="border dark:border-gray-700 dark:text-gray-300">{{localPersona.owners}}</td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.editors }}</td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.viewers }}</td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.createdBy }}</td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.isPublic }}</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+
 
             <div class="m-4 spacing-x-2">
-                <div v-if="localPersona.isOwner || localPersona.isEditor">
+                <div v-if="localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor">
                     <label for="url" class="block mb-2 dark:text-gray-300">Viewer Link</label>
                     <p v-if="localPersona.viewerLink">{{ localPersona.viewerLink }}</p>
                     <div v-else>
@@ -111,7 +138,7 @@
 
                 </div>
 
-                <div v-if="localPersona.isOwner || localPersona.isEditor">
+                <div v-if="localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor">
                     <label for="url" class="block mb-2 dark:text-gray-300">Editor Link</label>
                     <p v-if="localPersona.editorLink">{{ localPersona.editorLink }}</p>
                     <div v-else>
@@ -152,12 +179,16 @@
 
             </div>
 
-            <div v-if="localPersona?._id && localPersona.isEditor" class="w-full px-3">
-                <button @click="update" class="btn text-white bg-teal-500 hover:bg-teal-400 w-full flex items-center mb-3">
+            <div v-if="localPersona?._id && (localPersona.isAdmin || localPersona.isEditor)" class="w-full px-3">
+                <button @click="triggerUpdate"
+                    class="btn text-white bg-teal-500 hover:bg-teal-400 w-full flex items-center mb-3">
                     <span>Update Persona</span>
                 </button>
 
-
+                <button @click="triggerDelete"
+                    class="btn text-white bg-yellow-500 hover:bg-yellow-400 w-full flex items-center mb-3">
+                    <span>Delete Persona</span>
+                </button>
 
             </div>
 
@@ -179,13 +210,14 @@ import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 
 const { token } = useTokens()
-const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar } = usePersonas()
+const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar, deletePersonas } = usePersonas()
 const { categories, getCategories } = useCategories()
 
 let avatarPrompt = ref('An attractive digital avatar, Pixar style 3D render of a friendly person smiling, inside, 4k, high resolution')
 let statusCreatingAvatar = ref(false)
 
 let props = defineProps({ persona: { type: Object } })
+let emit = defineEmits(['changeTab'])
 let localPersona = ref({})
 
 onBeforeMount(() => {
@@ -217,8 +249,14 @@ function create() {
     createPersonas([localPersona.value]);
 }
 
-function update() {
+function triggerUpdate() {
     updatePersonas([localPersona.value]);
+}
+
+function triggerDelete() {
+    deletePersonas([localPersona.value]);
+    emit('changeTab', 0)
+
 }
 
 function createLink(linkType) {

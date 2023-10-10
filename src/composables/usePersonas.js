@@ -125,6 +125,25 @@ export function usePersonas() {
         }
     }
 
+
+    async function deletePersonas(deletePersonas) {
+        try {
+            if (!Array.isArray(deletePersonas)) deletePersonas = [deletePersonas]
+            var params = { personas: deletePersonas }
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/delete', params);
+            console.log(response.data.payload)
+            // currentPersona.value = response;    
+            notify({ group: "success", title: "Success", text: "Persona(s) deleted successfully" }, 4000) // 4s
+            getPersonas();
+        }
+        catch (error) {
+            console.log("Error", error)
+            notify({ group: "failure", title: "Error", text: "Error deleting persona(s). Try again" }, 4000) // 4s
+
+        }
+    }
+
+
     function addLink(personaUuid, personaLink, linkType) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -184,6 +203,7 @@ export function usePersonas() {
         getUsedCategories,
         createPersonas,
         updatePersonas,
+        deletePersonas,
 
         createNewPersonaAvatar,
 

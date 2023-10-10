@@ -37,8 +37,8 @@
               </template>
               <template v-slot:tab-1>
                 <PersonaCreateEdit v-if="selectedPersona" :persona="selectedPersona"
-                  :key="'persona' + selectedPersona._id" />
-                <PersonaCreateEdit v-else-if="newPersona" :persona="newPersona" />
+                  :key="'persona' + selectedPersona._id" @changeTab = "changeTab" />
+                <PersonaCreateEdit v-else-if="newPersona" :persona="newPersona" @changeTab = "changeTab" />
               </template>
 
             </Tabs>
@@ -86,6 +86,11 @@ function add() {
   resetPersona();
   selectedPersona.value = null;
   activeTab.value = 1;
+}
+
+function changeTab(tab)
+{
+  activeTab.value = tab;
 }
 
 </script>

@@ -19,11 +19,16 @@
       <Stats />
       <Carousel />
       <Personas />
+
+<!-- <stripe-pricing-table pricing-table-id="prctbl_1NyO7aEUAK7okpK9x0QySlKD"
+publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmVUtoLYhtQTuWM6aK8WxHrvI769RE6xQBd6P00eZpdWCb4">
+</stripe-pricing-table> -->
+
       <!-- <Process />
-      <PricingTables />
       <TestimonialsBlocks />
       <FeaturesBlocks />
       <Cta /> -->
+      <!-- <PricingTables /> -->
 
     </main>
 
@@ -36,6 +41,8 @@
 <script setup>
 
 import { ref, onMounted } from 'vue';
+import creativecrew from "../images/creativecrew.png";
+import defaultImage from "../images/persona1.png";
 
 import Header from '@/partials/Header.vue'
 import PageIllustration from '@/partials/PageIllustration.vue'
