@@ -15,27 +15,44 @@
             <!-- <pre>{{ file }}</pre> -->
             <div class="w-2/3 p-4" v-if="selectedFile?.uuid && file.uuid == selectedFile.uuid">
                 <form @submit.prevent>
+
+                    <div class = "space-x-2">
+                    <button @click="viewFile(file.storageUrl)"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                        View File
+                    </button>
+
+                    <button @click="viewFileInGoogle(file.storageUrl)"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                        Open in Google Docs
+                    </button>
+                </div>
+
                     <div class="mb-4">
                         <label for="name" class="block mb-2 dark:text-gray-300">Name</label>
-                        <input id="name" v-model="file.name" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" type="text"
+                        <input id="name" v-model="file.name"
+                            class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" type="text"
                             placeholder="Enter name" />
                     </div>
 
                     <div class="mb-4">
                         <label for="description-en" class="block mb-2 dark:text-gray-300">Description (EN)</label>
-                        <input id="description-en" v-model="file.description.en" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-                            type="text" placeholder="Enter description in English" />
+                        <input id="description-en" v-model="file.description.en"
+                            class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" type="text"
+                            placeholder="Enter description in English" />
                     </div>
 
                     <div class="mb-4">
                         <label for="description-fr" class="block mb-2 dark:text-gray-300">Description (FR)</label>
-                        <input id="description-fr" v-model="file.description.fr" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-                            type="text" placeholder="Enter description in French" />
+                        <input id="description-fr" v-model="file.description.fr"
+                            class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300" type="text"
+                            placeholder="Enter description in French" />
                     </div>
 
                     <div class="mb-4">
                         <label for="context" class="block mb-2 dark:text-gray-300">Context</label>
-                        <textarea id="context" v-model="file.context" class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                        <textarea id="context" v-model="file.context"
+                            class="w-full p-2 border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                             placeholder="Enter context"></textarea>
                     </div>
 
@@ -162,7 +179,7 @@ function addKnowledgeProfile(fileUuid) {
 
 function setLastSelection(val) {
     // console.log("EMIT REceived Set Selection")
-    files.value[val.fileUuid].lastSelection = {start:val.start, end:val.end}
+    files.value[val.fileUuid].lastSelection = { start: val.start, end: val.end }
 }
 
 function addHighlight({ type, fileUuid }) {
@@ -190,12 +207,6 @@ function generateFacts(fileUuid) {
     })
 
     var integratedPrompt = ""
-    if (structures.length) {
-        integratedPrompt += "The structure for this content is often represented in this format: "
-        structures.forEach((structure) => {
-            integratedPrompt += structure + "\n"
-        })
-    }
 
     if (contexts.length) {
         integratedPrompt += "Some additional context specifically includes: " + "\n";
@@ -203,17 +214,32 @@ function generateFacts(fileUuid) {
             integratedPrompt += context + "\n"
         })
     }
+    if (structures.length) {
+        integratedPrompt += "The structure for this content is often represented in this format: "
+        structures.forEach((structure) => {
+            integratedPrompt += structure + "\n"
+        })
+    }
 
+    //Create the user prompt to include context and structure
+    var userPrompt = "";
+    if (files.value[fileUuid]?.context?.length) userPrompt = "The overall context of the following information is: " + files.value[fileUuid].context + "\n";
+    userPrompt += integratedPrompt;
+    userPrompt += "The content to analyze is as follows: " + "\n";
+
+    //Manage the contents blocks
     if (contents.length) {
         contents.forEach((content) => {
-            var userPrompt = "";
-            if (files.value[fileUuid]?.context?.length) userPrompt = "The overall context of the following information is: " + files.value[fileUuid].context + "\n";
-            userPrompt += "The content to analyze is as follows: " + "\n" + content + "\n"
-            userPrompt += integratedPrompt;
-            var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt };
+            var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt + content };
             console.log("Socket Payload", socketPayload)
             files.value[fileUuid].sockets.push(socketPayload)
         })
+    }
+    //If nothing is selected, attempt to take on the whole thing, which may often be too much context and return an error
+    else {
+        var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt + files.value[fileUuid].extractedFileText };
+        console.log("Socket Payload", socketPayload)
+        files.value[fileUuid].sockets.push(socketPayload)
     }
 
     nextTick(() => {
@@ -276,6 +302,17 @@ function saveFacts(fileUuid) {
     // Now, `parsedObjects` contains all the extracted objects from `rawFacts`
     // You can proceed to use or return the `parsedObjects` array as needed
 }
+
+function viewFile(url)
+{
+    window.open(import.meta.env.VITE_STORAGE_URL + "/" + url, '_blank');
+}
+
+function viewFileInGoogle(url)
+{
+    window.open(`https://docs.google.com/viewer?url=${import.meta.env.VITE_STORAGE_URL + "/" + url}&embedded=true`, '_blank');
+}
+
 
 function saveFile(fileUuid) {
     let file = files.value[fileUuid];
