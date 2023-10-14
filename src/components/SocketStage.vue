@@ -90,6 +90,7 @@
             <template v-for="(socket, index) in props.sockets" :key="'stageSocket'+index">
                 <!-- {{ props }} -->
                 <!-- {{ localModel }} -->
+                <!-- {{ socket.knowledgeProfiles.map((kp)=>{return kp.uuid}) }} -->
                 <Socket 
                 :trigger="triggerGeneration" 
                 :stageIndex="props.stageIndex" 
@@ -101,12 +102,16 @@
                 :temperature="0.5" 
                 :persona="socket.persona"
                 :appendedContent="localSelectedSessionsContent" 
+                :knowledgeProfileUuids = "socket.knowledgeProfiles ? socket.knowledgeProfiles.map((kp)=>{return kp.uuid}): []"
                 @like="like(persona)" 
                 @close="removeFromSockets(index)"
                 @edit="edit(persona)" 
                 @addSocket="addSocket" 
                 @removeSocket="removeSocket"
-                :stageOptions="props.options" />
+                :stageOptions="props.options" >
+
+                <KnowledgeProfileSelector :index = "index" :selected = "socket.knowledgeProfiles" @knowledgeProfilesUpdate="knowledgeProfilesUpdate" />
+                </Socket>   
             </template>
         </div>
     </div>
@@ -122,6 +127,7 @@ import VueMultiselect from 'vue-multiselect'
 
 //Components
 import Socket from '@/components/Socket.vue'
+import KnowledgeProfileSelector from '@/components/KnowledgeProfileSelector.vue'
 import AppendOptions from '@/components/AppendOptions.vue'
 
 //Composables
@@ -155,7 +161,7 @@ let props = defineProps({
 
 })
 
-let emit = defineEmits(['deleteStage', 'moveStageUp', 'moveStageDown', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'update:options', 'update:model', 'updateSessionContent', 'addSocket', 'removeSocket'])
+let emit = defineEmits(['deleteStage', 'moveStageUp', 'moveStageDown', 'addToSockets', 'removeFromSockets', 'update:userPrompt', 'update:options', 'update:model', 'updateSessionContent', 'addSocket', 'removeSocket', 'knowledgeProfilesUpdate'])
 
 //Tabs
 let activeTab = ref(0)
@@ -258,10 +264,16 @@ const handleSessionContentInput = (newValue) => {
     emit('updateSessionContent', { newValue: newValue, stageIndex: props.stageIndex });
 };
 
+function knowledgeProfilesUpdate(val) {
+    val.stageIndex = props.stageIndex;
+    emit('knowledgeProfilesUpdate', val)
+}
+
 function addSocket(val) {
     console.log("SocketStage addSocket: still useful?", val)
     // emit('addSocket', val)
 }
+
 
 function removeSocket(val) {
     console.log("SocketStage removeSocket: still useful?", val)

@@ -18,28 +18,15 @@
                             class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-wordwrap">
                             {{ props.persona.name }}</h5>
                         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ props.persona.description.en }}.</p>
-
-                        <!-- {{ props.sessionId }}
-                        {{ sessionId }} -->
-                        <!-- 
-                        {{ stageOptions }}
-                        {{ appendedContent }} -->
-                        <!-- Model {{ props.model }} -->
-                    </div>
-                    <div class="flex-col flex items-start pl-3 pr-2 pt-3">
-                        <div class="self-start">
-                            <!-- <button @click="sendMessage" :disabled="processing"
-                                class=" mr-2 bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded disabled:text-gray-300">
-                                Generate
-                            </button> -->
-                            <!-- <button @click="onEditClick" :disabled="processing"
-                            class=" bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-3 rounded disabled:text-gray-300">
-                            Edit 
-                        </button> -->
-                        </div>
                     </div>
                 </div>
             </template>
+
+            <!--Slot ofr Knowledge Profile Selector-->
+            <slot>
+
+
+            </slot>
 
             <!-- Interim and final message section -->
             <div v-if="partialMessage" v-html="partialMessageMarkdown"
@@ -55,7 +42,6 @@
                 <EditContent class="w-full p-4 pt-10" v-model:content="sessions[sessionId].completedMessage" />
             </div>
 
-
             <div v-if="editPersona">
                 <EditContent v-if="props.persona && editPersona" class="w-full"
                     v-model:content="props.persona.basePrompt" />
@@ -68,15 +54,7 @@
             <ButtonEdit @edit="onEditClick" />
             <ButtonClose @close="onCloseClick" />
 
-
-
-            <!-- <label class="">
-                <FileWord class="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300" :size="48" />
-                Word
-            </label> -->
-
             <div class="flex flex-wrap space-x-1" v-if = "thisSessionsContent?.[0]?.content?.length">
-                <!-- {{ thisSessionsContent }} -->
                 <ClipboardPlus @click="copyToClipboard(stripHtmlTags(completedMessageMarkdown))"
                     class="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300" :size="48" />
 
@@ -85,12 +63,9 @@
                         :key="'socket' + sessionId + index">
 
                         <CodeJson @click="copyToClipboard(json)" class="text-black dark:text-white" :size="48" />
-                        <!-- JSON {{ index }} -->
 
                     </div>
                 </template>
-
-                <!-- {{ Object.keys(thisSessionsContent[0].extracts.value) }} -->
 
                 <template v-if="thisSessionsContent?.[0]?.extracts?.value?.code">
                     <div v-for="(code, index) in thisSessionsContent[0].extracts.value.code"
@@ -100,59 +75,11 @@
                         <LanguageHtml v-else-if = "code.key == 'html'" @click="copyToClipboard(code.code)" class="text-black dark:text-white" :size="48" />
                         <LanguageMarkdown v-else @click="copyToClipboard(code.code)" class="text-black dark:text-white" :size="48" />
 
-
-                        <!-- Javascript {{ index }} -->
-
                     </div>
                 </template>
             </div>
-
-            <!-- <LanguageJavascript class="text-black dark:text-white" :size="48" /> -->
-        </div>
-
-        <!-- Edit Content and Icons Section -->
-        <!-- <div class="w-full h-auto">
-            <div class="flex items-center p-4">
-                <div v-if="completedMessage" class="flex items-center space-x-4">
-                    <StarIcon @click="like"
-                        class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
-                    <TrashIcon @click="clear"
-                        class="h-6 w-6 dark:text-gray-200 text-gray-600 transform hover:scale-105 transition-transform duration-150" />
-                </div>
-                <div class="flex-grow">
-                    <EditContent v-if="sessions?.[sessionId]?.completedMessage" class="w-full"
-                        v-model:content="sessions[sessionId].completedMessage" />
-                </div>
-            </div>
-            <div class="flex items-center p-4">
-                <div class="flex-grow">
-                    <EditContent v-if="props.persona && editPersona" class="w-full"
-                        v-model:content="props.persona.basePrompt" />
-                </div>
-                <div v-if="props.persona && editPersona" class="pl-4">
-                    <CloudIcon @click="saveChanges"
-                        class="h-6 w-6 text-green-500 transform hover:scale-105 transition-transform duration-150" />
-                </div>
-            </div>
-        </div> -->
-
-        <!-- Markdown Reveal Section -->
-        <!-- <br/>
-<br/>
-
-This session content: {{ thisSessionsContent }}
-        <br/>
-        <br/>
-Appended Content: {{ appendedContent }} -->
-
-        <!-- <div v-if="thisSessionsContent?.[0]">
-            Extracts: {{ thisSessionsContent[0].extracts }}
-            <br />
-            Code: {{ thisSessionsContent[0].extracts.code }}
-            <br />
-            JSON: {{ thisSessionsContent[0].extracts.json }}
-        </div> -->
-
+       </div>
+ 
         <div v-if="sessions?.[sessionId]?.completedMessage?.length && (sessions[sessionId].completedMessage.includes('# Slide') || sessions[sessionId].completedMessage.includes('# Diapositive'))"
             class="w-full h-96 pointer-events-none" aria-hidden="true">
             <MarkdownReveal :markdownContent="sessions[sessionId].completedMessage" />
@@ -182,7 +109,6 @@ import { CloudIcon } from '@heroicons/vue/24/solid'
 
 import MarkdownIt from 'markdown-it';
 
-
 //Components
 import ButtonClose from '@/components/ButtonClose.vue';
 import ButtonEdit from '@/components/ButtonEdit.vue';
@@ -211,8 +137,10 @@ const props = defineProps({
     model: { type: Object, default: { maxTokens: 8192, model: "gpt-4", label: "OpenAI GPT-4" } },
     temperature: { type: Number, default: 0.5 },
     persona: { type: Object },
+
     appendedContent: { type: Array, default: [] },
     facts: { type: Array, default: [] },
+    knowledgeProfileUuids: { type: Array, default: [] },
     stageOptions: { type: Object, default: null },
 
 });
@@ -228,6 +156,7 @@ const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
 const stageOptions = computed(() => props.stageOptions);
+const knowledgeProfileUuids = computed(() => props.knowledgeProfileUuids);
 
 const thisSessionsContent = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == props.sessionId }));
 
@@ -237,9 +166,6 @@ const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket']
 //Make sessionId reactive
 const sessionId = ref(props.sessionId);
 const userPrompt = ref(props.userPrompt);
-
-const completedMessageDiv = ref(null);
-const partialMessageDiv = ref(null);
 
 
 let editPersona = ref(false)
@@ -400,7 +326,7 @@ function sendMessage() {
             var basePrompt = props?.persona?.basePrompt || "";
 
 
-            //Include any facts if relevant 
+            //Include any are provided as props 
             var factPrompt = ""
             var topScore = 0;
             if (facts?.value?.length) {
@@ -416,12 +342,11 @@ function sendMessage() {
                 basePrompt = factPrompt + "\n\nYour instructions are as follows: \n\n" + basePrompt;
             }
 
-            console.log("combinedPrompt", combinedPrompt)
-            console.log("basePrompt", basePrompt)
+            console.log("User Prompt", combinedPrompt)
+            console.log("Combined System Prompt", basePrompt)
 
-
-            //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, type
-            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, 'prompt')
+            //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, knowledgeProfileUuids, type
+            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, knowledgeProfileUuids.value, 'prompt')
             processing.value = true;
 
         }
@@ -449,8 +374,6 @@ const onEditClick = () => {
     // emit('edit');
 };
 
-
-
 const partialMessageMarkdown = computed(() => {
     const md = new MarkdownIt();
     return md.render(partialMessage.value);
@@ -460,19 +383,6 @@ const md = new MarkdownIt();
 const completedMessageMarkdown = computed(() => {
     return md.render(completedMessage.value);
 });
-
-function updateContent(event) {
-
-    // sessions.value[sessionId.value].completedMessage = event.target.innerHtml;
-
-    // console.log(completedMessageDiv.value)
-    // = completedMessageDiv.value;
-
-    // isFocused.value = false;
-    // console.log(event)
-    // sessions.value[sessionId.value].completedMessage = "";
-}
-
 
 async function copyToClipboard(text) {
 

@@ -74,3 +74,73 @@ export function extractData(text) {
     // Step 4: Return the results in a single object
     return { json: validJSONs, code: codes };
 }
+
+
+//Older Prototypes
+function extractCode(answer) {
+    let codes = [];
+    try {
+        if (answer) {
+            const textCode = answer.match(/```([\s\S]+?)```/g);
+            if (textCode && textCode.length > 0) {
+                codes = textCode
+                    .join(" ")
+                    .split("```")
+                    .map((code) => code.trim())
+                    .filter((code) => code !== "")
+                    .map((c) => ({
+                        key: c.slice(0, c.indexOf("\n")),
+                        code: c.slice(c.indexOf("\n")),
+                    }));
+            }
+            console.log(codes);
+        }
+        return codes;
+    }
+    catch (error) {
+        return [];
+    }
+}
+
+function extractJSON(text) {
+    const validJSONs = [];
+
+    try {
+        if (text) {
+
+            let startIdx = text.indexOf('{');
+            while (startIdx !== -1) {
+                let endIdx = startIdx;
+                let braceCount = 1;
+
+                while (endIdx < text.length && braceCount > 0) {
+                    endIdx++;
+                    if (text[endIdx] === '{') {
+                        braceCount++;
+                    } else if (text[endIdx] === '}') {
+                        braceCount--;
+                    }
+                }
+
+                const potentialJSON = text.substring(startIdx, endIdx + 1);
+                try {
+                    const sanitizedString = potentialJSON.replace(/<br\/?>/g, '').replace(/\n/g, ' ');
+                    const replacedString = sanitizedString.replace(/(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '$1"$3":');
+                    const parsed = JSON.parse(replacedString);
+                    validJSONs.push(parsed);
+                } catch (e) {
+                    // Not valid JSON, skip
+                }
+
+                startIdx = text.indexOf('{', startIdx + 1);
+            }
+        }
+
+        return validJSONs;
+    }
+
+    catch (error) {
+
+        return [];
+    }
+}

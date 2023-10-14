@@ -41,9 +41,11 @@
                         :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
                         :selectedSessionsContent="stage.selectedSessionsContent" @deleteStage="deleteStage"
                         @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
+                        @knowledgeProfilesUpdate='knowledgeProfilesUpdate'
                         @updateSessionContent="updateSessionContent" @moveStageUp="moveStageUp"
                         @moveStageDown="moveStageDown" @update:options="handleUpdateOptions"
-                        @update:model="handleUpdateModel" />
+                        @update:model="handleUpdateModel"
+                        />
                     </template>
                   </template>
 
@@ -142,9 +144,11 @@ import Tabs from '@/components/Tabs.vue';
 import StageVisualize2 from '@/components/StageVisualize2.vue';
 
 //Composables
+import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js';
 import { useWebsockets } from '@/composables/useWebsockets.js';
 import { useWorkStreams } from '@/composables/useWorkStreams.js';
 import { useModels } from '@/composables/useModels.js'
+const { getKnowledgeProfiles } = useKnowledgeProfiles();
 const { sessions, stages, stageNodes, stageEdges } = useWebsockets();
 const { getWorkStreams, createWorkStreams, updateWorkStreams, workStreams, selectedWorkStream, selectWorkStream } = useWorkStreams();
 const { adminModels, selectedModel } = useModels()
@@ -192,6 +196,7 @@ const messages = computed(() => {
 //Lifecycle hooks
 onMounted(() => {
   getWorkStreams();
+  getKnowledgeProfiles();
   if (!stages.value.length)
     addStage();
 })
@@ -315,6 +320,11 @@ function loadWorkStream() {
 
 function updateSessionContent(val) {
   stages.value[val.stageIndex].selectedSessionsContent = val.newValue;
+}
+
+function knowledgeProfilesUpdate(val) {
+  console.log("New KPs", val)
+  stages.value[val.stageIndex].sockets[val.index].knowledgeProfiles = val.knowledgeProfiles;
 }
 
 
