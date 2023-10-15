@@ -92,7 +92,8 @@ onMounted(async () => {
 function trigger()
 {
   triggerGenerate.value = !triggerGenerate.value;
-  let knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp)=>{return kp.uuid}) || [];
+  let knowledgeProfileUuids = [];
+  if(selectedPersona?.value?.knowledgeProfiles?.length) selectedPersona.value.knowledgeProfiles.map((kp)=>{return kp.uuid}) || [];
   if(chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
 }
 
