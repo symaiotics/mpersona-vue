@@ -23,7 +23,7 @@
             <!-- <DisplayPersona alignment="center" :persona="selectedPersona" /> -->
 
             <HeroChat/>
-            <Socket alignment="center" :persona="selectedPersona" :userPrompt = "chatPrompt" :trigger = "triggerGenerate">
+            <Socket alignment="center" :persona="selectedPersona" :userPrompt = "chatPrompt || 'greet me'" :trigger = "triggerGenerate">
 
             </Socket>
 
@@ -86,14 +86,14 @@ let chatPrompt = ref("");
 onMounted(async () => {
   await getPersonas();
   if (props.personaId) selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.personaId })
+  trigger();
 })
 
 function trigger()
 {
   triggerGenerate.value = !triggerGenerate.value;
   let knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp)=>{return kp.uuid}) || [];
-  console.log("Triggered knowledgeProfileUuids", knowledgeProfileUuids)
-  searchFacts(chatPrompt.value, knowledgeProfileUuids)
+  if(chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
 }
 
 function promptQuestion(question)
