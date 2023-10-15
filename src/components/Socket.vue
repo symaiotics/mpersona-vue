@@ -133,6 +133,7 @@ const props = defineProps({
     sessionId: { type: String, default: () => uuidv4() },
     socketIndex: { type: Number },
 
+    messageHistory: { type: Array, default: [] },
     userPrompt: { type: String, default: "" },
     model: { type: Object, default: { maxTokens: 8192, model: "gpt-4", label: "OpenAI GPT-4" } },
     temperature: { type: Number, default: 0.5 },
@@ -158,11 +159,12 @@ const stageUuid = computed(() => props.stageUuid);
 const socketIndex = computed(() => props.socketIndex);
 const stageOptions = computed(() => props.stageOptions);
 const knowledgeProfileUuids = computed(() => props.knowledgeProfileUuids);
+const messageHistory = computed(() => props.messageHistory);
 
 const thisSessionsContent = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == props.sessionId }));
 
 
-const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket']
+const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket', 'messageComplete']
 );
 //Make sessionId reactive
 const sessionId = ref(props.sessionId);
@@ -231,6 +233,8 @@ watch(completedMessage, (newValue, oldValue) => {
     console.log("Old Value", oldValue)
     if (!oldValue.length && newValue.length) {
         processing.value = false;
+
+        emit('messageComplete', {message: newValue, sessionId:sessionId.value});
 
         if (thisSessionsContent.value.length) {
             // console.log(thisSessionsContent.value[0])
@@ -350,7 +354,7 @@ function sendMessage() {
             let useKps = [];
             if(props?.persona?.knowledgeProfiles?.length) useKps =  props.persona.knowledgeProfiles.map((kp)=>{return kp.uuid}) 
             if(knowledgeProfileUuids?.value?.length) useKps = knowledgeProfileUuids.value;
-            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, useKps, 'prompt')
+            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, messageHistory.value, useKps, 'prompt')
             processing.value = true;
 
         }

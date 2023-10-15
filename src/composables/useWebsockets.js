@@ -169,9 +169,9 @@ export function useWebsockets() {
         console.log('WebSocket error:', event);
     }
 
-    function sendToServer(uuid, session, model, temperature, systemPrompt, userPrompt, knowledgeProfileUuids, type) {
+    function sendToServer(uuid, session, model, temperature, systemPrompt, userPrompt, messageHistory, knowledgeProfileUuids, type) {
         if (ws) {
-            ws.send(JSON.stringify({ uuid, session, model, temperature, systemPrompt, userPrompt, knowledgeProfileUuids, type }));
+            ws.send(JSON.stringify({ uuid, session, model, temperature, systemPrompt, userPrompt, messageHistory, knowledgeProfileUuids, type }));
         }
     }
 
