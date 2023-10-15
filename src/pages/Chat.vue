@@ -105,15 +105,14 @@ function trigger() {
   //Save the history
   messageHistory.value.push({ role: "user", content: JSON.stringify(chatPrompt.value) })
 
-  chatPrompt.value = "";
-  //Trigger the Persona
   triggerGenerate.value = !triggerGenerate.value;
 
   //Get the facts
   let knowledgeProfileUuids = [];
   if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
   if (chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
-  // chatPrompt.value = "";
+
+  chatPrompt.value = "";
 
 }
 
