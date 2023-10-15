@@ -312,7 +312,7 @@ function selectCategory(category) {
 function selectAndInteract(persona) {
   selectedPersona.value = persona;
   console.log("Selected Persona", persona)
-  router.push({ name: 'interact' })
+  router.push({ name: 'chat' , params:{personaId:persona.uuid}})
 
 }
 
