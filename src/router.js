@@ -11,6 +11,7 @@ import LinkPersona from '@/pages/LinkPersona.vue'
 import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
 import Assist from '@/pages/Assist.vue'
 import Chat from '@/pages/Chat.vue'
+import FT from '@/pages/demos/FT.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -66,6 +67,14 @@ const router = createRouter({
       path: '/chat/:personaId?',
       name: 'chat',
       component: Chat,
+      props:true,
+    },
+
+
+    {
+      path: '/demos/ft/:personaId?',
+      name: 'ft',
+      component: FT,
       props:true,
     },
 

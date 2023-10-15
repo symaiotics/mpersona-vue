@@ -128,13 +128,13 @@ export function useWebsockets() {
                         //Maybe cancel and try again if an error is received mid stream?
                     }
                     
-                    sessions.value[data.session].errorMessage = errorMessage;
+                    // sessions.value[data.session].errorMessage = errorMessage;
 
                     // Reset the partial and completed message
-                    sessions.value[data.session].messages = []; // Reset messages for the session
-                    sessions.value[data.session].partialMessage = '';
-                    sessions.value[data.session].completedMessage = '';
-                    sessions.value[data.session].status = 'error';
+                    // sessions.value[data.session].messages = []; // Reset messages for the session
+                    // sessions.value[data.session].partialMessage = '';
+                    // sessions.value[data.session].completedMessage = '';
+                    // sessions.value[data.session].status = 'error';
                 }                
                 
                 else {
