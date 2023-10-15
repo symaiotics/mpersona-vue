@@ -93,7 +93,7 @@ function trigger()
 {
   triggerGenerate.value = !triggerGenerate.value;
   let knowledgeProfileUuids = [];
-  if(selectedPersona?.value?.knowledgeProfiles?.length) selectedPersona.value.knowledgeProfiles.map((kp)=>{return kp.uuid}) || [];
+  if(selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids= selectedPersona.value.knowledgeProfiles.map((kp)=>{return kp.uuid}) || [];
   if(chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
 }
 
