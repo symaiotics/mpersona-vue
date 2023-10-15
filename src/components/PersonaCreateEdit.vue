@@ -94,6 +94,21 @@
             </div>
 
 
+            <div class="w-full px-3 pt-3" >
+
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
+                        Default Knowledge Profiles
+                    </label>
+                    <span class="text-gray-600">Optional</span>
+                </div>
+
+                <KnowledgeProfileSelector :selected = "localPersona.knowledgeProfiles" @knowledgeProfilesUpdate="knowledgeProfilesUpdate" />
+
+                <p> Knowledge Profiles provide Personas deep insight into key topics, significantly enhancing responses.</p>
+
+            </div>  
+
             <div class="w-full px-3 pt-3" v-if="localPersona._id">
                 <p> See all contributors.</p>
                 <table class="w-full">
@@ -204,14 +219,19 @@ import { notify } from "notiwind"
 import { v4 as uuidv4 } from 'uuid';
 import defaultImage from "../images/persona1.png"
 
+import KnowledgeProfileSelector from '@/components/KnowledgeProfileSelector.vue'
+
+
 //Composables
 import { useTokens } from '@/composables/useTokens.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
+import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
 
 const { token } = useTokens()
 const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar, deletePersonas } = usePersonas()
 const { categories, getCategories } = useCategories()
+const {getKnowledgeProfiles } = useKnowledgeProfiles()
 
 let avatarPrompt = ref('An attractive digital avatar, Pixar style 3D render of a friendly person smiling, inside, 4k, high resolution')
 let statusCreatingAvatar = ref(false)
@@ -226,6 +246,7 @@ onBeforeMount(() => {
 
 onMounted(() => {
     getCategories();
+    getKnowledgeProfiles();
     if (props.persona) localPersona.value = props.persona;
 })
 
@@ -271,6 +292,11 @@ function createLink(linkType) {
         });
     }
 }
+
+function knowledgeProfilesUpdate(val) {
+  localPersona.value.knowledgeProfiles = val.knowledgeProfiles;
+}
+
 
 async function copyToClipboard(text) {
 

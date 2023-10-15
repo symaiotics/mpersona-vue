@@ -10,6 +10,7 @@ import KnowledgeProfiles from '@/pages/KnowledgeProfiles.vue'
 import LinkPersona from '@/pages/LinkPersona.vue'
 import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
 import Assist from '@/pages/Assist.vue'
+import Chat from '@/pages/Chat.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -49,6 +50,26 @@ const router = createRouter({
       name: 'interact',
       component: InteractLive
     },
+
+    {
+      path: '/blog',
+      name: 'blog',
+      component: Blog
+    },
+
+    {
+      path: '/help',
+      name: 'help',
+      component: Help
+    },
+    {
+      path: '/chat/:personaId?',
+      name: 'chat',
+      component: Chat,
+      props:true,
+    },
+
+
     {
       path: '/interactLive',
       name: 'interactLive',

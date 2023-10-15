@@ -141,6 +141,7 @@ const props = defineProps({
     appendedContent: { type: Array, default: [] },
     facts: { type: Array, default: [] },
     knowledgeProfileUuids: { type: Array, default: [] },
+    knowledgeProfiles: { type: Array, default: [] },
     stageOptions: { type: Object, default: null },
 
 });
@@ -346,7 +347,10 @@ function sendMessage() {
             console.log("Combined System Prompt", basePrompt)
 
             //Format is always : uuid, session, model, temperature, systemPrompt, userPrompt, knowledgeProfileUuids, type
-            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, knowledgeProfileUuids.value, 'prompt')
+            let useKps = [];
+            if(props?.persona?.knowledgeProfiles?.length) useKps =  props.persona.knowledgeProfiles.map((kp)=>{return kp.uuid}) 
+            if(knowledgeProfileUuids?.value?.length) useKps = knowledgeProfileUuids.value;
+            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, useKps, 'prompt')
             processing.value = true;
 
         }

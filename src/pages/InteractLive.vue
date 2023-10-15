@@ -277,6 +277,7 @@ function addToSockets(val) {
       stageIndex: val.stageIndex,
       stageUuid: val.stageUuid,
       persona: val.persona,
+      knowledgeProfiles: val.persona.knowledgeProfiles || []
     }
   )
 }
