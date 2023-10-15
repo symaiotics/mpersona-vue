@@ -111,8 +111,10 @@ function trigger() {
   let knowledgeProfileUuids = [];
   if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
   if (chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
+  nextTick(()=>{
+    chatPrompt.value = "";
+  })
 
-  chatPrompt.value = "";
 
 }
 
@@ -120,6 +122,7 @@ function messageComplete(val) {
   //On message completion add it
   messageHistory.value.push({ role: "system", content: val.message })
   messageHistory.value = cleanseMessageHistory(messageHistory.value)
+  // chatPrompt.value = "";
 }
 
 function cleanseMessageHistory(messageHistory) {

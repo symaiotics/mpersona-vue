@@ -162,14 +162,12 @@ const knowledgeProfileUuids = computed(() => props.knowledgeProfileUuids);
 const messageHistory = computed(() => props.messageHistory);
 
 const thisSessionsContent = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == props.sessionId }));
+const userPrompt = computed(() => props.userPrompt);
+const sessionId = computed(() => props.sessionId);
 
 
 const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket', 'messageComplete']
 );
-//Make sessionId reactive
-const sessionId = ref(props.sessionId);
-const userPrompt = ref(props.userPrompt);
-
 
 let editPersona = ref(false)
 
@@ -272,12 +270,9 @@ function sendMessage() {
 
         if (!processing.value) {
 
-            console.log("SessionId", sessionId.value)
-            console.log("Facts for this socket", facts.value)
-            // console.log("UserPrompt", userPrompt)
 
             if(sessions?.value?.[sessionId?.value])sessions.value[sessionId.value].completedMessage = "";
-            var combinedPrompt = props.userPrompt;
+            var combinedPrompt = userPrompt.value;
 
 
             // All content - original text output
