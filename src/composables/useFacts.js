@@ -42,18 +42,21 @@ export function useFacts() {
     async function searchFacts(searchString, knowledgeProfileUuids) {
         return new Promise(async (resolve, reject) => {
             try {
-                var params = { searchString: searchString, knowledgeProfileUuids:knowledgeProfileUuids }
-                console.log("SEarching with params", params)
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/facts/search', params);
-                factSearchResults.value = response.data.payload;
-                resolve(response.data.payload)
+
+                if (!knowledgeProfileUuids.length) reject("No KPs selected")
+                else {
+                    var params = { searchString: searchString, knowledgeProfileUuids: knowledgeProfileUuids }
+                    console.log("SEarching with params", params)
+                    var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/facts/search', params);
+                    console.log("Searched facts", response.data.payload)
+                    factSearchResults.value = response.data.payload;
+                    resolve(response.data.payload)
+                }
             }
             catch (error) {
                 console.log("Error", error)
                 reject(error)
             }
-
-
         })
     }
 

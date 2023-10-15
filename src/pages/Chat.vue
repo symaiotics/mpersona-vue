@@ -42,7 +42,7 @@
               </div>
 
             <!-- <HelpList /> -->
-            <ChatList :facts= "factSearchResults" @promptQuestion = "promptQuestion" />
+            <ChatList v-if = "selectedPersona?.knowledgeProfiles?.length" :facts= "factSearchResults" @promptQuestion = "promptQuestion" />
             <!-- <RelatedLinks /> -->
 
           </div>
