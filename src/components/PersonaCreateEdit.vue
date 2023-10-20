@@ -94,7 +94,7 @@
             </div>
 
 
-            <div class="w-full px-3 pt-3" >
+            <div class="w-full px-3 pt-3">
 
                 <div class="flex justify-between items-center mb-1">
                     <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium" for="message">
@@ -103,11 +103,12 @@
                     <span class="text-gray-600">Optional</span>
                 </div>
 
-                <KnowledgeProfileSelector :selected = "localPersona.knowledgeProfiles" @knowledgeProfilesUpdate="knowledgeProfilesUpdate" />
+                <KnowledgeProfileSelector :selected="localPersona.knowledgeProfiles"
+                    @knowledgeProfilesUpdate="knowledgeProfilesUpdate" />
 
                 <p> Knowledge Profiles provide Personas deep insight into key topics, significantly enhancing responses.</p>
 
-            </div>  
+            </div>
 
             <div class="w-full px-3 pt-3" v-if="localPersona._id">
                 <p> See all contributors.</p>
@@ -123,7 +124,7 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="border dark:border-gray-700 dark:text-gray-300">{{localPersona.owners}}</td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.owners }}</td>
                             <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.editors }}</td>
                             <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.viewers }}</td>
                             <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.createdBy }}</td>
@@ -153,6 +154,7 @@
 
                 </div>
 
+
                 <div v-if="localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor">
                     <label for="url" class="block mb-2 dark:text-gray-300">Editor Link</label>
                     <p v-if="localPersona.editorLink">{{ localPersona.editorLink }}</p>
@@ -165,6 +167,31 @@
                             Editor Link</button>
                         <button v-if="localPersona.editorLink" @click="copyToClipboard(localPersona.editorLink)"
                             class="px-4 py-2 bg-gray-500 text-white dark:bg-gray-700">Copy Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full m-3 spacing-x-2">
+                <div v-if="localPersona.isAdmin">
+                    <label for="url" class="block mb-2 dark:text-gray-300">Publish/Unpublish Persona</label>
+                    <div class="flex space-x-4">
+                        <button v-if="localPersona.publishStatus !== 'published'" @click="publish('published')"
+                            class="btn bg-blue-500 text-white dark:bg-blue-700"> Publish </button>
+                        <button v-if="localPersona.publishStatus == 'published'" @click="publish('suspended')"
+                            class="btn text-white bg-yellow-500 hover:bg-yellow-400"> Suspend </button>
+                    </div>
+                </div>
+
+                <div v-else-if="localPersona.isOwner || localPersona.isEditor">
+                    <label for="url" class="block mb-2 dark:text-gray-300">Propose for Publishing</label>
+                    <div class="flex space-x-4">
+                        <button @click="publish('proposeForPublish')" class="btn bg-blue-500 text-white dark:bg-blue-700">
+                            Propose for Publishing
+                        </button>
+                        <button v-if="localPersona.publishStatus == 'proposedForPublishing'" @click="publish('unpublished')"
+                            class="btn text-white bg-yellow-500 hover:bg-yellow-400">
+                            Remove Proposal
+                        </button>
                     </div>
                 </div>
             </div>
@@ -229,9 +256,9 @@ import { useCategories } from '@/composables/useCategories.js'
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
 
 const { token } = useTokens()
-const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar, deletePersonas } = usePersonas()
+const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar, deletePersonas, publishPersonas } = usePersonas()
 const { categories, getCategories } = useCategories()
-const {getKnowledgeProfiles } = useKnowledgeProfiles()
+const { getKnowledgeProfiles } = useKnowledgeProfiles()
 
 let avatarPrompt = ref('An attractive digital avatar, Pixar style 3D render of a friendly person smiling, inside, 4k, high resolution')
 let statusCreatingAvatar = ref(false)
@@ -294,8 +321,20 @@ function createLink(linkType) {
 }
 
 function knowledgeProfilesUpdate(val) {
-  localPersona.value.knowledgeProfiles = val.knowledgeProfiles;
+    localPersona.value.knowledgeProfiles = val.knowledgeProfiles;
 }
+
+function publish( status) {
+    publishPersonas([localPersona.value], status).then((results)=>{
+        localPersona.value.publishStatus = status;
+        notify({ group: "success", title: "Success", text: "Persona published to the public" }, 4000) // 4s
+
+    }).catch((error)=>{
+        notify({ group: "failure", title: "Error", text: "Failed to publish." }, 4000) // 4s
+
+    })
+}
+
 
 
 async function copyToClipboard(text) {

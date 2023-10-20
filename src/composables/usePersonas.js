@@ -186,6 +186,20 @@ export function usePersonas() {
         })
     }
 
+    function publishPersonas(personas, status) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if(!Array.isArray(personas)) personas = [personas];
+                var params = { personaUuids: personas.map((persona)=>{return persona.uuid}), publishStatus: status }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/publish', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
     // expose managed state as return value
     return {
 
@@ -204,6 +218,7 @@ export function usePersonas() {
         createPersonas,
         updatePersonas,
         deletePersonas,
+        publishPersonas,
 
         createNewPersonaAvatar,
 
