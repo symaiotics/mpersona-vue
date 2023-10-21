@@ -38,9 +38,10 @@ export function usePersonas() {
         selectedPersona.value = null;
     };
 
-    async function getPersonas() {
+    async function getPersonas(viewAll) {
         try {
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas');
+            let params = {params:{viewAll:viewAll}};
+            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas', params);
             personas.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Personas", personas.value)

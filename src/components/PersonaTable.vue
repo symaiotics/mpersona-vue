@@ -18,7 +18,7 @@
                             <img v-else class="object-cover rounded-t-lg md:h-24 md:w-24 rounded" :src="defaultImage"
                                 alt="" />
                         </td>
-                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ persona.name }}</td>
+                        <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ persona.name }} {{ persona.isOwner ? "" : " (Contributor)" }}</td>
                         <td class="border dark:border-gray-700 dark:text-gray-300 p-3">{{ persona.description.en }}</td>
                     </tr>
                 </tbody>

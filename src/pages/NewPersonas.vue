@@ -24,21 +24,34 @@
                   <p v-if="personas?.length" class="text-lg text-gray-600 dark:text-gray-400">You currently have access to
                     <b>{{ personas.length }}</b> personas.
                   </p>
+                  <p v-if="tokenDecoded?.roles?.includes('admin')" class="text-lg text-gray-600 dark:text-gray-400 mt-2">As an admin, you can view all personas</p>
+
+                  <div v-if="tokenDecoded?.roles?.includes('admin')" >
+                    <button @click="viewAll" class="btn text-white bg-teal-500 hover:bg-teal-400  mb-3">
+                      <span>View All</span>
+                    </button>
+                  </div>
+
                   <br />
                 </div>
 
-                <div class="w-full px-3">
-                  <button @click="add" class="btn text-white bg-teal-500 hover:bg-teal-400 flex items-center mb-3">
-                    <span>Add New</span>
-                  </button>
+                <div class="flex space-x-4">
+
+                  <div >
+                    <button @click="add" class="btn text-white bg-teal-500 hover:bg-teal-400 flex items-center mb-3">
+                      <span>Add New</span>
+                    </button>
+                  </div>
+
                 </div>
+
 
                 <PersonaTable @changeTab="activeTab = 1" />
               </template>
               <template v-slot:tab-1>
                 <PersonaCreateEdit v-if="selectedPersona" :persona="selectedPersona"
-                  :key="'persona' + selectedPersona._id" @changeTab = "changeTab" />
-                <PersonaCreateEdit v-else-if="newPersona" :persona="newPersona" @changeTab = "changeTab" />
+                  :key="'persona' + selectedPersona._id" @changeTab="changeTab" />
+                <PersonaCreateEdit v-else-if="newPersona" :persona="newPersona" @changeTab="changeTab" />
               </template>
 
             </Tabs>
@@ -70,7 +83,9 @@ import PersonaCreateEdit from '@/components/PersonaCreateEdit.vue';
 
 //Composables
 import { usePersonas } from '@/composables/usePersonas.js'
+import { useTokens } from '@/composables/useTokens.js'
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
+const { tokenDecoded } = useTokens()
 
 let activeTab = ref(0)
 const tabs = ref([
@@ -82,14 +97,17 @@ onMounted(() => {
   getPersonas();
 })
 
+function viewAll()
+{
+  getPersonas(true);  
+}
 function add() {
   resetPersona();
   selectedPersona.value = null;
   activeTab.value = 1;
 }
 
-function changeTab(tab)
-{
+function changeTab(tab) {
   activeTab.value = tab;
 }
 

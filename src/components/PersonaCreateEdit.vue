@@ -111,7 +111,7 @@
             </div>
 
             <div class="w-full px-3 pt-3" v-if="localPersona._id">
-                <p> See all contributors.</p>
+                <p> Contributors</p>
                 <table class="w-full">
                     <thead>
                         <tr>
@@ -119,61 +119,71 @@
                             <th class="border dark:border-gray-700 dark:text-gray-300">Editors</th>
                             <th class="border dark:border-gray-700 dark:text-gray-300">Viewers</th>
                             <th class="border dark:border-gray-700 dark:text-gray-300">Created By</th>
-                            <th class="border dark:border-gray-700 dark:text-gray-300">Is Public</th>
+                            <th class="border dark:border-gray-700 dark:text-gray-300">Published</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.owners }}</td>
-                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.editors }}</td>
-                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.viewers }}</td>
-                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.createdBy }}</td>
-                            <td class="border dark:border-gray-700 dark:text-gray-300">{{ localPersona.isPublic }}</td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
+                                 {{ localPersona?.owners?.length ? localPersona.owners.join(', ') : "" }}
+                            </td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
+                                 {{ localPersona?.editors?.length ? localPersona.editors.join(', ') : "" }}
+                            </td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
+                                 {{ localPersona?.viewers?.length ? localPersona.viewers.join(', ') : "" }}
+                            </td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
+                                {{ localPersona.createdBy ? localPersona.createdBy : "" }}
+                            </td>
+                            <td class="border dark:border-gray-700 dark:text-gray-300 p-2">{{ localPersona.publishStatus }}
+                            </td>
                         </tr>
                     </tbody>
 
                 </table>
             </div>
 
-
-
-            <div class="m-4 spacing-x-2">
+            <div class="w-full m-3 spacing-x-2">
+                <label for="url" class="block mb-2 dark:text-gray-300">Sharable Links</label>
                 <div v-if="localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor">
-                    <label for="url" class="block mb-2 dark:text-gray-300">Viewer Link</label>
-                    <p v-if="localPersona.viewerLink">{{ localPersona.viewerLink }}</p>
-                    <div v-else>
-                        There is no viewer link.
-                    </div>
+                    <!-- <label for="url" class="block mb-2 dark:text-gray-300">Viewer Link</label> -->
                     <div class="flex space-x-4">
-                        <button @click="createLink('viewerLink')"
-                            class="px-4 py-2 bg-blue-500 text-white dark:bg-blue-700">Create
+                        <button @click="createLink('viewerLink')" class="btn bg-blue-500 text-white dark:bg-blue-700">Create
                             Viewer Link</button>
                         <button v-if="localPersona.viewerLink" @click="copyToClipboard(localPersona.viewerLink)"
-                            class="px-4 py-2 bg-gray-500 text-white dark:bg-gray-700">Copy Link</button>
+                            class="btn text-white bg-green-500 hover:bg-green-400">Copy Link</button>
+                            <button v-if="localPersona.viewerLink && localPersona.isViewer" @click="unlink('viewer', localPersona)"
+                            class="btn text-white bg-gray-500 hover:bg-gray-400">Unlink</button>
+
+
                     </div>
-
-                </div>
-
-
-                <div v-if="localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor">
-                    <label for="url" class="block mb-2 dark:text-gray-300">Editor Link</label>
-                    <p v-if="localPersona.editorLink">{{ localPersona.editorLink }}</p>
+                    <p v-if="localPersona.viewerLink">Viewer Link: {{ localPersona.viewerLink }}</p>
                     <div v-else>
                         There is no viewer link.
                     </div>
+                </div>
+
+                <div v-if="localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor">
                     <div class="flex space-x-4">
-                        <button @click="createLink('editorLink')"
-                            class="px-4 py-2 bg-blue-500 text-white dark:bg-blue-700">Create
+                        <button @click="createLink('editorLink')" class="btn bg-blue-500 text-white dark:bg-blue-700">Create
                             Editor Link</button>
                         <button v-if="localPersona.editorLink" @click="copyToClipboard(localPersona.editorLink)"
-                            class="px-4 py-2 bg-gray-500 text-white dark:bg-gray-700">Copy Link</button>
+                            class="btn text-white bg-green-500 hover:bg-green-400">Copy Link</button>
+                        <button v-if="localPersona.editorLink && localPersona.isEditor" @click="unlink('editor', localPersona)"
+                            class="btn text-white bg-gray-500 hover:bg-gray-400">Unlink</button>
+
+                    </div>
+                    <p v-if="localPersona.editorLink">Editor Link: {{ localPersona.editorLink }}</p>
+                    <div v-else>
+                        There is no viewer link.
                     </div>
                 </div>
             </div>
 
             <div class="w-full m-3 spacing-x-2">
+                <label class="block mb-2 dark:text-gray-300">Persona Publication (Public) Status </label>
                 <div v-if="localPersona.isAdmin">
-                    <label for="url" class="block mb-2 dark:text-gray-300">Publish/Unpublish Persona</label>
                     <div class="flex space-x-4">
                         <button v-if="localPersona.publishStatus !== 'published'" @click="publish('published')"
                             class="btn bg-blue-500 text-white dark:bg-blue-700"> Publish </button>
@@ -183,12 +193,12 @@
                 </div>
 
                 <div v-else-if="localPersona.isOwner || localPersona.isEditor">
-                    <label for="url" class="block mb-2 dark:text-gray-300">Propose for Publishing</label>
                     <div class="flex space-x-4">
-                        <button @click="publish('proposeForPublish')" class="btn bg-blue-500 text-white dark:bg-blue-700">
+                        <button v-if="localPersona.publishStatus == 'unpublished'" @click="publish('proposeForPublish')"
+                            class="btn bg-blue-500 text-white dark:bg-blue-700">
                             Propose for Publishing
                         </button>
-                        <button v-if="localPersona.publishStatus == 'proposedForPublishing'" @click="publish('unpublished')"
+                        <button v-if="localPersona.publishStatus == 'proposeForPublish'" @click="publish('unpublished')"
                             class="btn text-white bg-yellow-500 hover:bg-yellow-400">
                             Remove Proposal
                         </button>
@@ -205,7 +215,6 @@
                     </svg>
                 </button>
 
-
                 <div v-if="!token" class="w-full  text-center">
                     <p>
                         Note: You are <b>not</b> logged in, so any personas you create will be visible and usable by the
@@ -221,17 +230,16 @@
 
             </div>
 
-            <div v-if="localPersona?._id && (localPersona.isAdmin || localPersona.isEditor)" class="w-full px-3">
-                <button @click="triggerUpdate"
-                    class="btn text-white bg-teal-500 hover:bg-teal-400 w-full flex items-center mb-3">
+            <div v-if="localPersona?._id && (localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor)"
+                class="w-full m-3 space-x-4">
+                <button @click="triggerUpdate" class="btn text-white bg-teal-500 hover:bg-teal-400   mb-3">
                     <span>Update Persona</span>
                 </button>
 
-                <button @click="triggerDelete"
-                    class="btn text-white bg-yellow-500 hover:bg-yellow-400 w-full flex items-center mb-3">
+                <button v-if="localPersona.isAdmin || localPersona.isOwner" @click="triggerDelete"
+                    class="btn text-white bg-yellow-500 hover:bg-yellow-400 mb-3">
                     <span>Delete Persona</span>
                 </button>
-
             </div>
 
         </template>
@@ -320,16 +328,22 @@ function createLink(linkType) {
     }
 }
 
+
+function unlink(linkType, persona) {
+//TODO Remove Link
+
+}
+
 function knowledgeProfilesUpdate(val) {
     localPersona.value.knowledgeProfiles = val.knowledgeProfiles;
 }
 
-function publish( status) {
-    publishPersonas([localPersona.value], status).then((results)=>{
+function publish(status) {
+    publishPersonas([localPersona.value], status).then((results) => {
         localPersona.value.publishStatus = status;
-        notify({ group: "success", title: "Success", text: "Persona published to the public" }, 4000) // 4s
+        notify({ group: "success", title: "Success", text: "Persona publish status changed." }, 4000) // 4s
 
-    }).catch((error)=>{
+    }).catch((error) => {
         notify({ group: "failure", title: "Error", text: "Failed to publish." }, 4000) // 4s
 
     })
