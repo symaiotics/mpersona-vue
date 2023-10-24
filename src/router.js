@@ -12,6 +12,7 @@ import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
 import Assist from '@/pages/Assist.vue'
 import Chat from '@/pages/Chat.vue'
 import FT from '@/pages/demos/FT.vue'
+import GOV from '@/pages/demos/GOV.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -78,6 +79,12 @@ const router = createRouter({
       props:true,
     },
 
+    {
+      path: '/demos/gov/:personaId?',
+      name: 'gov',
+      component: GOV,
+      props:true,
+    },
 
     {
       path: '/interactLive',
