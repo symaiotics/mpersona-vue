@@ -1,4 +1,4 @@
-
+ 
 export function extractData(text) {
     let codes = [];
     let validJSONs = [];
@@ -6,6 +6,15 @@ export function extractData(text) {
     try {
         if (text) {
             // Step 1 & 2: Extract code blocks and remove them from the text
+
+            try {
+                const parsedTextJSON = JSON.parse(text);
+                validJSONs.push(parsedTextJSON);
+                return { json: validJSONs, code: codes };  // Return immediately if the whole text is valid JSON
+            } catch (e) {
+                // If not a valid JSON, proceed with the usual extraction logic
+            }
+
             const textCode = text.match(/```([\s\S]+?)```/g);
             let modifiedText = text;
             if (textCode && textCode.length > 0) {
