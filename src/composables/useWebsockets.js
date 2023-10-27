@@ -120,21 +120,31 @@ export function useWebsockets() {
                     try{
                         var parsedError = JSON.parse(data.message);
                         errorMessage +=  parsedError.status + " " + parsedError.statusText;
-                        if(parsedError.status == 429 || parsedError.status == "429") errorMessage += ". Try again in a minute."                         
+                        if(parsedError.status == 429 || parsedError.status == "429") errorMessage += ". You've submitted too many tokens. Try again in a minute."                         
                     }
                     catch(err)
                     {
                         //Not JSON, just leave as error
                         //Maybe cancel and try again if an error is received mid stream?
                     }
+
                     
-                    // sessions.value[data.session].errorMessage = errorMessage;
+                    sessions.value[data.session].status = 'waiting'; //Set a waiting status, to retry once available.
+                    sessions.value[data.session].errorMessage = errorMessage;
+
+                    // //If all the sessions are waiting, then show the error
+                    // let allWaiting = true;
+                    // Object.keys(sessions.value).forEach((session)=>{
+                    //     if(sessions.value[session].status !== 'waiting') allWaiting = false; 
+                    // })
+                    // if(allWaiting)
+                    // {
+                    // }
 
                     // Reset the partial and completed message
                     // sessions.value[data.session].messages = []; // Reset messages for the session
                     // sessions.value[data.session].partialMessage = '';
                     // sessions.value[data.session].completedMessage = '';
-                    // sessions.value[data.session].status = 'error';
                 }                
                 
                 else {

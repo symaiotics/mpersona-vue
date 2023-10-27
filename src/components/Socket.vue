@@ -22,6 +22,7 @@
                 </div>
             </template>
 
+            <!-- {{ userPrompt }} -->
             <!--Slot ofr Knowledge Profile Selector-->
             <slot>
 

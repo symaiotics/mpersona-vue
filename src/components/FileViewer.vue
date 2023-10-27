@@ -103,7 +103,7 @@
                         <div v-for="(socket, index) in file.sockets" :key="socket.sessionId">
                             <Socket :trigger="file.triggerGeneration" :stageIndex="file.index" :stageUuid="file.uuid"
                                 :sessionId="socket.sessionId" :socketIndex="index" :userPrompt="socket.userPrompt"
-                                :persona="file.persona" />
+                                :persona="file.persona" @messageComplete = "messageComplete(file.uuid)" />
                         </div>
                     </div>
 
@@ -192,7 +192,6 @@ function deleteHighlight({ index, fileUuid }) {
 
 function generateFacts(fileUuid) {
 
-
     files.value[fileUuid].sockets = [];
     var highlights = highlightedSegments(files.value[fileUuid].extractedFileText, files.value[fileUuid].highlights)
 
@@ -229,16 +228,16 @@ function generateFacts(fileUuid) {
 
     //Manage the contents blocks
     if (contents.length) {
-        contents.forEach((content) => {
+        contents.forEach((content, index) => {
+            console.log("Contents ", index)
             var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt + content };
-            console.log("Socket Payload", socketPayload)
             files.value[fileUuid].sockets.push(socketPayload)
         })
     }
     //If nothing is selected, attempt to take on the whole thing, which may often be too much context and return an error
     else {
         var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt + files.value[fileUuid].extractedFileText };
-        console.log("Socket Payload", socketPayload)
+        console.log("Socket Payload (Full File)", socketPayload)
         files.value[fileUuid].sockets.push(socketPayload)
     }
 
@@ -323,6 +322,14 @@ function saveFile(fileUuid) {
 const submitForm = () => {
     // Implement form submission logic
     // console.log('Form Submitted:', selectedFileDetails)
+}
+
+function messageComplete(fileUuid)
+{
+    console.log("Message Complete")
+    files.value[fileUuid].sockets.forEach((socket)=>{
+        if(socket.status == 'waiting') console.log('socket waiting', socket)
+    })
 }
 </script>
   
