@@ -27,6 +27,7 @@
             <Socket alignment="center" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
               :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete">
             </Socket>
+            <!-- <ChatWindow :messages="messageHistory"/> -->
 
             <div class="max-w-2xl mx-auto md:px-4">
               <form @submit.prevent="trigger" class="relative flex items-center mt-8" data-aos="fade-down"
@@ -75,6 +76,7 @@ import RelatedLinks from '@/partials/RelatedLinks.vue'
 import Footer from '@/partials/Footer.vue'
 
 import DisplayPersona from '@/components/DisplayPersona.vue'
+import ChatWindow from '@/components/ChatWindow.vue'
 import Socket from '@/components/Socket.vue'
 
 //Composables
@@ -103,7 +105,7 @@ onMounted(async () => {
 
 function trigger() {
   //Save the history
-  messageHistory.value.push({ role: "user", content: JSON.stringify(chatPrompt.value) })
+  messageHistory.value.push({ role: "user", content: JSON.parse(JSON.stringify(chatPrompt.value)) })
 
   triggerGenerate.value = !triggerGenerate.value;
 

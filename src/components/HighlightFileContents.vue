@@ -4,9 +4,22 @@
             <button @click="addHighlight('context')" class="px-4 py-2 bg-red-500 text-white rounded">Context</button>
             <button @click="addHighlight('structure')" class="px-4 py-2 bg-blue-500 text-white rounded">Structure</button>
             <button @click="addHighlight('content')" class="px-4 py-2 bg-yellow-500 text-black rounded">Content</button>
-            <button @click="generateFacts" class="px-4 py-2 bg-green-500 text-black rounded">Generate Facts</button>
         </div>
-<!-- {{ fileUuid }} -->
+
+        <div class="flex space-x-4 mb-4">
+            <button @click="generateFacts" class="px-4 py-2 bg-blue-500 text-black rounded">Stage Facts for Processing</button>
+            <button @click="startProcessingAndSaveFacts" class="px-4 py-2 bg-green-500 text-black rounded">Process and Save Facts</button>
+            <button @click="pauseProcessing" class="px-4 py-2 bg-yellow-500 text-black rounded">Pause Processing</button>
+        </div>
+
+        <div class = "w-full">
+            <p>
+                <slot>
+                </slot>
+            </p>
+        </div>
+
+        <!-- {{ fileUuid }} -->
         <div class="flex min-h-48 overflow-y-auto">
             <!-- Left Column -->
             <div class="w-2/3  p-4 overflow-y-auto h-screen md:h-[66.6667vh] ">
@@ -66,13 +79,13 @@ import { useFiles } from '@/composables/useFiles.js'
 const { highlightedText, highlightedSegments } = useFiles()
 
 let props = defineProps({
-    fileUuid: {type:String, default:""},
+    fileUuid: { type: String, default: "" },
     originalText: { type: String, default: "Some basic longform text to be categorized" },
     lastSelection: { type: Object, default: {} },
     highlights: { type: Array, default: [] }
 })
 
-let emit = defineEmits(['setLastSelection', "addHighlight", "deleteHighlight", "generateFacts"])
+let emit = defineEmits(['setLastSelection', "addHighlight", "deleteHighlight", "generateFacts", "startProcessingAndSaveFacts", "pauseProcessing"])
 
 
 
@@ -88,16 +101,24 @@ onMounted(() => {
 // }
 
 const addHighlight = (type) => {
-    emit("addHighlight", {type, fileUuid: props.fileUuid});
+    emit("addHighlight", { type, fileUuid: props.fileUuid });
 };
 
 function deleteHighlight(index) {
-    emit("deleteHighlight", {index, fileUuid: props.fileUuid});
+    emit("deleteHighlight", { index, fileUuid: props.fileUuid });
 }
 
-function generateFacts()
-{
+function generateFacts() {
     emit('generateFacts', props.fileUuid)
+}
+
+
+function startProcessingAndSaveFacts() {
+    emit('startProcessingAndSaveFacts', props.fileUuid)
+}
+
+function pauseProcessing() {
+    emit('pauseProcessing', props.fileUuid)
 }
 
 
@@ -113,46 +134,46 @@ const getHighlightedText = computed(() => {
 
 
 const captureSelection = () => {
-  const selection = window.getSelection();
-  if (!selection.rangeCount) return;
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
 
-  const range = selection.getRangeAt(0);
-  let startNode = range.startContainer;
-  let endNode = range.endContainer;
+    const range = selection.getRangeAt(0);
+    let startNode = range.startContainer;
+    let endNode = range.endContainer;
 
-  if (startNode.nodeType !== Node.TEXT_NODE && startNode.firstChild) {
-    startNode = startNode.firstChild;
-  }
+    if (startNode.nodeType !== Node.TEXT_NODE && startNode.firstChild) {
+        startNode = startNode.firstChild;
+    }
 
-  if (endNode.nodeType !== Node.TEXT_NODE && endNode.lastChild) {
-    endNode = endNode.lastChild;
-  }
+    if (endNode.nodeType !== Node.TEXT_NODE && endNode.lastChild) {
+        endNode = endNode.lastChild;
+    }
 
-  var start = calculateOffset(parentNodeRef.value, startNode) + range.startOffset;
-  var end = calculateOffset(parentNodeRef.value, endNode) + range.endOffset;
-  
-  if (start > end) [start, end] = [end, start];
+    var start = calculateOffset(parentNodeRef.value, startNode) + range.startOffset;
+    var end = calculateOffset(parentNodeRef.value, endNode) + range.endOffset;
 
-//   console.log({ start, end });
+    if (start > end) [start, end] = [end, start];
 
-    emit("setLastSelection", {fileUuid: props.fileUuid, start, end});
+    //   console.log({ start, end });
+
+    emit("setLastSelection", { fileUuid: props.fileUuid, start, end });
 
 };
 
 const calculateOffset = (parentNode, targetNode) => {
-  let offset = 0;
+    let offset = 0;
 
-  const traverseNodes = (node) => {
-    for (let child of node.childNodes) {
-      if (child === targetNode || (child.contains && child.contains(targetNode))) return true;
-      if (child.nodeType === Node.TEXT_NODE) offset += child.textContent.length;
-      if (child.childNodes.length > 0 && traverseNodes(child)) return true;
-    }
-    return false;
-  };
+    const traverseNodes = (node) => {
+        for (let child of node.childNodes) {
+            if (child === targetNode || (child.contains && child.contains(targetNode))) return true;
+            if (child.nodeType === Node.TEXT_NODE) offset += child.textContent.length;
+            if (child.childNodes.length > 0 && traverseNodes(child)) return true;
+        }
+        return false;
+    };
 
-  traverseNodes(parentNode);
-  return offset;
+    traverseNodes(parentNode);
+    return offset;
 };
 
 // const scrollId = ref('id-' + uuidv4())

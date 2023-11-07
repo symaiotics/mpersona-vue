@@ -11,62 +11,68 @@ let pongTimeout;
 let stages = ref([]); //Manages all the stages within the app. However, this will need to revamped if we enable multiple workstreams
 let sessions = ref({}); //Sessions - Does not need a rework, would work across all
 
+
+// sessions is assumed to be defined elsewhere and is a ref object
+// This function will extract data from the session messages
+function getExtracts(sessionKey) {
+    return extractData(sessions.value[sessionKey]?.completedMessage || sessions.value[sessionKey]?.partialMessage || "");
+}
+
+// This computed property will create a content array from the session keys
 let sessionsContent = computed(() => {
-    var content = [];
-    var keys = Object.keys(sessions.value);
-    keys.forEach((key, index, origArray) => {
-        content.push(
-            {
-                content: sessions.value[key].completedMessage || sessions.value[key].partialMessage || "",
-                label: sessions.value[key].stageUuid + sessions.value[key].stageIndex + sessions.value[key].socketIndex,
-                sessionId: key,
-                stageUuid: sessions.value[key].stageUuid,
-                stageIndex: sessions.value[key].stageIndex,
-                socketIndex: sessions.value[key].socketIndex,
-                extracts: computed(()=>{
-                    return extractData(sessions?.value?.[key]?.completedMessage || sessions?.value?.[key]?.partialMessage || "")
-                })
-            })
-    })
+    // Create an array to hold the session content
+    const content = Object.keys(sessions.value).map((key) => {
+        // Create an object for each session with the desired properties
+        return {
+            content: sessions.value[key].completedMessage || sessions.value[key].partialMessage || "",
+            label: `${sessions.value[key].stageUuid}${sessions.value[key].stageIndex}${sessions.value[key].socketIndex}`,
+            sessionId: key,
+            stageUuid: sessions.value[key].stageUuid,
+            stageIndex: sessions.value[key].stageIndex,
+            socketIndex: sessions.value[key].socketIndex,
+            // Call getExtracts directly instead of creating a new computed property
+            extracts: getExtracts(key)
+        };
+    });
 
+    // Return the array of session content
     return content;
-})
-
+});
 
 //Nodes for the stage visualizer
 let stageNodes = computed(() => {
     var nodes = [];
     stages.value.forEach((stage, index, origArray) => {
-      stage.sockets.forEach((socket, sIndex, sOrigArray) => {
-        nodes.push({
-          id: socket.sessionId,
-          name: "Stage." + (index + 1) + "." + (sIndex + 1),
-          stage: index,
-          status: sessions?.value?.[socket.sessionId]?.status || "missing",
-          personaName: sessions?.value?.[socket.sessionId]?.persona?.name || null,
+        stage.sockets.forEach((socket, sIndex, sOrigArray) => {
+            nodes.push({
+                id: socket.sessionId,
+                name: "Stage." + (index + 1) + "." + (sIndex + 1),
+                stage: index,
+                status: sessions?.value?.[socket.sessionId]?.status || "missing",
+                personaName: sessions?.value?.[socket.sessionId]?.persona?.name || null,
+            })
         })
-      })
     })
     return nodes;
-  })
-  
-  //Edges for the stage visualizer
-  let stageEdges = computed(() => {
+})
+
+//Edges for the stage visualizer
+let stageEdges = computed(() => {
     var edges = [];
     stages.value.forEach((stage, index, origArray) => {
-      let sources = stage.selectedSessionsContent.map((ssc) => { return ssc.sessionId })
-      let targets = stage.sockets.map((socket) => { return socket.sessionId })
-      if (sources?.length && targets?.length)
-        sources.forEach((source) => {
-          targets.forEach((target) => {
-            edges.push({ source, target })
-            // console.log("Edges updated", edges)
-          })
-        })
+        let sources = stage.selectedSessionsContent.map((ssc) => { return ssc.sessionId })
+        let targets = stage.sockets.map((socket) => { return socket.sessionId })
+        if (sources?.length && targets?.length)
+            sources.forEach((source) => {
+                targets.forEach((target) => {
+                    edges.push({ source, target })
+                    // console.log("Edges updated", edges)
+                })
+            })
     })
     return edges;
-  })
-  
+})
+
 export function useWebsockets() {
 
     async function websocketConnection() {
@@ -117,20 +123,24 @@ export function useWebsockets() {
                 else if (data.type === 'ERROR') {
 
                     var errorMessage = "Error: ";
-                    try{
+                    try {
                         var parsedError = JSON.parse(data.message);
-                        errorMessage +=  parsedError.status + " " + parsedError.statusText;
-                        if(parsedError.status == 429 || parsedError.status == "429") errorMessage += ". You've submitted too many tokens. Try again in a minute."                         
+                        errorMessage += parsedError.status + " " + parsedError.statusText;
+                        if (parsedError.status == 429 || parsedError.status == "429") errorMessage += ". You've submitted too many tokens. Try again in a minute."
                     }
-                    catch(err)
-                    {
+                    catch (err) {
                         //Not JSON, just leave as error
                         //Maybe cancel and try again if an error is received mid stream?
                     }
 
-                    
+
                     sessions.value[data.session].status = 'waiting'; //Set a waiting status, to retry once available.
                     sessions.value[data.session].errorMessage = errorMessage;
+
+                    // Clean up messages to avoid memory bloat
+                    sessions.value[data.session].messages = []; // Reset messages for the session
+                    sessions.value[data.session].partialMessage = '';
+                    sessions.value[data.session].completedMessage = '';
 
                     // //If all the sessions are waiting, then show the error
                     // let allWaiting = true;
@@ -145,8 +155,8 @@ export function useWebsockets() {
                     // sessions.value[data.session].messages = []; // Reset messages for the session
                     // sessions.value[data.session].partialMessage = '';
                     // sessions.value[data.session].completedMessage = '';
-                }                
-                
+                }
+
                 else {
                     // Update the partial message with the new fragment
                     sessions.value[data.session].messages.push(data.message);
@@ -168,6 +178,17 @@ export function useWebsockets() {
         clearInterval(pingInterval);
         clearTimeout(pongTimeout);
 
+
+
+        // Remove event listeners when the WebSocket closes
+        if (ws) {
+            ws.removeEventListener('open', handleOpen);
+            ws.removeEventListener('message', handleMessage);
+            ws.removeEventListener('close', handleClose);
+            ws.removeEventListener('error', handleError);
+            ws = null;
+        }
+
         setTimeout(() => {
             console.log('Attempting to reconnect...');
             ws = null;
@@ -186,7 +207,7 @@ export function useWebsockets() {
     }
 
     function registerSession(session, stageIndex, stageUuid, socketIndex, persona, callback) {
-        sessions.value[session] = { callback, messages: [], status:'idle', partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid, socketIndex: socketIndex, persona:persona };
+        sessions.value[session] = { callback, messages: [], status: 'idle', partialMessage: "", completedMessage: "", stageIndex: stageIndex, stageUuid: stageUuid, socketIndex: socketIndex, persona: persona };
     }
 
     function updateSession(session, stageIndex, stageUuid, socketIndex, callback) {
@@ -198,7 +219,17 @@ export function useWebsockets() {
 
     function unregisterSession(session, stageIndex, stageUuid, socketIndex) {
         console.log("Deleted session", session)
+        clearSessionData(session)
         delete sessions.value[session];
+    }
+
+    function clearSessionData(sessionId) {
+        if (sessions.value[sessionId]) {
+            sessions.value[sessionId].messages = [];
+            sessions.value[sessionId].partialMessage = '';
+            sessions.value[sessionId].completedMessage = '';
+            // Any other cleanup that is needed for a session
+        }
     }
 
     return {
@@ -206,9 +237,9 @@ export function useWebsockets() {
         sessions,
         sessionsContent,
         stages,
-        stageNodes, 
+        stageNodes,
         stageEdges,
-        
+
         websocketConnection,
         sendToServer,
         registerSession,

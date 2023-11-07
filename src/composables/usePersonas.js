@@ -40,7 +40,7 @@ export function usePersonas() {
 
     async function getPersonas(viewAll) {
         try {
-            let params = {params:{viewAll:viewAll}};
+            let params = { params: { viewAll: viewAll } };
             var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas', params);
             personas.value = response.data.payload;
             //TODO enhance to receive the code as well
@@ -190,9 +190,36 @@ export function usePersonas() {
     function publishPersonas(personas, status) {
         return new Promise(async (resolve, reject) => {
             try {
-                if(!Array.isArray(personas)) personas = [personas];
-                var params = { personaUuids: personas.map((persona)=>{return persona.uuid}), publishStatus: status }
+                if (!Array.isArray(personas)) personas = [personas];
+                var params = { personaUuids: personas.map((persona) => { return persona.uuid }), publishStatus: status }
                 var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/publish', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
+    function finetunePersonas(personas) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!Array.isArray(personas)) personas = [personas];
+                var params = { personaUuids: personas.map((persona) => { return persona.uuid }) }
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/finetune', params);
+                resolve(response.data.payload)
+            }
+            catch (error) {
+                reject(error)
+            }
+        })
+    }
+
+    function loadFinetuneStatuses() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                var params = {}
+                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/finetuneStatuses', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -226,6 +253,9 @@ export function usePersonas() {
         addLink,
         getLinkDetails,
         acceptLink,
+
+        finetunePersonas,
+        loadFinetuneStatuses
 
     }
 }

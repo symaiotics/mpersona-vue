@@ -13,9 +13,9 @@
       </div>
 
       <!-- Page sections -->
+      <Cosmic>
       <HeroHome />
-     
-
+    </Cosmic>
       <Stats />
       <Carousel />
       <Personas />
@@ -56,6 +56,8 @@ import TestimonialsBlocks from '@/partials/TestimonialsBlocks.vue'
 import FeaturesBlocks from '@/partials/FeaturesBlocks.vue'
 import Cta from '@/partials/Cta.vue'
 import Footer from '@/partials/Footer.vue'
+
+import Cosmic from '@/components/Cosmic.vue'
 
 //composables
 import { usePersonas } from '@/composables/usePersonas.js'

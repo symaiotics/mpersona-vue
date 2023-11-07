@@ -125,13 +125,13 @@
                     <tbody>
                         <tr>
                             <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
-                                 {{ localPersona?.owners?.length ? localPersona.owners.join(', ') : "" }}
+                                {{ localPersona?.owners?.length ? localPersona.owners.join(', ') : "" }}
                             </td>
                             <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
-                                 {{ localPersona?.editors?.length ? localPersona.editors.join(', ') : "" }}
+                                {{ localPersona?.editors?.length ? localPersona.editors.join(', ') : "" }}
                             </td>
                             <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
-                                 {{ localPersona?.viewers?.length ? localPersona.viewers.join(', ') : "" }}
+                                {{ localPersona?.viewers?.length ? localPersona.viewers.join(', ') : "" }}
                             </td>
                             <td class="border dark:border-gray-700 dark:text-gray-300 p-2">
                                 {{ localPersona.createdBy ? localPersona.createdBy : "" }}
@@ -153,7 +153,8 @@
                             Viewer Link</button>
                         <button v-if="localPersona.viewerLink" @click="copyToClipboard(localPersona.viewerLink)"
                             class="btn text-white bg-green-500 hover:bg-green-400">Copy Link</button>
-                            <button v-if="localPersona.viewerLink && localPersona.isViewer" @click="unlink('viewer', localPersona)"
+                        <button v-if="localPersona.viewerLink && localPersona.isViewer"
+                            @click="unlink('viewer', localPersona)"
                             class="btn text-white bg-gray-500 hover:bg-gray-400">Unlink</button>
 
 
@@ -170,7 +171,8 @@
                             Editor Link</button>
                         <button v-if="localPersona.editorLink" @click="copyToClipboard(localPersona.editorLink)"
                             class="btn text-white bg-green-500 hover:bg-green-400">Copy Link</button>
-                        <button v-if="localPersona.editorLink && localPersona.isEditor" @click="unlink('editor', localPersona)"
+                        <button v-if="localPersona.editorLink && localPersona.isEditor"
+                            @click="unlink('editor', localPersona)"
                             class="btn text-white bg-gray-500 hover:bg-gray-400">Unlink</button>
 
                     </div>
@@ -230,6 +232,18 @@
 
             </div>
 
+
+            <div v-if="localPersona?.knowledgeProfiles?.length && (localPersona.isAdmin)"
+                class="w-full m-3 space-x-4">
+                <button @click="createFinetune" class="btn text-white bg-blue-500 hover:bg-blue-400   mb-3">
+                    <span>Create Finetune Model</span>
+                </button>
+
+                <button @click="checkFinetuneStatus" class="btn text-white bg-blue-500 hover:bg-blue-400   mb-3">
+                    <span>Check statuses</span>
+                </button>
+            </div>
+
             <div v-if="localPersona?._id && (localPersona.isAdmin || localPersona.isOwner || localPersona.isEditor)"
                 class="w-full m-3 space-x-4">
                 <button @click="triggerUpdate" class="btn text-white bg-teal-500 hover:bg-teal-400   mb-3">
@@ -264,7 +278,7 @@ import { useCategories } from '@/composables/useCategories.js'
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
 
 const { token } = useTokens()
-const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar, deletePersonas, publishPersonas } = usePersonas()
+const { newPersona, selectedPersona, defaultPersona, addNewPersona, createPersonas, updatePersonas, addLink, createNewPersonaAvatar, deletePersonas, publishPersonas, finetunePersonas, loadFinetuneStatuses } = usePersonas()
 const { categories, getCategories } = useCategories()
 const { getKnowledgeProfiles } = useKnowledgeProfiles()
 
@@ -330,7 +344,7 @@ function createLink(linkType) {
 
 
 function unlink(linkType, persona) {
-//TODO Remove Link
+    //TODO Remove Link
 
 }
 
@@ -350,6 +364,30 @@ function publish(status) {
 }
 
 
+function createFinetune() {
+    finetunePersonas([localPersona.value]).then((results) => {
+        console.log(results)
+        notify({ group: "success", title: "Success", text: "Persona finetune created." }, 4000) // 4s
+
+    }).catch((error) => {
+        console.log(error)
+        notify({ group: "failure", title: "Error", text: "Failed to publish." }, 4000) // 4s
+
+    })
+}
+
+
+function checkFinetuneStatus() {
+    loadFinetuneStatuses().then((results) => {
+        console.log(results)
+        notify({ group: "success", title: "Success", text: "Statuses loaded." }, 4000) // 4s
+
+    }).catch((error) => {
+        console.log(error)
+        notify({ group: "failure", title: "Error", text: "Failed to load finetune statuses." }, 4000) // 4s
+
+    })
+}
 
 async function copyToClipboard(text) {
 

@@ -106,6 +106,19 @@
                 </button>
             </div>
 
+
+            <div  class="w-full px-3">
+                <button @click="downloadJsonl"
+                    class="btn text-white bg-teal-500 hover:bg-teal-400 w-full flex items-center mb-3">
+                    <span>Download JSONL Facts for Fine-Tuning</span>
+                    <svg class="w-3 h-3 shrink-0 mt-px ml-2" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+                        <path class="fill-current"
+                            d="M6.602 11l-.875-.864L9.33 6.534H0v-1.25h9.33L5.727 1.693l.875-.875 5.091 5.091z" />
+                    </svg>
+                </button>
+            </div>
+
+
             <div v-if="!token" class="w-full  text-center">
                 <p>
                     Note: You are <b>not</b> logged in, so any knowledge profiles you create will be visible and usable
@@ -134,9 +147,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 //Composables
 import { useTokens } from '@/composables/useTokens.js'
+import { useFacts } from '@/composables/useFacts.js'
 import { useKnowledgeProfiles } from '@/composables/useKnowledgeProfiles.js'
 
 const { token, tokenDecoded } = useTokens()
+const { getJsonl } = useFacts()
 const { newKnowledgeProfile, selectedKnowledgeProfile, defaultKnowledgeProfile, addNewKnowledgeProfile, createKnowledgeProfiles, updateKnowledgeProfiles, addLink } = useKnowledgeProfiles()
 
 let props = defineProps({ knowledgeProfile: { type: Object } })
@@ -186,6 +201,16 @@ async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
         notify({ group: "success", title: "Success", text: "Link copied" }, 4000) // 4s
+    } catch (err) {
+        notify({ group: "failure", title: "Error", text: "Error. Please try again." }, 4000) // 4s
+    }
+}
+
+async function downloadJsonl()
+{
+    try {
+        await getJsonl([localKnowledgeProfile.value.uuid])
+        notify({ group: "success", title: "Success", text: "JSONL generated" }, 4000) // 4s
     } catch (err) {
         notify({ group: "failure", title: "Error", text: "Error. Please try again." }, 4000) // 4s
     }

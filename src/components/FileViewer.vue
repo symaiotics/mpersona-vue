@@ -16,17 +16,17 @@
             <div class="w-2/3 p-4" v-if="selectedFile?.uuid && file.uuid == selectedFile.uuid">
                 <form @submit.prevent>
 
-                    <div class = "space-x-2">
-                    <button @click="viewFile(file.storageUrl)"
-                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                        View File
-                    </button>
+                    <div class="space-x-2">
+                        <button @click="viewFile(file.storageUrl)"
+                            class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                            View File
+                        </button>
 
-                    <button @click="viewFileInGoogle(file.storageUrl)"
-                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                        Open in Google Docs
-                    </button>
-                </div>
+                        <button @click="viewFileInGoogle(file.storageUrl)"
+                            class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                            Open in Google Docs
+                        </button>
+                    </div>
 
                     <div class="mb-4">
                         <label for="name" class="block mb-2 dark:text-gray-300">Name</label>
@@ -97,20 +97,24 @@
                     <HighlightFileContents :fileUuid="file.uuid" :originalText="file.extractedFileText"
                         :highlights="file.highlights" :lastSelection="file.lastSelection"
                         @setLastSelection="setLastSelection" @addHighlight="addHighlight" @deleteHighlight="deleteHighlight"
-                        @generateFacts="generateFacts" />
+                        @generateFacts="generateFacts" @startProcessingAndSaveFacts="startProcessingAndSaveFacts"
+                        @pauseProcessing="pauseProcessing">
+
+                        Concurrent Processes: {{ concurrentSockets }}
+                    </HighlightFileContents>
 
                     <div v-if="file.persona">
                         <div v-for="(socket, index) in file.sockets" :key="socket.sessionId">
-                            <Socket :trigger="file.triggerGeneration" :stageIndex="file.index" :stageUuid="file.uuid"
+                            <Socket :trigger="socket.trigger" :stageIndex="file.index" :stageUuid="file.uuid"
                                 :sessionId="socket.sessionId" :socketIndex="index" :userPrompt="socket.userPrompt"
-                                :persona="file.persona" @messageComplete = "messageComplete(file.uuid)" />
+                                :persona="file.persona" @messageComplete="payload => messageComplete(payload, file.uuid)" />
                         </div>
                     </div>
 
                     <div class="space-x-2">
-                        <button @click="saveFacts(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">
+                        <!-- <button @click="saveFacts(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">
                             Save Facts
-                        </button>
+                        </button> -->
 
                         <button @click="saveFile(file.uuid)" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded">
                             Update File
@@ -128,6 +132,7 @@ import { ref, toRefs, reactive, onMounted, nextTick } from 'vue'
 import VueMultiselect from 'vue-multiselect'
 import { v4 as uuidv4 } from 'uuid';
 import { extractData } from '@/utils/extractJsonAndCode.js';
+import { notify } from "notiwind"
 
 
 import HighlightFileContents from '@/components/HighlightFileContents.vue';
@@ -146,6 +151,9 @@ const { sessions, sessionContent } = useWebsockets()
 const { personas, selectedPersona, getPersonas } = usePersonas()
 
 let triggerGeneration = ref(false);
+
+let concurrentSockets = ref(10);
+let processingPaused = ref(false);
 onMounted(() => {
     if (!personas?.value) getPersonas();
     if (!knowledgeProfiles?.value) getKnowledgeProfiles();
@@ -230,7 +238,7 @@ function generateFacts(fileUuid) {
     if (contents.length) {
         contents.forEach((content, index) => {
             console.log("Contents ", index)
-            var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt + content };
+            var socketPayload = { sessionId: uuidv4(), userPrompt: userPrompt + content, trigger: false };
             files.value[fileUuid].sockets.push(socketPayload)
         })
     }
@@ -241,27 +249,125 @@ function generateFacts(fileUuid) {
         files.value[fileUuid].sockets.push(socketPayload)
     }
 
-    nextTick(() => {
-        files.value[fileUuid].triggerGeneration = !files.value[fileUuid].triggerGeneration;
-    })
+
+    //Don't auto generate anymore
+    // nextTick(() => {
+    //     files.value[fileUuid].triggerGeneration = !files.value[fileUuid].triggerGeneration;
+    // })
 
     // return selectedFile.value.sockets;
 
 }
 
+function startProcessingAndSaveFacts(fileUuid) {
 
-function saveFacts(fileUuid) {
+    processingPaused.value = false;
     let file = files.value[fileUuid];
+    //Status array for processing?
+    file.sockets.forEach((socket, index) => {
+        socket.order = index;
+        socket.processingStatus = 'pending';
+    })
+
+    continueProcessing(fileUuid)
+
+}
+
+function continueProcessing(fileUuid) {
+
+    if (!processingPaused.value) {
+
+        let file = files.value[fileUuid];
+
+        let numberOfActive = file.sockets.filter((socket) => {
+            return socket.processingStatus === 'processing';
+        }).length;
+
+        file.sockets.forEach((socket, index) => {
+            if (numberOfActive < concurrentSockets.value) {
+                if (socket.processingStatus === 'pending') {
+                    socket.processingStatus = 'processing';
+                    socket.trigger = !socket.trigger;
+                    numberOfActive++;
+                }
+            }
+
+            if(socket.processingStatus == 'completed') saveFact(fileUuid, socket)
+        })
+    }
+
+}
+
+function pauseProcessing(fileUuid) {
+    processingPaused.value = true;
+    notify({ group: "success", title: "Success", text: "Processing paused" }, 4000) // 4s
+
+}
+
+
+// function saveFacts(fileUuid) {
+//     let file = files.value[fileUuid];
+//     let rawFacts = [];
+//     let parsedObjects = [];
+
+//     file.sockets.forEach((socket) => {
+//         var extracts = extractData(sessions.value[socket.sessionId].partialMessage || sessions.value[socket.sessionId].completedMessage)
+//         if (extracts.json) {
+//             rawFacts.push(extracts.json);
+//         }
+//     });
+
+//     function parseArray(arr) {
+//         arr.forEach(item => {
+//             if (Array.isArray(item)) {
+//                 parseArray(item);
+//             } else if (typeof item === 'object' && item !== null) {
+//                 parsedObjects.push(item);
+//             }
+//         });
+//     }
+
+//     parseArray(rawFacts);
+
+
+//     var highlights = highlightedSegments(files.value[fileUuid].extractedFileText, files.value[fileUuid].highlights)
+
+//     //Extract the structure and the context
+//     var structures = [];
+//     var contexts = [];
+//     highlights.forEach((highlight) => {
+//         if (highlight.type == 'structure') structures.push(highlight.content + "\n");
+//         else if (highlight.type == 'context') contexts.push(highlight.content + "\n");
+//     })
+
+//     parsedObjects.forEach((fact) => {
+//         fact.fileUuid = file.uuid;
+//         fact.storageUrl = file.storageUrl;
+//         fact.knowledgeProfileUuid = file.knowledgeProfileUuid;
+//         fact.knowledgeProfile = file.knowledgeProfile;
+//         fact.context = file.context;
+//         fact.structures = structures;
+//         fact.contexts = contexts;
+//     })
+
+//     createFacts(parsedObjects)
+//     file.status = "complete";
+
+//     // Now, `parsedObjects` contains all the extracted objects from `rawFacts`
+//     // You can proceed to use or return the `parsedObjects` array as needed
+// }
+
+
+async function saveFact(fileUuid, socket) {
+    let file = files.value[fileUuid];
+
     let rawFacts = [];
+    var extracts = extractData(sessions.value[socket.sessionId].partialMessage || sessions.value[socket.sessionId].completedMessage)
+    if (extracts.json) {
+        rawFacts.push(extracts.json);
+    }
+
     let parsedObjects = [];
-
-    file.sockets.forEach((socket) => {
-        var extracts = extractData(sessions.value[socket.sessionId].partialMessage || sessions.value[socket.sessionId].completedMessage)
-        if (extracts.json) {
-            rawFacts.push(extracts.json);
-        }
-    });
-
     function parseArray(arr) {
         arr.forEach(item => {
             if (Array.isArray(item)) {
@@ -271,9 +377,7 @@ function saveFacts(fileUuid) {
             }
         });
     }
-
     parseArray(rawFacts);
-
 
     var highlights = highlightedSegments(files.value[fileUuid].extractedFileText, files.value[fileUuid].highlights)
 
@@ -293,22 +397,30 @@ function saveFacts(fileUuid) {
         fact.context = file.context;
         fact.structures = structures;
         fact.contexts = contexts;
+        if(typeof fact.fact === 'object' && fact.fact !== null) fact.fact = JSON.stringify(fact.fact)
+        if(!Array.isArray(fact.keywords) && fact.keywords !== null) fact.keywords = [fact.keywords]
+        if(!Array.isArray(fact.questions) && fact.questions !== null) fact.questions = [fact.questions]
     })
 
-    createFacts(parsedObjects)
-    file.status = "complete";
+    try {
+        await createFacts(parsedObjects)
+        notify({ group: "success", title: "Success", text: "Facts created successfully" }, 4000) // 4s
+        let socketIndex = file.sockets.findIndex(s => s.uuid === socket.uuid);
+        if (socketIndex !== -1) files.value[fileUuid].sockets.splice(socketIndex, 1);
+        continueProcessing(fileUuid);
+    }
+    catch (error) {
+        notify({ group: "failure", title: "Error", text: "Error creating fact." }, 4000) // 4s
+    }
 
-    // Now, `parsedObjects` contains all the extracted objects from `rawFacts`
-    // You can proceed to use or return the `parsedObjects` array as needed
 }
 
-function viewFile(url)
-{
+
+function viewFile(url) {
     window.open(import.meta.env.VITE_STORAGE_URL + "/" + url, '_blank');
 }
 
-function viewFileInGoogle(url)
-{
+function viewFileInGoogle(url) {
     window.open(`https://docs.google.com/viewer?url=${import.meta.env.VITE_STORAGE_URL + "/" + url}&embedded=true`, '_blank');
 }
 
@@ -324,12 +436,14 @@ const submitForm = () => {
     // console.log('Form Submitted:', selectedFileDetails)
 }
 
-function messageComplete(fileUuid)
-{
-    console.log("Message Complete")
-    files.value[fileUuid].sockets.forEach((socket)=>{
-        if(socket.status == 'waiting') console.log('socket waiting', socket)
-    })
+function messageComplete(val, fileUuid) {
+    console.log("Message Complete", { val, fileUuid })
+    let socket = files.value[fileUuid].sockets.find((socket) => { return socket.sessionId == val.sessionId })
+    socket.processingStatus = 'completed'
+    if (socket) saveFact(fileUuid, socket)
+    // files.value[fileUuid].sockets.forEach((socket) => {
+    //     if (socket.status == 'waiting') console.log('socket waiting', socket)
+    // })
 }
 </script>
   

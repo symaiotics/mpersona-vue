@@ -7,9 +7,9 @@
         <div class="md:grid md:grid-cols-12 md:gap-12   ">
 
           <!-- Content -->
-          <div class="md:col-span-6 lg:col-span-5 mb-8 md:mb-0 items-center text-center  ">
+          <div class="md:col-span-12 lg:col-span-12 mb-8 md:mb-0 items-center text-center  ">
 
-            <img class=" mx-auto h-auto pointer-events-none" style="width:300px" src="/images/splash1.png"
+            <img class=" mx-auto h-auto pointer-events-none " style="width:300px" src="/images/splash1.png"
               alt="iPhone mockup" aria-hidden="true" />
 
 
@@ -20,13 +20,13 @@
 
           </div>
 
-          <div class="md:col-span-6 lg:col-span-6 mb-8 md:mb-0 items-center text-center  ">
+          <!-- <div class="md:col-span-6 lg:col-span-6 mb-8 md:mb-0 items-center text-center  "> -->
             <!-- <img :src = "defaultImage"/> -->
-            <img class="w-full rounded-md content-cover" :src="startup1" width="352" height="264" alt="Persona thumbnail" />
+            <!-- <img class="w-full rounded-md content-cover" :src="startup1" width="352" height="264" alt="Persona thumbnail" /> -->
             <!-- <img class=" mx-auto h-auto pointer-events-none" style="width:300px" :src="defaultImage"  alt="iPhone mockup" aria-hidden="true" /> -->
 
  
-          </div>
+          <!-- </div> -->
 
           <!-- Mobile mockup
           <ModalVideoIphone :thumb="Splash1" :thumbWidth="290" :thumbHeight="624" thumbAlt="Modal video thumbnail"
