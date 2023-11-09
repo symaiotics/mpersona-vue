@@ -1,82 +1,33 @@
 <template>
   <div class="bg-gray-100 min-h-screen p-2">
     <div class=" mx-auto bg-white p-8 rounded shadow-lg">
-
-
-
-
-      <div class="bg-white">
-        <!-- Top Header -->
-        <div class="flex justify-between items-center py-4 border-b border-gray-300">
-          <div class="flex items-center">
-            <img :src="canada" alt="Canada Flag" class="w-96 h-10 mr-4">
-            <div>
-              <span class="font-bold">Government of Canada</span>
-              <br>
-              <span>Gouvernement du Canada</span>
-            </div>
-          </div>
-
-          <div class="flex items-center">
-            <input type="text" placeholder="Search FINTRAC website" class="border rounded-l px-4 py-2 focus:outline-none">
-            <!-- <button class="bg-gray-300 px-4 py-2 rounded-r border">
-          <img src="path_to_search_icon.png" alt="Search Icon" class="w-4 h-4">
-        </button> -->
-          </div>
-
-          <span>Français</span>
-        </div>
-
-        <!-- Bottom Header -->
-        <div class="flex align-right justify-between w-36 items-right px-6 py-4 bg-gray-800 text-white">
-          <div class="flex items-center ">
-            <span>MENU</span>
-            <span class="ml-4">▼</span>
-          </div>
-          <!-- <div>
-        <span>Canada.ca</span>
-        <span class="font-bold mx-2">></span>
-        <span>FINTRAC</span>
-      </div> -->
-        </div>
-      </div>
-
       <div class="flex flex-box w-full justify-center ">
 
-      <section class="  w-10/12">
+        <section class="  w-10/12">
 
-        <h1 id="wb-cont" class="font-lato font-bold text-3xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
-          Compliance AI Assistant (New!)
-        </h1>
+          <h1 id="wb-cont" class="font-lato font-bold text-3xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+            Legs and Regs AI Assistant </h1>
 
 
-        <p class="mb-3">
-          <strong>From:</strong>
-          <a href="/intro-eng" class="text-blue-500 hover:underline">
-            Financial Transactions and Reports Analysis Centre of Canada
-          </a>
-          (FINTRAC)
-        </p>
+          <p class="mb-1">
+            <strong>From:</strong>
+            <a href="/intro-eng" class="text-blue-500 hover:underline">
+              Financial Transactions and Reports Analysis Centre of Canada
+            </a>
+            (FINTRAC)
+          </p>
 
- 
-            <section class="mb-6">
-              <h2 id="wb-cont" class="font-lato text-2xl font-bold text-1xl.5 mt-5 mb-1 pb-1 ">
-                FINTRAC's Compliance Assistant is ready to help your organization to become fully compliant with the
-                PCMLTFA.
 
-              </h2>
-              <p>Use this service to learn about compliance obligations, how to create a compliance program, and how to
-                submit reports to FINTRAC. <br/>Learn about:</p>
-              <ul class="list-disc pl-5 mt-2 text-blue-800 cursor-pointer">
-                <li @click = "quickLinks('Tell me about New incoming Legislation and Regulations')" >New incoming Legislation and Regulations</li>
-                <li @click = "quickLinks('Tell me how I can register with FONTRAC')">How to register with FINTRAC</li>
-                <li @click = "quickLinks('Tell me about new Large VIrtual CUrrency Transaction Reports')">New Large Virtual Currency Transaction Reports</li>
-                <li @click = "quickLinks('Tell me how to register with FINTRAC')">How to Register with FINTRAC</li>
-              </ul>
-            </section>
-      
-      </section>
-</div>
+          <section class="mb-2">
+            <p id="wb-cont" class="font-lato text-1xl.5 mt-1 mb-1 pb-1 ">
+              This tool puts forward a roster of capable AI personas to address questions relating to forms, validation
+              rules, and technical details of the FINTRAC Report Ingest system.
+            </p>
+
+          </section>
+
+        </section>
+      </div>
       <div class="flex justify-center ">
 
         <div class="flex w-10/12">
@@ -85,6 +36,7 @@
           <section class="mb-6 w-2/3">
 
             <!-- <HeroChat /> -->
+            Roster:
             <Socket alignment="center" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
               :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete">
             </Socket>
@@ -106,10 +58,8 @@
 
           </section>
           <section class=" w-1/3">
-
             <ChatList v-if="selectedPersona?.knowledgeProfiles?.length" :facts="factSearchResults"
               @promptQuestion="promptQuestion" />
-
           </section>
         </div>
       </div>
@@ -117,50 +67,38 @@
     </div>
   </div>
 </template>
- 
-
-
 
 <script setup>
 
 import { ref, onMounted, nextTick, watch } from 'vue';
-
 import { v4 as uuidv4 } from 'uuid';
-
-import Header from '@/partials/Header.vue'
-import PageIllustration from '@/partials/PageIllustration.vue'
-import HeroChat from '@/partials/HeroChat.vue'
-import HelpList from '@/partials/HelpList.vue'
-import ChatList from '@/partials/ChatList.vue'
-import RelatedLinks from '@/partials/RelatedLinks.vue'
-import Footer from '@/partials/Footer.vue'
-import canada from "@/images/canada.svg";
-
 import DisplayPersona from '@/components/DisplayPersona.vue'
 import Socket from '@/components/Socket.vue'
+import ChatList from '@/partials/ChatList.vue'
 
 //Composables
 import { usePersonas } from '@/composables/usePersonas.js'
+import { useRosters } from '@/composables/useRosters.js'
 import { useFacts } from '@/composables/useFacts.js'
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
+const { getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
 
-let props = defineProps({ personaId: { type: String, default: null } })
+let props = defineProps({ rosterId: { type: String, default: null } })
 let triggerGenerate = ref(false);
 let chatPrompt = ref("");
-// let initialPrompt = ref('Say hello.');
 let sessionId = ref(uuidv4())
 let messageHistory = ref([]);
 const textarea = ref(null);
 
 onMounted(async () => {
   setDark(false)
-  if (props.personaId) {
-    await getPersonas();
-    selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.personaId })
-    if (selectedPersona?.value?.basePrompt?.length) {
-      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
-    }
+  if (props.rosterId) {
+    await getRosterFromUuid();
+    // selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.rosterId })
+    // if (selectedPersona?.value?.basePrompt?.length) {
+    //   messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+    // }
   }
 })
 
@@ -174,11 +112,10 @@ function setDark(newValue) {
   }
 }
 
-function quickLinks(text)
-{
-  chatPrompt.value = text;
-  trigger();
-}
+// function quickLinks(text) {
+//   chatPrompt.value = text;
+//   trigger();
+// }
 
 
 function trigger() {

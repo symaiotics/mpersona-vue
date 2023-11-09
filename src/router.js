@@ -8,11 +8,13 @@ import Join from '@/pages/Join.vue'
 import Login from '@/pages/Login.vue'
 import KnowledgeProfiles from '@/pages/KnowledgeProfiles.vue'
 import LinkPersona from '@/pages/LinkPersona.vue'
+import LinkRoster from '@/pages/LinkRoster.vue'
 import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
 import Assist from '@/pages/Assist.vue'
 import Chat from '@/pages/Chat.vue'
-import FT from '@/pages/demos/FT.vue'
-import GOV from '@/pages/demos/GOV.vue'
+import FT from '@/pages/apps/FT.vue'
+import LR from '@/pages/apps/LR.vue'
+import GOV from '@/pages/apps/GOV.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -70,17 +72,20 @@ const router = createRouter({
       component: Chat,
       props:true,
     },
-
-
     {
-      path: '/demos/ft/:personaId?',
+      path: '/apps/ft/:rosterId?',
       name: 'ft',
       component: FT,
       props:true,
     },
-
     {
-      path: '/demos/gov/:personaId?',
+      path: '/apps/lr/:rosterId?',
+      name: 'lr',
+      component: LR,
+      props:true,
+    },
+    {
+      path: '/apps/gov/:personaId?',
       name: 'gov',
       component: GOV,
       props:true,
@@ -111,7 +116,15 @@ const router = createRouter({
       name: 'linkPersona',
       component: LinkPersona,
       props: true
-    },{
+    },
+    {
+      path: '/linkRoster/:link?',
+      name: 'linkRoster',
+      component: LinkRoster,
+      props: true
+    },    
+    
+    {
       path: '/assist/:code?',
       name: 'assist',
       component: Assist,

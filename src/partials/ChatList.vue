@@ -64,7 +64,7 @@
             <article class="mb-2" v-show="category == 'questions' && listQuestions?.[0]?.question">
               <template v-for="(questionSet, index) in listQuestions" :key="'questionSet' + index">
                 <div v-if="index == 0" v-for="(question, index2) in questionSet.question" :key="'question' + index2"
-                  class="flex pr-6 py-5 bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
+                  class="flex pr-6 py-5 text-gray-200 dark:text-white  bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
 
                   <!-- Category icon -->
                   <div class="flex items-center px-4 sm:px-8">
@@ -105,7 +105,7 @@
 
 
               <div v-for="(fact, index) in listFacts" :key="'fact' + index"
-                class="flex pr-6 py-5 bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
+                class="flex pr-6 py-5 text-gray-200 dark:text-white  bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
 
 
 
@@ -139,7 +139,7 @@
 
 
               <div v-for="(resource, index) in listResources" :key="'fact' + index"
-                class="flex pr-6 py-5 bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
+                class="flex pr-6 py-5 text-gray-200 dark:text-white  bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
 
 
 
