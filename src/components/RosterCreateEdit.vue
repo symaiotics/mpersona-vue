@@ -241,7 +241,7 @@ function triggerDelete() {
 
 function demo(uuid)
 {
-    window.open(import.meta.env.VITE_SELF + "/apps/lr/" + uuid, '_blank');
+    window.open(import.meta.env.VITE_SELF + "/apps/gc/" + uuid, '_blank');
 }
 
 function createLink(linkType) {

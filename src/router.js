@@ -13,7 +13,7 @@ import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
 import Assist from '@/pages/Assist.vue'
 import Chat from '@/pages/Chat.vue'
 import FT from '@/pages/apps/FT.vue'
-import LR from '@/pages/apps/LR.vue'
+import GC from '@/pages/apps/GC.vue'
 import GOV from '@/pages/apps/GOV.vue'
 
 
@@ -79,9 +79,9 @@ const router = createRouter({
       props:true,
     },
     {
-      path: '/apps/lr/:rosterId?',
-      name: 'lr',
-      component: LR,
+      path: '/apps/gc/:rosterId?',
+      name: 'gc',
+      component: GC,
       props:true,
     },
     {

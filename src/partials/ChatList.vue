@@ -14,7 +14,7 @@
             <div class="flex flex-wrap justify-center -m-1">
 
               <button
-  class="font-medium px-4 py-2 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 shadow transition duration-150 ease-in-out rounded-full inline-flex items-center justify-center m-1"
+  class="font-medium px-4 py-2  bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 shadow transition duration-150 ease-in-out rounded-full inline-flex items-center justify-center m-1"
   :class="{ 'bg-teal-500 hover:bg-teal-500 dark:bg-teal-600 dark:hover:bg-teal-600 dark:bg-opacity-25 dark:hover:bg-opacity-25': category === 'questions' }"
   @click="category = 'questions'">
   <svg class="w-4 h-4 shrink-0 mr-2" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
@@ -22,8 +22,7 @@
       :class="category === 'questions' ? 'text-gray-800 dark:text-teal-400' : 'text-teal-500'"
       d="M5 16H4a4 4 0 01-4-4v-1h2v1a2 2 0 002 2h1v2zM13 10h-1.686l-1.207-1.207L14.37 4.63a2.121 2.121 0 00-3-3L7.207 5.793 5.99 4.576 5.98 3.02 3.038.079 0 3.117 3 6h1.586l1.207 1.207L4 9l3 3 1.793-1.793L10 11.414V13l3.01 3.01 2.98-2.979L13 10z" />
   </svg>
-  <span class="transition duration-150 ease-in-out"
-    :class="category === 'questions' ? 'text-gray-800 dark:text-teal-400' : 'text-gray-600 dark:text-gray-300'">Related
+  <span class="transition duration-150 ease-in-out text-black dark:text-white">Related
     Questions</span>
 </button>
 
@@ -37,8 +36,7 @@
                     :class="category === 'facts' ? 'text-purple-200 dark:text-purple-400' : 'text-purple-500'"
                     d="M12.071 0L15 2.929v4.142L12.071 10H12V7.101L7.9 3H5v-.071L7.929 0h4.142zm-5 5L10 7.929v4.142L7.071 15H2.929L0 12.071V7.929L2.929 5h4.142z" />
                 </svg>
-                <span class="transition duration-150 ease-in-out"
-                  :class="category === 'facts' ? 'text-white dark:text-purple-400' : 'text-gray-600 dark:text-gray-300'">Facts</span>
+                <span class="transition duration-150 ease-in-out text-black dark:text-white">Facts</span>
               </button>
 
 
@@ -51,8 +49,7 @@
                     :class="category === 'resources' ? 'text-indigo-200 dark:text-indigo-400' : 'text-indigo-500'"
                     d="M1 0h8a1 1 0 011 1v10a1 1 0 01-1 1H1a1 1 0 01-1-1V1a1 1 0 011-1zm14.124 4.085v-.001a1 1 0 01.868 1.116l-1.243 9.932a1 1 0 01-1.117.868l-7.938-1 .248-1.988 6.946.871.995-7.938-2.007-.251.248-1.984 3 .375z" />
                 </svg>
-                <span class="transition duration-150 ease-in-out"
-                  :class="category === 'resources' ? 'text-white dark:text-indigo-400' : 'text-gray-600 dark:text-gray-300'">Resources</span>
+                <span class="transition duration-150 ease-in-out text-black dark:text-white">Resources</span>
               </button>
 
             </div>
@@ -64,7 +61,7 @@
             <article class="mb-2" v-show="category == 'questions' && listQuestions?.[0]?.question">
               <template v-for="(questionSet, index) in listQuestions" :key="'questionSet' + index">
                 <div v-if="index == 0" v-for="(question, index2) in questionSet.question" :key="'question' + index2"
-                  class="flex pr-6 py-5 text-gray-200 dark:text-white  bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
+                  class="flex pr-6 py-5 bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
 
                   <!-- Category icon -->
                   <div class="flex items-center px-4 sm:px-8">
@@ -105,7 +102,7 @@
 
 
               <div v-for="(fact, index) in listFacts" :key="'fact' + index"
-                class="flex pr-6 py-5 text-gray-200 dark:text-white  bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
+                class="flex pr-6 py-5 bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
 
 
 
@@ -139,7 +136,7 @@
 
 
               <div v-for="(resource, index) in listResources" :key="'fact' + index"
-                class="flex pr-6 py-5 text-gray-200 dark:text-white  bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
+                class="flex pr-6 py-5 bg-white dark:bg-gray-800 divide-x divide-gray-200 dark:divide-gray-700 shadow-2xl">
 
 
 
