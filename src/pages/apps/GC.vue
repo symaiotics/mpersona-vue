@@ -153,11 +153,9 @@ onMounted(async () => {
   setDark(false)
   if (props.rosterId) {
     await getRosterFromUuid(props.rosterId);
-    console.log("selectedRoster", selectedRoster.value);
-    // selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.rosterId })
-    // if (selectedPersona?.value?.basePrompt?.length) {
-    //   messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
-    // }
+    // console.log("selectedRoster", selectedRoster.value);
+    // selectedPersona.value = selectedRoster.value.find((persona) => { return persona.uuid == props.rosterId })
+   
   }
 })
 
@@ -261,6 +259,11 @@ function promptQuestion(question) {
 function selectPersona(persona) {
   messageHistory.value = []; //Clear message history when you switch Personas
   selectedPersona.value = persona
+
+  if (selectedPersona?.value?.basePrompt?.length) {
+       messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+  }
+                        
   activeTab.value = 1;
 }
 
