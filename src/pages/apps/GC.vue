@@ -51,7 +51,7 @@
               <template v-slot:tab-0>
                 <div v-if="selectedRoster">
 
-                  <div class="grid grid-cols-3 gap-4">
+                  <div class="grid grid-cols-2 gap-4">
                     <template v-for="persona in selectedRoster.personas" :key="persona.uuid">
                       <div>
                         <DisplayPersona @click="selectPersona(persona)" :persona="persona" alignment="center" />
