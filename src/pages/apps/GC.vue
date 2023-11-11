@@ -55,11 +55,6 @@
                     <template v-for="persona in selectedRoster.personas" :key="persona.uuid">
                       <div>
                         <DisplayPersona @click="selectPersona(persona)" :persona="persona" alignment="center" />
-                        <!--
-      <Socket alignment="center" :persona="persona" :userPrompt="chatPrompt"
-        :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete">
-      </Socket>
-      -->
                       </div>
                     </template>
                   </div>
@@ -70,19 +65,17 @@
               <template v-slot:tab-1>
                 <template v-if="selectedPersona">
                   <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
-                    :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete">
+                    :model="adminModels[0]" :messageHistory="messageHistory" :trigger="triggerGenerate"
+                    @messageComplete="messageComplete" @messagePartial="messagePartial">
+                    <ChatWindow :messages="messageHistory" />
                   </Socket>
-
-                  <!--<Socket alignment="center" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
-              :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete">
-            </Socket>-->
 
                   <div class="w-full mx-auto ">
                     <form @submit.prevent="trigger" class="relative flex items-center mt-8" data-aos="fade-down"
                       data-aos-delay="300">
                       <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
                         v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
-                        placeholder="Ask me about …" aria-label="Search anything" />
+                        placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
                       <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
                         <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
                           <path class="fill-current text-gray-400"
@@ -124,14 +117,17 @@ import { ref, onMounted, nextTick, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import DisplayPersona from '@/components/DisplayPersona.vue'
 import Socket from '@/components/Socket.vue'
+import ChatWindow from '@/components/ChatWindow.vue'
 import ChatList from '@/partials/ChatList.vue'
 import Tabs from '@/components/Tabs.vue';
 import canada from "@/images/canada.svg";
 
 //Composables
+import { useModels } from '@/composables/useModels.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useRosters } from '@/composables/useRosters.js'
 import { useFacts } from '@/composables/useFacts.js'
+const { adminModels } = useModels()
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
 const { rosters, selectedRoster, getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
@@ -145,8 +141,8 @@ const textarea = ref(null);
 
 let activeTab = ref(0)
 const tabs = ref([
-  { label: 'Rosters' },
-  { label: 'Interact' }
+  { label: 'Roster / Équipe' },
+  { label: 'Interact / Interagir' }
 ]);
 
 onMounted(async () => {
@@ -155,7 +151,7 @@ onMounted(async () => {
     await getRosterFromUuid(props.rosterId);
     // console.log("selectedRoster", selectedRoster.value);
     // selectedPersona.value = selectedRoster.value.find((persona) => { return persona.uuid == props.rosterId })
-   
+
   }
 })
 
@@ -177,7 +173,7 @@ function setDark(newValue) {
 
 function trigger() {
   //Save the history
-  messageHistory.value.push({ role: "user", content: JSON.stringify(chatPrompt.value) })
+  messageHistory.value.push({ role: "user", content: chatPrompt.value })
 
   triggerGenerate.value = !triggerGenerate.value;
 
@@ -188,15 +184,28 @@ function trigger() {
   nextTick(() => {
     chatPrompt.value = "";
   })
+}
 
+function messagePartial(val) {
 
+  if (messageHistory?.value?.length) {
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'user') {
+      messageHistory.value.push({ role: "system", content: val.message })
+    }
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'system' && val.message.length) {
+      messageHistory.value[messageHistory.value.length - 1].content = val.message;
+    }
+  }
 }
 
 function messageComplete(val) {
-  //On message completion add it
-  messageHistory.value.push({ role: "system", content: val.message })
-  messageHistory.value = cleanseMessageHistory(messageHistory.value)
-  // chatPrompt.value = "";
+  console.log("MC", val)
+  if (messageHistory?.value?.length) {
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'system') {
+      messageHistory.value[messageHistory.value.length - 1].content = val.message;
+    }
+  }
+
 }
 
 function cleanseMessageHistory(messageHistory) {
@@ -254,16 +263,28 @@ function promptQuestion(question) {
 
 }
 
-
-
 function selectPersona(persona) {
-  messageHistory.value = []; //Clear message history when you switch Personas
-  selectedPersona.value = persona
+  selectedPersona.value = persona;
 
+  //Don't automatically remove the history
+  // messageHistory.value = []; //Clear message history when you switch Personas
+
+  // if (selectedPersona?.value?.basePrompt?.length) {
+  //      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+  // }
+
+  //Instead, replace the original system prompt
   if (selectedPersona?.value?.basePrompt?.length) {
-       messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+    if (messageHistory?.value?.length) {
+      if (messageHistory.value[0].role == 'system') messageHistory.value[0] = { role: "system", content: selectedPersona.value.basePrompt };
+      else messageHistory.value.unshift({ role: "system", content: selectedPersona.value.basePrompt })
+    }
+    else {
+      messageHistory.value = []
+      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+    }
   }
-                        
+
   activeTab.value = 1;
 }
 

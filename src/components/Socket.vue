@@ -30,10 +30,10 @@
             </slot>
 
             <!-- Interim and final message section -->
-            <div v-if="partialMessage" v-html="partialMessageMarkdown"
+            <div v-if="partialMessage && !messageHistory.length" v-html="partialMessageMarkdown"
                 class="border w-full transition duration-300 preserve-whitespace-pre-line p-4 pt-10 rounded-md"></div>
 
-            <div v-if="completedMessage" class="relative">
+            <div v-if="completedMessage && !messageHistory.length" class="relative">
                 <div class="absolute top-0 right-0 flex space-x-4 p-4">
                     <StarIcon @click="like"
                         class="h-6 w-6 dark:text-yellow-400 text-yellow-600 transform hover:scale-105 transition-transform duration-150" />
@@ -166,8 +166,7 @@ const thisSessionsContent = computed(() => sessionsContent.value.filter((session
 const userPrompt = computed(() => props.userPrompt);
 const sessionId = computed(() => props.sessionId);
 
-
-const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket', 'messageComplete']
+const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket', 'messageComplete', 'messagePartial']
 );
 
 let editPersona = ref(false)
@@ -239,11 +238,16 @@ watch(completedMessage, (newValue, oldValue) => {
             // console.log(thisSessionsContent.value[0])
             // console.log(thisSessionsContent.value[0].extracts)
             // console.log(thisSessionsContent.value[0].extracts.value.json)
-            actionJson(thisSessionsContent.value[0].extracts.value.json)
+            // actionJson(thisSessionsContent.value[0].extracts.value.json)
         }
     }
     // updateSession(sessionId.value, stageIndex, stageUuid, socketIndex)
 });
+
+
+watch(partialMessage, (newValue, oldValue) => {
+        emit('messagePartial', {message: newValue, sessionId:sessionId.value});
+ });
 
 watch(errorMessage, (newValue, oldValue) => {
     // console.log("Error message", newValue);
@@ -384,6 +388,8 @@ const partialMessageMarkdown = computed(() => {
 });
 
 const md = new MarkdownIt();
+
+
 const completedMessageMarkdown = computed(() => {
     return md.render(completedMessage.value);
 });

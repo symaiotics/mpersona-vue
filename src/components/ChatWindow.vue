@@ -1,11 +1,20 @@
 <template>
     <!-- {{ messages }} -->
     <div class="flex flex-col h-full overflow-y-auto p-4 space-y-4 dark:bg-gray-800" ref="chatContainer">
-        <div v-for="message in messages" :key="message.id" class="flex" :class="{ 'justify-end': message.role == 'user' }">
-            <div class="py-2 px-4 rounded-lg" :class="[message.role == 'user'
-                ? 'bg-blue-500 text-white dark:bg-blue-700'
-                : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-white']" v-html = "renderMarkdown(message.content) ">
+        <div v-for="(message, index) in messages" :key="message.id" class="flex"
+            :class="{ 'justify-end': message.role == 'user' }">
+
+
+            <div v-if="index > 0 || message.role == 'user'" :class="[message.role == 'user'
+                ? ''
+                : 'w-full']">
+                <div class="py-2 px-4 rounded-lg " :class="[message.role == 'user'
+                    ? 'bg-blue-500 text-white dark:bg-blue-700'
+                    : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-white']"
+                    v-html="renderMarkdown(message.content)">
+                </div>
             </div>
+
         </div>
     </div>
 </template>
