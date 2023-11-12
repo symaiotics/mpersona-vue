@@ -74,8 +74,8 @@
                             </svg>
                           </button>
                         </form>
-                        <p class = "italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
-                        <p class = "italic pt-0">Cost / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p><br/>
+                        <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
+                        <p class="italic pt-0">Cost / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p><br />
 
                       </div>
 
@@ -101,7 +101,7 @@
 
 <script setup>
 
-import { ref, onMounted, nextTick, watch } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch, watchEffect } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import DisplayPersona from '@/components/DisplayPersona.vue'
 import DisplayPersonaStack from '@/components/DisplayPersonaStack.vue'
@@ -128,6 +128,7 @@ let sessionId = ref(uuidv4())
 let messageHistory = ref([]);
 const textarea = ref(null);
 let selectedPersonaIndex = ref(null)
+const isAutoScrollActive = ref(true);
 
 let activeTab = ref(0)
 const tabs = ref([
@@ -140,7 +141,15 @@ onMounted(async () => {
   if (props.rosterId) {
     await getRosterFromUuid(props.rosterId);
   }
+  window.addEventListener('scroll', handleScroll);
+
 })
+
+
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 
 
 function setDark(newValue) {
@@ -175,18 +184,9 @@ function messagePartial(val) {
       messageHistory.value[messageHistory.value.length - 1].content = val.message;
     }
   }
-   scrollToBottom();
+  //  scrollToBottom();
 }
 
-
-function scrollToBottom() {
-  // Replace 'messageContainer' with the actual ID of your message container
-  // const messageContainer = document.getElementById('messageContainer');
-  // if (messageContainer) {
-  //   messageContainer.scrollTop = messageContainer.scrollHeight;
-  // }
-  window.scrollTo(0, document.body.scrollHeight);
-}
 
 function messageComplete(val) {
   console.log("MC", val)
@@ -197,10 +197,31 @@ function messageComplete(val) {
   }
 }
 
-function costOfInteraction()
-{
+
+const handleScroll = () => {
+  const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
+  isAutoScrollActive.value = isAtBottom;
+};
+
+// Function to scroll to the bottom of the page
+const scrollToBottom = () => {
+  window.scrollTo(0, document.body.scrollHeight);
+};
+
+// Watch for changes in logLines and auto-scroll if active
+watchEffect(() => {
+  if (isAutoScrollActive.value) {
+    scrollToBottom();
+  }
+});
+
+
+
+
+
+function costOfInteraction() {
   let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPrompt.value.length;
-  return (lengthOfHistory / 4000) *0.01;
+  return (lengthOfHistory / 4000) * 0.01;
 }
 
 function cleanseMessageHistory(messageHistory) {

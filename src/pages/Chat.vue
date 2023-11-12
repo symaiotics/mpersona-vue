@@ -24,8 +24,11 @@
 
             <HeroChat />
             <!-- {{ messageHistory }} -->
-            <Socket alignment="center" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
-              :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete">
+            <Socket alignment="center" :model = "adminModels[0]" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
+              :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete" @messagePartial="messagePartial">
+<!-- {{ messageHistory }} -->
+              <ChatWindow :messages="messageHistory" />
+
             </Socket>
             <!-- <ChatWindow :messages="messageHistory"/> -->
 
@@ -80,8 +83,10 @@ import ChatWindow from '@/components/ChatWindow.vue'
 import Socket from '@/components/Socket.vue'
 
 //Composables
+import { useModels } from '@/composables/useModels.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useFacts } from '@/composables/useFacts.js'
+const { adminModels } = useModels()
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
 const { searchFacts, factSearchResults } = useFacts()
 
@@ -120,12 +125,37 @@ function trigger() {
 
 }
 
-function messageComplete(val) {
-  //On message completion add it
-  messageHistory.value.push({ role: "system", content: val.message })
-  messageHistory.value = cleanseMessageHistory(messageHistory.value)
-  // chatPrompt.value = "";
+// function messageComplete(val) {
+//   //On message completion add it
+//   messageHistory.value.push({ role: "system", content: val.message })
+//   messageHistory.value = cleanseMessageHistory(messageHistory.value)
+//   // chatPrompt.value = "";
+// }
+
+
+
+function messagePartial(val) {
+  if (messageHistory?.value?.length) {
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'user') {
+      messageHistory.value.push({ role: "system", content: val.message })
+    }
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'system' && val.message.length) {
+      messageHistory.value[messageHistory.value.length - 1].content = val.message;
+    }
+  }
+  //  scrollToBottom();
 }
+
+
+function messageComplete(val) {
+  console.log("MC", val)
+  if (messageHistory?.value?.length) {
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'system') {
+      messageHistory.value[messageHistory.value.length - 1].content = val.message;
+    }
+  }
+}
+
 
 function cleanseMessageHistory(messageHistory) {
   // Define a function to check if the messageHistory exceeds the length limit.
