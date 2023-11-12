@@ -32,7 +32,7 @@
             <Tabs :tabs="tabs" v-model="activeTab">
               <template v-slot:tab-0>
                 <div v-if="selectedRoster">
-                  <div class="grid grid-cols-2 gap-6">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     <template v-for="(persona, index) in selectedRoster.personas" :key="persona.uuid">
                       <div class="pl-6 pr-6">
                         <DisplayPersona @click="selectPersona(persona, index)" :persona="persona" alignment="center" />
