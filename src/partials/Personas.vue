@@ -71,30 +71,19 @@
 
                 <!-- {{ filteredPersonas }} -->
                 <div v-for="(persona, index) in filteredPersonas" :key="'persona' + index" class="relative">
-                  <div  @click="selectAndInteract(persona)">
-                    <img class="w-full" :src="persona.url || defaultImage" width="352" height="264" alt="Persona thumbnail" />
-                    <div class="absolute inset-0 flex flex-col">
-                      <div class="grow flex justify-center items-center">
-                        <!-- <a class="hover:opacity-75 transition duration-150 ease-in-out" href="#0">
-                        <img src="../images/play-button.svg" width="72" height="72" alt="Play icon" />
-                      </a> -->
-                      </div>
-                      <div
-                        class="w-full bottom-0 px-6 py-3 bg-white opacity-90 dark:bg-gray-900 flex justify-between items-center">
-
-                        {{ persona.name }}<br />
-                        {{ persona.description.en }}
-
-
-                        <div
-                          class="inline-flex px-3 py-1 text-xs font-medium text-white bg-gray-900 bg-opacity-50 dark:text-teal-400 dark:bg-teal-600 dark:bg-opacity-25 rounded-full">
-                          <button 
-                            class="hover:opacity-75 transition duration-150 ease-in-out">
-                            Select
-                          </button>
-                        </div>
-                      </div>
+                  <div @click="selectAndInteract(persona)">
+                    <img class="w-full" :src="persona.url || defaultImage" width="352" height="264"
+                      alt="Persona thumbnail" />
+                  </div>
+                  <div @click.stop="selectAndInteract(persona)" class="px-6 py-3 bg-white dark:bg-gray-900 flex flex-col items-start">
+                    <div class="mb-2">
+                      <div class="font-bold">{{ persona.name }}</div>
+                      <div>{{ persona.description.en }}</div>
                     </div>
+                    <button 
+                      class="px-3 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-teal-600 rounded-full hover:opacity-75 transition duration-150 ease-in-out">
+                      Select
+                    </button>
                   </div>
                 </div>
 
@@ -312,7 +301,7 @@ function selectCategory(category) {
 function selectAndInteract(persona) {
   selectedPersona.value = persona;
   console.log("Selected Persona", persona)
-  router.push({ name: 'chat' , params:{personaId:persona.uuid}})
+  router.push({ name: 'chat', params: { personaId: persona.uuid } })
 
 }
 
