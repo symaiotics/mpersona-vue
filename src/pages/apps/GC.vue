@@ -2,73 +2,53 @@
   <div class="bg-gray-100 min-h-screen p-2">
     <div class=" mx-auto bg-white p-8 rounded shadow-lg">
 
-
       <!-- Top Header -->
       <div class="bg-white">
         <div class="flex justify-between items-center py-4 border-b border-gray-300">
           <div class="flex items-center">
             <img :src="canada" alt="Canada Flag" class="w-64  mr-4">
           </div>
-          <span>Français</span>
+          <!-- <span>Français</span> -->
         </div>
       </div>
 
       <div class="flex flex-box w-full justify-center ">
-
         <section class="w-10/12">
-
           <h1 v-if="selectedRoster" id="wb-cont"
             class="font-lato font-bold text-3xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
             {{ selectedRoster.name }} </h1>
-
-          <!-- 
-          <p class="mb-1">
-            <strong>From:</strong>
-            <a href="https://fintrac-canafe.gc.ca" class="text-blue-500 hover:underline">
-              Financial Transactions and Reports Analysis Centre of Canada
-            </a>
-            (FINTRAC)
-          </p> -->
-
 
           <section class="mb-2">
             <p v-if="selectedRoster" id="wb-cont" class="font-lato text-1xl.5 mt-1 mb-1 pb-1 ">
               {{ selectedRoster.description.en }}
             </p>
-
           </section>
-
         </section>
       </div>
+
       <div class="flex justify-center ">
-
         <div class=" w-10/12">
-
-
           <section class="mb-6 w-full">
-
             <Tabs :tabs="tabs" v-model="activeTab">
               <template v-slot:tab-0>
                 <div v-if="selectedRoster">
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <template v-for="persona in selectedRoster.personas" :key="persona.uuid">
-                      <div>
-                        <DisplayPersona @click="selectPersona(persona)" :persona="persona" alignment="center" />
+                  <div class="grid grid-cols-2 gap-6">
+                    <template v-for="(persona, index) in selectedRoster.personas" :key="persona.uuid">
+                      <div class="pl-6 pr-6">
+                        <DisplayPersona @click="selectPersona(persona, index)" :persona="persona" alignment="center" />
                       </div>
                     </template>
                   </div>
-
-
                 </div>
               </template>
 
-
               <template v-slot:tab-1>
                 <div class="grid grid-cols-12 gap-4 h-full">
+
                   <!-- Left Column (Skinny) - Aligned to Bottom -->
-                  <div v-if = "selectedRoster?.personas" class="col-span-1 flex flex-col justify-end">
-                    <DisplayPersonaStack :personas="selectedRoster.personas" @selectPersona = "selectPersona" />
+                  <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col justify-end">
+                    <DisplayPersonaStack :personas="selectedRoster.personas" :selectedPersonaIndex="selectedPersonaIndex"
+                      @selectPersona="selectPersona" />
                   </div>
 
                   <!-- Right Column (Wider) -->
@@ -81,7 +61,7 @@
                       </Socket>
 
                       <div class="w-full mx-auto ">
-                        <form @submit.prevent="trigger" class="relative flex items-center mt-8" data-aos="fade-down"
+                        <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
                           data-aos-delay="300">
                           <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
                             v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
@@ -94,36 +74,27 @@
                             </svg>
                           </button>
                         </form>
+                        <p class = "italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
+                        <p class = "italic pt-0">Cost / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p><br/>
+
                       </div>
 
-                   
+
                     </template>
-                    
+
                   </div>
-                  
+
                   <section class="col-span-12 w-full">
-                        <ChatList v-if="selectedPersona?.knowledgeProfiles?.length" :facts="factSearchResults"
-                          @promptQuestion="promptQuestion" />
-                      </section>
+                    <ChatList v-if="selectedPersona?.knowledgeProfiles?.length" :facts="factSearchResults"
+                      @promptQuestion="promptQuestion" />
+                  </section>
 
                 </div>
               </template>
-
-
             </Tabs>
-
-            <!-- <HeroChat /> -->
-
-            <!-- {{ selectedRoster }} -->
-
-            <!--  -->
-
-
           </section>
-
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -156,6 +127,7 @@ let chatPrompt = ref("");
 let sessionId = ref(uuidv4())
 let messageHistory = ref([]);
 const textarea = ref(null);
+let selectedPersonaIndex = ref(null)
 
 let activeTab = ref(0)
 const tabs = ref([
@@ -167,9 +139,6 @@ onMounted(async () => {
   setDark(false)
   if (props.rosterId) {
     await getRosterFromUuid(props.rosterId);
-    // console.log("selectedRoster", selectedRoster.value);
-    // selectedPersona.value = selectedRoster.value.find((persona) => { return persona.uuid == props.rosterId })
-
   }
 })
 
@@ -183,16 +152,9 @@ function setDark(newValue) {
   }
 }
 
-// function quickLinks(text) {
-//   chatPrompt.value = text;
-//   trigger();
-// }
-
-
 function trigger() {
   //Save the history
   messageHistory.value.push({ role: "user", content: chatPrompt.value })
-
   triggerGenerate.value = !triggerGenerate.value;
 
   //Get the facts
@@ -205,7 +167,6 @@ function trigger() {
 }
 
 function messagePartial(val) {
-
   if (messageHistory?.value?.length) {
     if (messageHistory.value[messageHistory.value.length - 1].role == 'user') {
       messageHistory.value.push({ role: "system", content: val.message })
@@ -214,6 +175,17 @@ function messagePartial(val) {
       messageHistory.value[messageHistory.value.length - 1].content = val.message;
     }
   }
+   scrollToBottom();
+}
+
+
+function scrollToBottom() {
+  // Replace 'messageContainer' with the actual ID of your message container
+  // const messageContainer = document.getElementById('messageContainer');
+  // if (messageContainer) {
+  //   messageContainer.scrollTop = messageContainer.scrollHeight;
+  // }
+  window.scrollTo(0, document.body.scrollHeight);
 }
 
 function messageComplete(val) {
@@ -223,7 +195,12 @@ function messageComplete(val) {
       messageHistory.value[messageHistory.value.length - 1].content = val.message;
     }
   }
+}
 
+function costOfInteraction()
+{
+  let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPrompt.value.length;
+  return (lengthOfHistory / 4000) *0.01;
 }
 
 function cleanseMessageHistory(messageHistory) {
@@ -273,17 +250,16 @@ watch(chatPrompt, () => {
   adjustHeight();
 });
 
-
-
 function promptQuestion(question) {
   chatPrompt.value = question;
   trigger();
-
 }
 
-function selectPersona(persona) {
+function selectPersona(persona, index) {
   selectedPersona.value = persona;
-
+  if (index) selectedPersonaIndex.value = index;
+  let findIndex = selectedRoster.value.personas.findIndex((rosterPersona) => { return rosterPersona.uuid == selectedPersona.value.uuid })
+  if (findIndex > -1) selectedPersonaIndex.value = findIndex;
   //Don't automatically remove the history
   // messageHistory.value = []; //Clear message history when you switch Personas
 

@@ -17,10 +17,10 @@
         />
       </div>
       <div :class="textAlignmentClasses">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white overflow-hidden break-all">
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white overflow-hidden break-words">
           {{ props.persona.name }}
         </h5>
-        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 w-full overflow-hidden break-all">
+        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400 w-full overflow-hidden break-words">
           {{ props.persona.description.en }}
         </p>
       </div>
@@ -34,6 +34,7 @@
   import defaultImage from "../images/persona1.png";
   const props = defineProps({ 
     persona: { type: Object },
+    personaIndex: { type: Number },
     alignment: { type: String, default: 'left' }
   });
   
