@@ -62,36 +62,53 @@
 
                 </div>
               </template>
-              <template v-slot:tab-1>
-                <template v-if="selectedPersona">
-                  <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
-                    :model="adminModels[0]" :messageHistory="messageHistory" :trigger="triggerGenerate"
-                    @messageComplete="messageComplete" @messagePartial="messagePartial">
-                    <ChatWindow :messages="messageHistory" />
-                  </Socket>
 
-                  <div class="w-full mx-auto ">
-                    <form @submit.prevent="trigger" class="relative flex items-center mt-8" data-aos="fade-down"
-                      data-aos-delay="300">
-                      <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
-                        v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
-                        placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
-                      <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
-                        <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                          <path class="fill-current text-gray-400"
-                            d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
-                        </svg>
-                      </button>
-                    </form>
+
+              <template v-slot:tab-1>
+                <div class="grid grid-cols-12 gap-4 h-full">
+                  <!-- Left Column (Skinny) - Aligned to Bottom -->
+                  <div v-if = "selectedRoster?.personas" class="col-span-1 flex flex-col justify-end">
+                    <DisplayPersonaStack :personas="selectedRoster.personas" @selectPersona = "selectPersona" />
                   </div>
 
-                  <section class=" w-full">
-                    <ChatList v-if="selectedPersona?.knowledgeProfiles?.length" :facts="factSearchResults"
-                      @promptQuestion="promptQuestion" />
-                  </section>
-                </template>
+                  <!-- Right Column (Wider) -->
+                  <div class="col-span-11">
+                    <template v-if="selectedPersona">
+                      <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
+                        :model="adminModels[0]" :messageHistory="messageHistory" :trigger="triggerGenerate"
+                        @messageComplete="messageComplete" @messagePartial="messagePartial">
+                        <ChatWindow :messages="messageHistory" />
+                      </Socket>
 
+                      <div class="w-full mx-auto ">
+                        <form @submit.prevent="trigger" class="relative flex items-center mt-8" data-aos="fade-down"
+                          data-aos-delay="300">
+                          <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
+                            v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+                            placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
+                          <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
+                            <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <path class="fill-current text-gray-400"
+                                d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
+
+                   
+                    </template>
+                    
+                  </div>
+                  
+                  <section class="col-span-12 w-full">
+                        <ChatList v-if="selectedPersona?.knowledgeProfiles?.length" :facts="factSearchResults"
+                          @promptQuestion="promptQuestion" />
+                      </section>
+
+                </div>
               </template>
+
 
             </Tabs>
 
@@ -116,6 +133,7 @@
 import { ref, onMounted, nextTick, watch } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import DisplayPersona from '@/components/DisplayPersona.vue'
+import DisplayPersonaStack from '@/components/DisplayPersonaStack.vue'
 import Socket from '@/components/Socket.vue'
 import ChatWindow from '@/components/ChatWindow.vue'
 import ChatList from '@/partials/ChatList.vue'
@@ -287,5 +305,6 @@ function selectPersona(persona) {
 
   activeTab.value = 1;
 }
+
 
 </script>
