@@ -6,7 +6,7 @@
       <div class="bg-white">
         <div class="flex justify-between items-center pl-2  border-b border-gray-300">
           <div v-if = "selectedRoster" class="flex items-center">
-            <img v-if = "selectedRoster" :src="selectedRoster.url" alt="Canada Flag" class="w-auto h-24 mr-4">
+            <img v-if = "selectedRoster && selectedRoster.url.length" :src="selectedRoster.url" alt="Brand Logo" class="w-auto h-24 mr-4">
             <img v-else :src="canada" alt="Canada Flag" class="w-64  mr-4">
           </div>
           <!-- <span>Français</span> -->
