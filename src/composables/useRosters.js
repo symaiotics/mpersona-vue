@@ -12,6 +12,7 @@ let selectedRoster = ref(null) //the actively selected persona
 const defaultRoster = {
     name: null,
     description: { en: null, fr: null },
+    url: null,
     personas: [],
     personaUuids: [],
     createdBy: 'public',
@@ -49,6 +50,7 @@ export function useRosters() {
             var params = {params:{ rosterUuid:uuid }};
             var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/rosters/uuid', params);
             selectedRoster.value = response.data.payload;
+            console.log("Selected Roster", selectedRoster.value)
         }
         catch (error) {
             console.log("Error", error)

@@ -1,12 +1,13 @@
 <template>
-  <div class="bg-gray-100 min-h-screen p-2">
-    <div class=" mx-auto bg-white p-8 rounded shadow-lg">
+  <div class="bg-gray-100 min-h-screen lg:p-2">
+    <div class=" mx-auto bg-white lg:p-8 rounded shadow-lg">
 
       <!-- Top Header -->
       <div class="bg-white">
-        <div class="flex justify-between items-center py-4 border-b border-gray-300">
-          <div class="flex items-center">
-            <img :src="canada" alt="Canada Flag" class="w-64  mr-4">
+        <div class="flex justify-between items-center pl-2  border-b border-gray-300">
+          <div v-if = "selectedRoster" class="flex items-center">
+            <img v-if = "selectedRoster" :src="selectedRoster.url" alt="Canada Flag" class="w-auto h-24 mr-4">
+            <img v-else :src="canada" alt="Canada Flag" class="w-64  mr-4">
           </div>
           <!-- <span>Français</span> -->
         </div>

@@ -28,9 +28,16 @@
                     <span class="text-sm text-gray-500">Optional</span>
                 </label>
                 <input v-model="localRoster.description.en" id="roster-description" type="text" class="form-input w-full"
-                    placeholder="Enter a brief description" required />
+                    placeholder="Enter a brief description" />
             </div>
-
+            <div class="w-full m-2">
+                <label class="block text-gray-800 dark:text-gray-300 text-sm font-medium mb-1" for="roster-description">
+                    Brand URL
+                    <span class="text-sm text-gray-500">Optional</span>
+                </label>
+                <input v-model="localRoster.url" id="roster-url" type="text" class="form-input w-full"
+                    placeholder="Enter a brand url" />
+            </div>
 
             <div class="w-full px-3 pt-3">
                 <div class="flex justify-between items-center mb-1">
@@ -239,8 +246,7 @@ function triggerDelete() {
     emit('changeTab', 0)
 }
 
-function demo(uuid)
-{
+function demo(uuid) {
     window.open(import.meta.env.VITE_SELF + "/apps/gc/" + uuid, '_blank');
 }
 
