@@ -172,18 +172,8 @@ function promptPersona(prompt, personaIndex) {
 
   //Save the history
 
-  if (selectedPersona?.value?.basePrompt?.length) {
-    if (messageHistory?.value?.length) {
-      if (messageHistory.value[0].role == 'system') messageHistory.value[0] = { role: "system", content: selectedPersona.value.basePrompt };
-      else messageHistory.value.unshift({ role: "system", content: selectedPersona.value.basePrompt })
-    }
-    else {
-      messageHistory.value = []
-      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
-    }
-  }
-
-
+  messageHistory.value = []
+  messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
   messageHistory.value.push({ role: "user", content: prompt })
   triggerGenerate.value = !triggerGenerate.value;
 
