@@ -1,0 +1,356 @@
+<template>
+  <div class="bg-gray-100 min-h-screen lg:p-2">
+    <div class=" mx-auto bg-white lg:p-8 rounded shadow-lg">
+
+      <!-- Top Header -->
+      <div class="bg-white">
+        <div class="flex justify-between items-center pl-2  border-b border-gray-300">
+          <!-- <div v-if="selectedRoster" class="flex items-center">
+            <img v-if="selectedRoster && selectedRoster.url.length" :src="selectedRoster.url" alt="Brand Logo"
+              class="w-auto h-24 mr-4">
+            <img v-else :src="canada" alt="Canada Flag" class="w-64  mr-4">
+          </div> -->
+          <!-- <span>Français</span> -->
+        </div>
+      </div>
+
+
+
+      <div class="bg-white p-4">
+        <div class="max-w-6xl mx-auto">
+          <div class="flex flex-col items-center justify-center text-center">
+
+            <div v-if="selectedRoster" class="flex items-center">
+              <img v-if="selectedRoster && selectedRoster.url.length" :src="selectedRoster.url" alt="Brand Logo"
+                class="w-auto h-48 mr-4">
+              <img v-else :src="canada" alt="Canada Flag" class="w-64  mr-4">
+            </div>
+
+
+            <h2 class="text-3xl font-bold mb-4">Youth Employment Activation Hub (YEAH)</h2>
+            <p class="mb-6">
+              Are you a youth (15 to 30 years of age) looking for employment opportunities? <br />
+              We are here to lend a hand at the Ottawa Chinese Community Service Centre.<br />
+              Our AI Agent will help you gain access to the services quickly and pair you with a counsellor.
+            </p>
+            <div class="space-x-2">
+              <button @click="promptPersona('I need help finding a job', 0)"
+                class="bg-red-600 text-white font-bold py-2 px-4 rounded">
+                Find a Job
+              </button>
+              <button @click="promptPersona('I would like to get a coach to help me prepare for a new job', 0)"
+                class="bg-red-600 text-white font-bold py-2 px-4 rounded">
+                Get Coaching
+              </button>
+              <button @click="promptPersona('I would like to find a mentor', 0)"
+                class="bg-red-600 text-white font-bold py-2 px-4 rounded">
+                Find a Mentor
+              </button>
+              <button @click="promptPersona('I need help planning my career', 0)"
+                class="bg-red-600 text-white font-bold py-2 px-4 rounded">
+                Plan your Career
+              </button>
+            </div>
+            <p class="mt-6">
+              Our helpful AI Agent to help you on your journey. Start right away, with no registration required.<br />
+              Our agents are fluent in English, Français, Українська, 中文, 한국어, and many other languages.
+            </p>
+
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="flex justify-center ">
+        <div class=" w-8/12">
+          <section class="mb-6 w-full">
+
+            <div v-if="selectedPersona">
+
+
+              <!-- Right Column (Wider) -->
+              <div class="col-span-11">
+                <template v-if="selectedPersona">
+                  <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
+                    :model="adminModels[0]" :messageHistory="messageHistory" :trigger="triggerGenerate"
+                    @messageComplete="messageComplete" @messagePartial="messagePartial">
+                    <ChatWindow :messages="messageHistory" />
+                  </Socket>
+
+                  <div class="w-full mx-auto ">
+                    <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
+                      data-aos-delay="300">
+                      <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
+                        v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+                        placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
+                      <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
+                        <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                          <path class="fill-current text-gray-400"
+                            d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
+                        </svg>
+                      </button>
+                    </form>
+                  </div>
+
+
+                </template>
+
+              </div>
+
+
+
+            </div>
+
+          </section>
+        </div>
+
+      </div>
+
+
+    </div>
+  </div>
+</template>
+
+<script setup>
+
+import { ref, onMounted, onUnmounted, nextTick, watch, watchEffect } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
+import DisplayPersona from '@/components/DisplayPersona.vue'
+import DisplayPersonaStack from '@/components/DisplayPersonaStack.vue'
+import Socket from '@/components/Socket.vue'
+import ChatWindow from '@/components/ChatWindow.vue'
+import ChatList from '@/partials/ChatList.vue'
+import Tabs from '@/components/Tabs.vue';
+import canada from "@/images/canada.svg";
+
+//Composables
+import { useModels } from '@/composables/useModels.js'
+import { usePersonas } from '@/composables/usePersonas.js'
+import { useRosters } from '@/composables/useRosters.js'
+import { useFacts } from '@/composables/useFacts.js'
+const { adminModels } = useModels()
+const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
+const { rosters, selectedRoster, getRosterFromUuid } = useRosters()
+const { searchFacts, factSearchResults } = useFacts()
+
+let props = defineProps({ rosterId: { type: String, default: null } })
+let triggerGenerate = ref(false);
+let chatPrompt = ref("");
+let sessionId = ref(uuidv4())
+let messageHistory = ref([]);
+const textarea = ref(null);
+let selectedPersonaIndex = ref(null)
+const isAutoScrollActive = ref(true);
+
+let activeTab = ref(0)
+const tabs = ref([
+  { label: 'Roster / Équipe' },
+  { label: 'Interact / Interagir' }
+]);
+
+onMounted(async () => {
+  setDark(false)
+  if (props.rosterId) {
+    await getRosterFromUuid(props.rosterId);
+    if (selectedRoster?.value?.personas?.length) {
+      selectedPersona.value = selectedRoster.value.personas[0]
+    }
+  }
+  window.addEventListener('scroll', handleScroll);
+
+})
+
+
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
+
+
+function promptPersona(prompt, personaIndex) {
+
+  //Save the history
+
+  if (selectedPersona?.value?.basePrompt?.length) {
+    if (messageHistory?.value?.length) {
+      if (messageHistory.value[0].role == 'system') messageHistory.value[0] = { role: "system", content: selectedPersona.value.basePrompt };
+      else messageHistory.value.unshift({ role: "system", content: selectedPersona.value.basePrompt })
+    }
+    else {
+      messageHistory.value = []
+      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+    }
+  }
+
+
+  messageHistory.value.push({ role: "user", content: prompt })
+  triggerGenerate.value = !triggerGenerate.value;
+
+  //Get the facts
+  let knowledgeProfileUuids = [];
+  if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
+  searchFacts(prompt, knowledgeProfileUuids)
+  nextTick(() => {
+    chatPrompt.value = "";
+  })
+
+
+
+
+}
+
+
+function setDark(newValue) {
+  sessionStorage.setItem('dark-mode', newValue);
+  if (newValue) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
+function trigger() {
+  //Save the history
+  messageHistory.value.push({ role: "user", content: chatPrompt.value })
+  triggerGenerate.value = !triggerGenerate.value;
+
+  //Get the facts
+  let knowledgeProfileUuids = [];
+  if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
+  if (chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
+  nextTick(() => {
+    chatPrompt.value = "";
+  })
+}
+
+function messagePartial(val) {
+  if (messageHistory?.value?.length) {
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'user') {
+      messageHistory.value.push({ role: "system", content: val.message })
+    }
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'system' && val.message.length) {
+      messageHistory.value[messageHistory.value.length - 1].content = val.message;
+    }
+  }
+  //  scrollToBottom();
+}
+
+
+function messageComplete(val) {
+  console.log("MC", val)
+  if (messageHistory?.value?.length) {
+    if (messageHistory.value[messageHistory.value.length - 1].role == 'system') {
+      messageHistory.value[messageHistory.value.length - 1].content = val.message;
+    }
+  }
+}
+
+
+const handleScroll = () => {
+  const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
+  isAutoScrollActive.value = isAtBottom;
+};
+
+// Function to scroll to the bottom of the page
+const scrollToBottom = () => {
+  window.scrollTo(0, document.body.scrollHeight);
+};
+
+// Watch for changes in logLines and auto-scroll if active
+watchEffect(() => {
+  if (isAutoScrollActive.value) {
+    scrollToBottom();
+  }
+});
+
+
+
+
+
+function costOfInteraction() {
+  let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPrompt.value.length;
+  return (lengthOfHistory / 4000) * 0.01;
+}
+
+function cleanseMessageHistory(messageHistory) {
+  // Define a function to check if the messageHistory exceeds the length limit.
+  const exceedsLimit = () => JSON.stringify(messageHistory).length > 5000;
+
+  // If the length is more than 8 items, handle normally
+  if (messageHistory.length > 8) {
+    // Truncate the 5 items before the last 2
+    for (let i = messageHistory.length - 7; i <= messageHistory.length - 3; i++) {
+      if (messageHistory[i].content.length > 500) {
+        messageHistory[i].content = messageHistory[i].content.substring(0, 500);
+      }
+    }
+
+    // If still exceeds limit after truncation, remove middle items
+    if (exceedsLimit()) {
+      return [
+        messageHistory[0],
+        ...messageHistory.slice(messageHistory.length - 7)
+      ];
+    }
+
+    return messageHistory;
+  } else {
+    // If 8 or fewer items, truncate all but the 1st and last 2 items
+    for (let i = 1; i < messageHistory.length - 2; i++) {
+      if (messageHistory[i].content.length > 500) {
+        messageHistory[i].content = messageHistory[i].content.substring(0, 500);
+      }
+    }
+
+    // No need to remove any items since there are 8 or fewer
+    return messageHistory;
+  }
+}
+
+
+const adjustHeight = () => {
+  nextTick(() => {
+    textarea.value.style.height = 'auto';
+    textarea.value.style.height = (textarea.value.scrollHeight + 10) + 'px';
+  });
+};
+
+watch(chatPrompt, () => {
+  adjustHeight();
+});
+
+function promptQuestion(question) {
+  chatPrompt.value = question;
+  trigger();
+}
+
+function selectPersona(persona, index) {
+  selectedPersona.value = persona;
+  if (index) selectedPersonaIndex.value = index;
+  let findIndex = selectedRoster.value.personas.findIndex((rosterPersona) => { return rosterPersona.uuid == selectedPersona.value.uuid })
+  if (findIndex > -1) selectedPersonaIndex.value = findIndex;
+  //Don't automatically remove the history
+  // messageHistory.value = []; //Clear message history when you switch Personas
+
+  // if (selectedPersona?.value?.basePrompt?.length) {
+  //      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+  // }
+
+  //Instead, replace the original system prompt
+  if (selectedPersona?.value?.basePrompt?.length) {
+    if (messageHistory?.value?.length) {
+      if (messageHistory.value[0].role == 'system') messageHistory.value[0] = { role: "system", content: selectedPersona.value.basePrompt };
+      else messageHistory.value.unshift({ role: "system", content: selectedPersona.value.basePrompt })
+    }
+    else {
+      messageHistory.value = []
+      messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
+    }
+  }
+
+  activeTab.value = 1;
+}
+
+
+</script>

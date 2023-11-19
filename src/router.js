@@ -15,6 +15,7 @@ import Chat from '@/pages/Chat.vue'
 import FT from '@/pages/apps/FT.vue'
 import GC from '@/pages/apps/GC.vue'
 import GOV from '@/pages/apps/GOV.vue'
+import OCCSC from '@/pages/apps/OCCSC.vue'
 
 
 import Testimonials from './pages/Testimonials.vue'
@@ -90,6 +91,13 @@ const router = createRouter({
       component: GOV,
       props:true,
     },
+    {
+      path: '/apps/occsc/:rosterId?',
+      name: 'occsc',
+      component: OCCSC,
+      props:true,
+    },
+
 
     {
       path: '/interactLive',
