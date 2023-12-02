@@ -76,40 +76,40 @@ onMounted(() => {
     easing: 'ease-out-sine',
   })
 
+  websocketConnection()
+  setDark(true)
+
+
 })
 
-websocketConnection()
 
 </script>
 
 <style>
-
-
 .multiselect__tags {
-        @apply bg-gray-100 dark:bg-gray-800 rounded-t;
-    }
+  @apply bg-gray-100 dark:bg-gray-800 rounded-t;
+}
 
-    .multiselect__tag {
-        @apply  text-black dark:text-white bg-green-100 dark:bg-green-800 rounded-t;
+.multiselect__tag {
+  @apply text-black dark:text-white bg-green-100 dark:bg-green-800 rounded-t;
 
-    }
+}
 
-    .multiselect__single {
-        @apply text-black dark:text-white bg-green-100 dark:bg-green-800;
-    }
+.multiselect__single {
+  @apply text-black dark:text-white bg-green-100 dark:bg-green-800;
+}
 
-    .multiselect__element {
-        @apply text-black dark:text-white bg-gray-100 dark:bg-gray-800;
-    }
+.multiselect__element {
+  @apply text-black dark:text-white bg-gray-100 dark:bg-gray-800;
+}
 
 
-    .multiselect__placeholder {
-        @apply bg-gray-100 dark:bg-gray-800 rounded-t;
+.multiselect__placeholder {
+  @apply bg-gray-100 dark:bg-gray-800 rounded-t;
 
-    }
+}
 
-    .multiselect__select {
-        @apply bg-gray-100 dark:bg-gray-800 rounded-t;
-    }
-
+.multiselect__select {
+  @apply bg-gray-100 dark:bg-gray-800 rounded-t;
+}
 </style>

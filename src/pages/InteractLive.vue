@@ -37,8 +37,13 @@
                     </div>
 
                     <template v-for="(stage, index) in stages" :key="'stage' + stage.uuid">
-                      <SocketStage v-model:userPrompt="stage.userPrompt" :options="stage.options" :model="stage.model"
-                        :stageIndex="index" :stageUuid="stage.uuid" :sockets="stage.sockets"
+                      <SocketStage 
+                      v-model:userPrompt="stage.userPrompt" 
+                      :options="stage.options" 
+                      :model="stage.model"
+                      :stageIndex="index" 
+                      :stageUuid="stage.uuid" 
+                      :sockets="stage.sockets"
                         :selectedSessionsContent="stage.selectedSessionsContent" @deleteStage="deleteStage"
                         @addToSockets='addToSockets' @removeFromSockets='removeFromSockets'
                         @knowledgeProfilesUpdate='knowledgeProfilesUpdate'

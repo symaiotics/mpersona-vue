@@ -24,7 +24,7 @@
 
             <HeroChat />
             <!-- {{ messageHistory }} -->
-            <Socket alignment="center" :model = "adminModels[0]" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
+            <Socket alignment="center" :model = "selectedModel" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
               :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete" @messagePartial="messagePartial">
 <!-- {{ messageHistory }} -->
               <ChatWindow :messages="messageHistory" />
@@ -86,7 +86,7 @@ import Socket from '@/components/Socket.vue'
 import { useModels } from '@/composables/useModels.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useFacts } from '@/composables/useFacts.js'
-const { adminModels } = useModels()
+const { adminModels, selectedModel } = useModels()
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
 const { searchFacts, factSearchResults } = useFacts()
 

@@ -136,7 +136,7 @@ const props = defineProps({
 
     messageHistory: { type: Array, default: [] },
     userPrompt: { type: String, default: "" },
-    model: { type: Object, default: { maxTokens: 8192, model: "gpt-4", label: "OpenAI GPT-4" } },
+    model: { type: Object, default: null },
     temperature: { type: Number, default: 0.5 },
     persona: { type: Object },
 
@@ -153,7 +153,7 @@ const trigger = computed(() => props.trigger);
 let isFocused = ref(false)
 
 const facts = computed(() => props.facts);
-const model = computed(() => props.model);
+const model = computed(() => props.model); // includes provider and model name for various LLM APIs
 const appendedContent = computed(() => props.appendedContent);
 const stageIndex = computed(() => props.stageIndex);
 const stageUuid = computed(() => props.stageUuid);
@@ -322,10 +322,10 @@ function sendMessage() {
                 })
             }
 
-            var useModel = "gpt-4";
-            if (props?.model?.model) useModel = props.model.model;
-            if (model?.value?.model) useModel = model.value.model;
-            console.log("PROMPT: ", { combinedPrompt, useModel })
+            // var useModel = "gpt-4";
+            // if (props?.model?.model) useModel = props.model.model;
+            // if (model?.value?.model) useModel = model.value.model;
+            // console.log("PROMPT: ", { combinedPrompt, useModel })
 
 
             var basePrompt = props?.persona?.basePrompt || "";
@@ -354,7 +354,7 @@ function sendMessage() {
             let useKps = [];
             if(props?.persona?.knowledgeProfiles?.length) useKps =  props.persona.knowledgeProfiles.map((kp)=>{return kp.uuid}) 
             if(knowledgeProfileUuids?.value?.length) useKps = knowledgeProfileUuids.value;
-            sendToServer(wsUuid.value, sessionId.value, useModel, props.temperature, basePrompt, combinedPrompt, messageHistory.value, useKps, 'prompt')
+            sendToServer(wsUuid.value, sessionId.value, model.value.provider || 'openAi', model.value.model || 'gpt-4', props.temperature, basePrompt, combinedPrompt, messageHistory.value, useKps, 'prompt')
             processing.value = true;
 
         }
