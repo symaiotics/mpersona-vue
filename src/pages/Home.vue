@@ -61,21 +61,17 @@ publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmV
       <Cta /> -->
       <!-- <PricingTables /> -->
 
-
-
-      <section class="container mx-auto p-8 flex" data-aos="fade-up" data-aos-delay="100">
-
-
+      <section class="container mx-auto p-8 flex flex-col md:flex-row" data-aos="fade-up" data-aos-delay="100">
         <div class="w-full md:w-1/2 p-6">
-          <img :src="comingSoon" alt="mPersona Logo" class="mx-auto md:h-auto h-64 object-cover animate-scale  " />
+          <img :src="comingSoon" alt="mPersona Logo" class="w-full md:w-auto md:h-auto h-64 object-cover animate-scale" />
         </div>
-        <div class="w-full md:w-1/2 text-center md:text-left p-6">
+        <div class="w-full md:w-1/2 p-6 flex flex-col justify-center">
           <h2 class="text-3xl font-extrabold mb-4"> Version 2 is Coming </h2>
           <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
             There is a powerful new version of mPersona arriving in early 2024. Features include:
           </p>
 
-          <ul class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-6 list-disc">
+          <ul class="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-6 list-disc list-inside">
             <li>User account management and metrics</li>
             <li>New simplified look and feel and dashboard</li>
             <li>Fully multi-lingual with AI-integrated translation assist</li>
@@ -88,7 +84,7 @@ publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmV
             <li>Enhanced 'vector-based' reference search</li>
             <li>Real-time interaction Audit Reports</li>
           </ul>
-          <div class="flex space-x-2">
+          <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
             <div class="flex-1">
               <input v-model="emailAddress" id="waitList" type="text" class="form-input w-full"
                 placeholder="Enter your email" required />
@@ -101,32 +97,30 @@ publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmV
           </div>
           <p class="pt-3">By joining, you confirm you wish to receive e-mail updates from Symaiotics on future versions of
             mPersona.</p>
-
         </div>
       </section>
-
-      <section class="container mx-auto p-8 flex" data-aos="fade-up" data-aos-delay="100">
+      <section class="container mx-auto p-8 flex flex-col md:flex-row" data-aos="fade-up" data-aos-delay="100">
         <div class="w-full md:w-1/2 p-6">
           <img :src="venom" alt="Venom stack image of a snake"
-            class="mx-auto md:h-auto h-auto object-cover animate-scale  " />
+            class="w-full md:w-auto md:h-auto h-auto object-cover animate-scale" />
         </div>
-        <div class="w-full md:w-1/2 text-center md:text-left p-6">
+        <div class="w-full md:w-1/2 p-6 flex flex-col justify-center">
           <h2 class="text-3xl font-extrabold mb-4"> Tech Stack </h2>
           <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
             mPersona is built on Open-Source technologies (using the VENOM stack) which can be deployed in the Cloud or
             On-Prem.
           </p>
-          <ul class="text-md text-gray-600 dark:text-gray-300 leading-relaxed list-disc">
+          <ul class="text-md text-gray-600 dark:text-gray-300 leading-relaxed list-disc list-inside">
             <li><u>V</u>ue.js 3.x Reactive Framework</li>
             <li><u>E</u>xpress.js Server-side Framework</li>
             <li><u>No</u>de.js Server Operations</li>
             <li><u>M</u>ongoDB Atlas DBaaS (or Community/Enterprise)</li>
           </ul>
 
-          <p class="text-lg mt-6 text-gray-600 dark:text-gray-300 leading-relaxed ">
+          <p class="text-lg mt-6 text-gray-600 dark:text-gray-300 leading-relaxed">
             Currently, it also integrates services such as:
           </p>
-          <ul class="text-md text-gray-600 dark:text-gray-300 leading-relaxed list-disc">
+          <ul class="text-md text-gray-600 dark:text-gray-300 leading-relaxed list-disc list-inside">
             <li>OpenAI GPT 4 API</li>
             <li>OpenAI Dalle-2 API</li>
             <li>Anthropic Claude 2.1 API</li>
@@ -137,28 +131,28 @@ publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmV
       </section>
 
 
-         <!-- Book -->
-         <section class="container mx-auto p-8" data-aos="fade-up" data-aos-delay="100">
+      <!-- Book -->
+      <section class="container mx-auto p-8" data-aos="fade-up" data-aos-delay="100">
         <div
           class="flex flex-wrap items-center justify-center md:justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md text-black dark:text-white">
           <div class="w-full md:w-1/2 p-6">
-            <a href = "https://intelligentdigitalecosystems.com">
-            <img :src="book" alt="Intelligent Digital Ecosystems Book"
-              class="max-w-xs md:max-w-sm mx-auto h-auto object-cover rounded-lg transition-all duration-300 ease-in-out hover:shadow-xl" />
-              </a>
-            </div>
+            <a href="https://intelligentdigitalecosystems.com">
+              <img :src="book" alt="Intelligent Digital Ecosystems Book"
+                class="max-w-xs md:max-w-sm mx-auto h-auto object-cover rounded-lg transition-all duration-300 ease-in-out hover:shadow-xl" />
+            </a>
+          </div>
           <div class="w-full md:w-1/2 text-center md:text-left p-6">
-            <a href = "https://intelligentdigitalecosystems.com">
-              <h2 class="text-3xl font-extrabold mb-4">Intelligent Digital Ecosystems</h2> 
+            <a href="https://intelligentdigitalecosystems.com">
+              <h2 class="text-3xl font-extrabold mb-4">Intelligent Digital Ecosystems</h2>
             </a>
             <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-               mPersona is based on the AI technology roadmap described in Intelligent Digital Ecosystems by Janak Alford 
+              mPersona is based on the AI technology roadmap described in Intelligent Digital Ecosystems by Janak Alford
 
             </p>
-            <p class = "mb-4 text-gray-600 dark:text-gray-300 "> Want to see where the future is headed?</p>
+            <p class="mb-4 text-gray-600 dark:text-gray-300 "> Want to see where the future is headed?</p>
             <a href="https://www.amazon.com/Intelligent-Digital-Ecosystems-Rethinking-Technology/dp/0228873010/ref=tmm_hrd_swatch_0?_encoding=UTF8&qid=1685442142&sr=8-2"
               class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md transition-all duration-300 ease-linear">
-               Claim Your Book 
+              Claim Your Book
             </a>
           </div>
         </div>
