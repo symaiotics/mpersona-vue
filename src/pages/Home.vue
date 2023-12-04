@@ -124,7 +124,7 @@ publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmV
           </ul>
 
           <p class="text-lg mt-6 text-gray-600 dark:text-gray-300 leading-relaxed ">
-            Currently, it also takes integrates services such as:
+            Currently, it also integrates services such as:
           </p>
           <ul class="text-md text-gray-600 dark:text-gray-300 leading-relaxed list-disc">
             <li>OpenAI GPT 4 API</li>
@@ -133,6 +133,34 @@ publishable-key="pk_live_51HfwM7EUAK7okpK9hpYgjmGqZngHYQoZ4I5cS3Pwe6rCx9NenaNGmV
             <li>Google Gmail API for Persona/Inbox integration (Alpha)</li>
             <li>Azure Storage Account (easily replaced with File System storage)</li>
           </ul>
+        </div>
+      </section>
+
+
+         <!-- Book -->
+         <section class="container mx-auto p-8" data-aos="fade-up" data-aos-delay="100">
+        <div
+          class="flex flex-wrap items-center justify-center md:justify-between bg-white dark:bg-gray-800 rounded-lg shadow-md text-black dark:text-white">
+          <div class="w-full md:w-1/2 p-6">
+            <a href = "https://intelligentdigitalecosystems.com">
+            <img :src="book" alt="Intelligent Digital Ecosystems Book"
+              class="max-w-xs md:max-w-sm mx-auto h-auto object-cover rounded-lg transition-all duration-300 ease-in-out hover:shadow-xl" />
+              </a>
+            </div>
+          <div class="w-full md:w-1/2 text-center md:text-left p-6">
+            <a href = "https://intelligentdigitalecosystems.com">
+              <h2 class="text-3xl font-extrabold mb-4">Intelligent Digital Ecosystems</h2> 
+            </a>
+            <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
+               mPersona is based on the AI technology roadmap described in Intelligent Digital Ecosystems by Janak Alford 
+
+            </p>
+            <p class = "mb-4 text-gray-600 dark:text-gray-300 "> Want to see where the future is headed?</p>
+            <a href="https://www.amazon.com/Intelligent-Digital-Ecosystems-Rethinking-Technology/dp/0228873010/ref=tmm_hrd_swatch_0?_encoding=UTF8&qid=1685442142&sr=8-2"
+              class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-md transition-all duration-300 ease-linear">
+               Claim Your Book 
+            </a>
+          </div>
         </div>
       </section>
 
@@ -150,6 +178,7 @@ import { ref, onMounted } from 'vue';
 import defaultImage from "../images/persona1.png";
 import comingSoon from "../images/comingsoon.webp";
 import venom from "../images/venom.webp";
+import book from "../images/book.png";
 
 import Header from '@/partials/Header.vue'
 import PageIllustration from '@/partials/PageIllustration.vue'
