@@ -13,8 +13,8 @@
               alt="iPhone mockup" aria-hidden="true" />
 
 
-            <h1 class="h1 lg:text-6xl mb-4 font-red-hat-display font-black" data-aos="fade-down">mPersona</h1>
-            <h2 class="h2 lg:text-3xl mb-4 font-red-hat-display font-black" data-aos="fade-down">by Symaiotics</h2>
+            <h1 class="h1 lg:text-6xl mb-4 font-red-hat-display text-gray-400 dark:text-white" data-aos="fade-down">mPersona</h1>
+            <h2 class="h2 lg:text-3xl mb-4 font-red-hat-display text-gray-400 dark:text-white" data-aos="fade-down">by Symaiotics</h2>
             <p class="text-xl text-gray-600 dark:text-gray-400" data-aos="fade-down" data-aos-delay="150">Build your team of digital AI personas.</p>
             <p class="text-xl text-gray-600 dark:text-gray-400" data-aos="fade-down" data-aos-delay="150">Automate your enterprise.</p>
 

@@ -4,11 +4,14 @@
 
       <!-- Top Header -->
       <div class="bg-white">
-        <div class="flex justify-between items-center pl-2  border-b border-gray-300">
-          <div v-if = "selectedRoster" class="flex items-center">
-            <img v-if = "selectedRoster && selectedRoster.url.length" :src="selectedRoster.url" alt="Brand Logo" class="w-auto h-24 mr-4">
-            <img v-else :src="canada" alt="Canada Flag" class="w-64  mr-4">
-          </div>
+        <div class="flex justify-between items-center pl-2  border-b border-gray-300 pb-2">
+          <a href="https://mpersona.com">
+            <div v-if="selectedRoster" class="flex items-center">
+              <img v-if="selectedRoster && selectedRoster.url.length" :src="selectedRoster.url" alt="Brand Logo"
+                class="w-auto h-24 mr-4">
+              <img v-else :src="canada" alt="Canada Flag" class="w-64  mr-4">
+            </div>
+          </a>
           <!-- <span>Français</span> -->
         </div>
       </div>
@@ -56,25 +59,35 @@
                   <div class="col-span-11">
                     <template v-if="selectedPersona">
                       <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
-                        :model="adminModels[0]" :messageHistory="messageHistory" :trigger="triggerGenerate"
+                        :model="selectedModel" :messageHistory="messageHistory" :trigger="triggerGenerate"
                         @messageComplete="messageComplete" @messagePartial="messagePartial">
                         <ChatWindow :messages="messageHistory" />
                       </Socket>
 
                       <div class="w-full mx-auto ">
-                        <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
-                          data-aos-delay="300">
-                          <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
-                            v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
-                            placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
-                          <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
-                            <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16"
-                              xmlns="http://www.w3.org/2000/svg">
-                              <path class="fill-current text-gray-400"
-                                d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
-                            </svg>
-                          </button>
-                        </form>
+
+                        <div class="mt-6">
+
+                          <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                            :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                            placeholder="Pick a model" />
+
+
+                          <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
+                            data-aos-delay="300">
+                            <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
+                              v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+                              placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
+                            <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
+                              <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path class="fill-current text-gray-400"
+                                  d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
+                              </svg>
+                            </button>
+                          </form>
+
+                        </div>
                         <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
                         <p class="italic pt-0">Cost / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p><br />
 
@@ -91,6 +104,10 @@
                   </section>
 
                 </div>
+              </template>
+
+              <template v-slot:tab-2>
+                <h2>Coming in mPersona V2 (2024)</h2>
               </template>
             </Tabs>
           </section>
@@ -111,13 +128,16 @@ import ChatWindow from '@/components/ChatWindow.vue'
 import ChatList from '@/partials/ChatList.vue'
 import Tabs from '@/components/Tabs.vue';
 import canada from "@/images/canada.svg";
+import VueMultiselect from 'vue-multiselect'
+
 
 //Composables
 import { useModels } from '@/composables/useModels.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useRosters } from '@/composables/useRosters.js'
 import { useFacts } from '@/composables/useFacts.js'
-const { adminModels } = useModels()
+
+const { adminModels, selectedModel } = useModels()
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
 const { rosters, selectedRoster, getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
@@ -130,11 +150,13 @@ let messageHistory = ref([]);
 const textarea = ref(null);
 let selectedPersonaIndex = ref(null)
 const isAutoScrollActive = ref(true);
+const customLabelModel = (option) => option ? option.label : '';
 
 let activeTab = ref(0)
 const tabs = ref([
   { label: 'Roster / Équipe' },
-  { label: 'Interact / Interagir' }
+  { label: 'Interact / Interagir' },
+  { label: 'Audit / Vérification' }
 ]);
 
 onMounted(async () => {

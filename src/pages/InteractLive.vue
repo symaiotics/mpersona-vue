@@ -230,6 +230,8 @@ function moveStageUp(index) {
   if (index > 0) {
     var newIndex = index - 1;
 
+    //TODO This code is still buggy
+    //TODO update selectedSessionsContent so the indexes of those change as well
     //Incorrect, this is fixing the wrong thing. Need to fix all the other indexes 
     // stages.value.forEach((stage)=>{
     //   stage.selectedSessionsContent.forEach((session)=>{
@@ -244,7 +246,6 @@ function moveStageUp(index) {
     stages.value[index].selectedSessionsContent = []
     stages.value[newIndex].selectedSessionsContent = []
 
-    //TODO update selectedSessionsContent so the indexes of those change as well
 
   }
 }
@@ -253,18 +254,11 @@ function moveStageDown(index) {
   if (index < stages.value.length - 1) {
     var newIndex = index + 1;
 
-    //Incorrect
-    // stages.value.forEach((stage)=>{
-    //   stage.selectedSessionsContent.forEach((session)=>{
-    //     if(session.stageIndex == index) session.stageIndex = newIndex;
-    //   })
-    // })
-
+    //TODO update selectedSessionsContent so the indexes of those change as well
     const itemToMoveDown = stages.value[index];
     stages.value.splice(index, 1);
     stages.value.splice(index + 1, 0, itemToMoveDown);
 
-    //TODO update selectedSessionsContent so the indexes of those change as well
     stages.value[index].selectedSessionsContent = []
     stages.value[newIndex].selectedSessionsContent = []
 
@@ -308,21 +302,7 @@ function loadWorkStream() {
   selectWorkStream(selectedWorkStream.value);
   activeTab.value = 0;
 }
-
-// function addSocket(val) {
-// stages.value[val.stageIndex].sockets.push(val.sessionId)
-// console.log("Add Socket at parent", val)
-// }
-
-// function removeSocket(val) {
-//  stages.value[val.stageIndex].sockets.splice(val.socketIndex)
-//  console.log("Remove Socket at parent", val)
-// }
-
-// const stageStatus = computed(()=>{
-
-//   var filtered = sessions.value.filter((session)=>{return session.stage ==  })
-// })
+ 
 
 function updateSessionContent(val) {
   stages.value[val.stageIndex].selectedSessionsContent = val.newValue;

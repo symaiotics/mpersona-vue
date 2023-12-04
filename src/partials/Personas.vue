@@ -10,7 +10,7 @@
 
         <!-- Section header -->
         <div class="max-w-3xl mx-auto text-center pb-12 md:pb-16">
-          <h2 class="h2 font-red-hat-display mb-4">Pick your Persona</h2>
+          <h2 class="h2 font-red-hat-display mb-4">Interact with Personas</h2>
           <p class="text-xl text-gray-600 dark:text-gray-400">Select from our ever-growing library of digital personas to
             guide your AI interactions.</p>
         </div>

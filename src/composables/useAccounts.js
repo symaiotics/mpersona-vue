@@ -53,6 +53,26 @@ export function useAccounts() {
         }
     }
 
+
+    function mailingList(emailAddress) {
+
+        return new Promise(async (resolve, reject) => {
+
+            try {
+                var params = {emailAddress};
+                await configuredAxios.post('/accounts/mailingList', params);
+                notify({ group: "success", title: "Success", text: "Welcome! You've joined the mailing list for future updates." }, 4000) // 4s
+            }
+            catch (error) {
+                notify({ group: "failure", title: "Error", text: "Error joining the mailing list. Please try again" }, 4000) // 4s
+                console.log("Error", error)
+                reject(error);
+
+            }
+        })
+    }
+
+
     function newAccount() {
 
         return new Promise(async (resolve, reject) => {
@@ -111,6 +131,7 @@ export function useAccounts() {
         newUser,
         resetPassword,
 
+        mailingList,
         resetNewUser,
         resetResetPassword,
         newAccount,

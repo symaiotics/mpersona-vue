@@ -24,27 +24,37 @@
 
             <HeroChat />
             <!-- {{ messageHistory }} -->
-            <Socket alignment="center" :model = "selectedModel" :sessionId="sessionId" :persona="selectedPersona" :userPrompt="chatPrompt"
-              :messageHistory="messageHistory" :trigger="triggerGenerate" @messageComplete="messageComplete" @messagePartial="messagePartial">
-<!-- {{ messageHistory }} -->
+            <Socket alignment="center" :model="selectedModel" :sessionId="sessionId" :persona="selectedPersona"
+              :userPrompt="chatPrompt" :messageHistory="messageHistory" :trigger="triggerGenerate"
+              @messageComplete="messageComplete" @messagePartial="messagePartial">
+              <!-- {{ messageHistory }} -->
               <ChatWindow :messages="messageHistory" />
 
             </Socket>
             <!-- <ChatWindow :messages="messageHistory"/> -->
 
             <div class="max-w-2xl mx-auto md:px-4">
-              <form @submit.prevent="trigger" class="relative flex items-center mt-8" data-aos="fade-down"
-                data-aos-delay="300">
-                <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }" v-model="chatPrompt"
-                  @input="adjustHeight" class="form-input w-full pl-12" placeholder="Ask me about …"
-                  aria-label="Search anything" />
-                <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
-                  <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-                    <path class="fill-current text-gray-400"
-                      d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
-                  </svg>
-                </button>
-              </form>
+
+              <div class="mt-6">
+
+                <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true" :close-on-select="true"
+                  :custom-label="customLabelModel" :show-labels="false" placeholder="Pick a model" />
+
+
+                <form @submit.prevent="trigger" class="relative flex items-center " data-aos="fade-down"
+                  data-aos-delay="300">
+                  <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }" v-model="chatPrompt"
+                    @input="adjustHeight" class="form-input w-full pl-12" placeholder="Ask me about …"
+                    aria-label="Search anything" />
+                  <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
+                    <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                      <path class="fill-current text-gray-400"
+                        d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
+
             </div>
 
             <!-- <HelpList /> -->
@@ -81,6 +91,7 @@ import Footer from '@/partials/Footer.vue'
 import DisplayPersona from '@/components/DisplayPersona.vue'
 import ChatWindow from '@/components/ChatWindow.vue'
 import Socket from '@/components/Socket.vue'
+import VueMultiselect from 'vue-multiselect'
 
 //Composables
 import { useModels } from '@/composables/useModels.js'
@@ -97,6 +108,8 @@ let chatPrompt = ref("");
 let sessionId = ref(uuidv4())
 let messageHistory = ref([]);
 const textarea = ref(null);
+
+const customLabelModel = (option) => option ? option.label : '';
 
 onMounted(async () => {
   if (props.personaId) {
@@ -118,7 +131,7 @@ function trigger() {
   let knowledgeProfileUuids = [];
   if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
   if (chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
-  nextTick(()=>{
+  nextTick(() => {
     chatPrompt.value = "";
   })
 

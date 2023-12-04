@@ -77,9 +77,7 @@ onMounted(() => {
   })
 
   websocketConnection()
-  setDark(true)
-
-
+  
 })
 
 

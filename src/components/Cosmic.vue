@@ -303,7 +303,6 @@ onMounted(() => {
         // Generate links using the selected pattern generator
         const newLinks = patternFunction(nodes);
 
-            console.log(newLinks)
 
     // Update the links dataset
     links.splice(0, links.length, ...newLinks);
