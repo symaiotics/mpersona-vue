@@ -77,8 +77,19 @@ onMounted(() => {
   })
 
   websocketConnection()
-  
+  setDark(true)
 })
+
+
+
+function setDark(newValue) {
+  sessionStorage.setItem('dark-mode', newValue);
+  if (newValue) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
 
 
 </script>

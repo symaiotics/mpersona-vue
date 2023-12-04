@@ -35,7 +35,7 @@
 
           <div class="bg-white dark:bg-gray-800 py-8 px-1 shadow-2xl" data-aos="fade-down" data-aos-anchor="[data-aos-id-stats]" data-aos-delay="300">
             <div class="font-red-hat-display text-3xl font-black tracking-tighter mb-1">Auditable</div>
-            <div class="text-gray-600 dark:text-gray-400">Grow AI Trust Real-Time Self-Audits</div>
+            <div class="text-gray-600 dark:text-gray-400">Grow AI Trust with Real-Time Self-Audits</div>
           </div>
 
           <div class="bg-white dark:bg-gray-800 py-8 px-1 shadow-2xl" data-aos="fade-down" data-aos-anchor="[data-aos-id-stats]" data-aos-delay="300">

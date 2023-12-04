@@ -29,7 +29,7 @@
           <h2 class="text-3xl font-extrabold mb-4"> Open Source </h2>
           <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
             mPersona is Open Source under the MIT License, inviting contributors and developers to participate in its
-            evolution.Access the code and contribute to the project on GitHub
+            evolution. Access the code and contribute to the project on GitHub
           </p>
           <div class="space-x-2">
             <a href="https://github.com/symaiotics/mpersona-vue"
