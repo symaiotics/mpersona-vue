@@ -31,7 +31,7 @@
       </div>
 
       <div class="flex justify-center ">
-        <div class=" w-10/12">
+        <div class=" w-full">
           <section class="mb-6 w-full">
             <Tabs :tabs="tabs" v-model="activeTab">
               <template v-slot:tab-0>
@@ -47,54 +47,77 @@
               </template>
 
               <template v-slot:tab-1>
+
+
+                <!-- Left Column (Skinny) - Aligned to Bottom -->
+                <!-- <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col justify-end">
+                  <DisplayPersonaStack :personas="selectedRoster.personas" :selectedPersonaIndex="selectedPersonaIndex"
+                    @selectPersona="selectPersona" />
+                </div> -->
+
+
                 <div class="grid grid-cols-12 gap-4 h-full">
 
-                  <!-- Left Column (Skinny) - Aligned to Bottom -->
-                  <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col justify-end">
-                    <DisplayPersonaStack :personas="selectedRoster.personas" :selectedPersonaIndex="selectedPersonaIndex"
-                      @selectPersona="selectPersona" />
-                  </div>
 
                   <!-- Right Column (Wider) -->
-                  <div class="col-span-11">
-                    <template v-if="selectedPersona">
-                      <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
-                        :model="selectedModel" :messageHistory="messageHistory" :trigger="triggerGenerate"
-                        @messageComplete="messageComplete" @messagePartial="messagePartial">
-                        <ChatWindow :messages="messageHistory" />
-                      </Socket>
+                  <div class="col-span-12">
 
+                    <div :class="`grid gap-4 h-full grid-cols-${2 + showColsCount}`">
                       <div class="w-full mx-auto ">
 
-                        <div class="mt-6">
 
-                          <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
-                            :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
-                            placeholder="Pick a model" />
+                        <div class="w-full mx-auto ">
 
+                          
 
-                          <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
-                            data-aos-delay="300">
-                            <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
-                              v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
-                              placeholder="Ask me about... / Demande moi à propos de..." aria-label="Search anything" />
-                            <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
-                              <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path class="fill-current text-gray-400"
-                                  d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
-                              </svg>
-                            </button>
-                          </form>
+                        
+
+                            <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
+                              data-aos-delay="300">
+                              <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
+                                v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+                                placeholder="Enter text to translate... / Saisissez le texte à traduire..." aria-label="Search anything" />
+                              <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
+                                <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16"
+                                  xmlns="http://www.w3.org/2000/svg">
+                                  <path class="fill-current text-gray-400"
+                                    d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
+                                </svg>
+                              </button>
+                            </form>
+
+                            <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                              :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                              placeholder="Pick a model" />
+
+                          <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
+                          <p class="italic pt-0">Cost per Interaction / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p>
+                          <br />
 
                         </div>
-                        <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
-                        <p class="italic pt-0">Cost / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p><br />
+
 
                       </div>
 
 
-                    </template>
+                      <template v-if="selectedPersona">
+                        <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
+                          :model="selectedModel" :messageHistory="messageHistory" :trigger="triggerGenerate"
+                          @messageComplete="messageComplete" @messagePartial="messagePartial">
+                          <ChatWindow :messages="messageHistory" />
+                        </Socket>
+
+
+
+
+                      </template>
+
+                      <div class="w-full mx-auto ">
+                        Lexicon
+                      </div>
+
+
+                    </div>
 
                   </div>
 
@@ -152,11 +175,16 @@ let selectedPersonaIndex = ref(null)
 const isAutoScrollActive = ref(true);
 const customLabelModel = (option) => option ? option.label : '';
 
+let showCols = ref({showLexicon:false, showReference:false})
+let showColsCount = computed(() => {
+  return Object.values(showCols.value).filter(value => value).length;
+});
+
 let activeTab = ref(0)
 const tabs = ref([
   { label: 'Roster / Équipe' },
-  { label: 'Interact / Interagir' },
-  { label: 'Audit / Vérification' }
+  { label: 'Translate / Traduire' },
+  { label: 'Lexicon / Lexique' }
 ]);
 
 onMounted(async () => {
@@ -167,8 +195,6 @@ onMounted(async () => {
   window.addEventListener('scroll', handleScroll);
 
 })
-
-
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll);
@@ -237,10 +263,6 @@ watchEffect(() => {
     scrollToBottom();
   }
 });
-
-
-
-
 
 function costOfInteraction() {
   let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPrompt.value.length;

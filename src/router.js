@@ -15,6 +15,7 @@ import FT from '@/pages/apps/FT.vue'
 import GC from '@/pages/apps/GC.vue'
 import GOV from '@/pages/apps/GOV.vue'
 import OCCSC from '@/pages/apps/OCCSC.vue'
+import Translate from '@/pages/apps/Translate.vue'
 
 import Blog from './pages/Blog.vue'
 import Help from './pages/Help.vue'
@@ -89,6 +90,12 @@ const router = createRouter({
       path: '/apps/occsc/:rosterId?',
       name: 'occsc',
       component: OCCSC,
+      props:true,
+    },
+    {
+      path: '/apps/translate/:rosterId?',
+      name: 'translate',
+      component: Translate,
       props:true,
     },
 
