@@ -184,8 +184,11 @@
                 </button>
             </div>
 
-            <button v-if="localRoster.uuid" @click="demo(localRoster.uuid)"
-                class="btn text-white bg-green-500 hover:bg-green-400 m-4">Open Demo</button>
+            <button v-if="localRoster.uuid" @click="demo(localRoster.uuid, 'gc')"
+                class="btn text-white bg-green-500 hover:bg-green-400 m-4">Open GC Wrapp</button>
+
+            <button v-if="localRoster.uuid" @click="demo(localRoster.uuid, 'translate')"
+                class="btn text-white bg-green-500 hover:bg-green-400 m-4">Open Translation Wrapp</button>
 
 
 
@@ -246,8 +249,8 @@ function triggerDelete() {
     emit('changeTab', 0)
 }
 
-function demo(uuid) {
-    window.open(import.meta.env.VITE_SELF + "/apps/gc/" + uuid, '_blank');
+function demo(uuid, wrapp) {
+    window.open(`${import.meta.env.VITE_SELF}/apps/${wrapp}/${uuid}`, '_blank');
 }
 
 function createLink(linkType) {
