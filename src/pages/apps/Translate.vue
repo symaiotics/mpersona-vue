@@ -48,89 +48,167 @@
 
               <template v-slot:tab-1>
 
-
                 <!-- Left Column (Skinny) - Aligned to Bottom -->
                 <!-- <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col justify-end">
                   <DisplayPersonaStack :personas="selectedRoster.personas" :selectedPersonaIndex="selectedPersonaIndex"
                     @selectPersona="selectPersona" />
                 </div> -->
 
+                <div class="flex items-center mb-2 space-x-6">
 
-                <div class="grid grid-cols-12 gap-4 h-full">
+                  <button @click="trigger"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Translate
+                  </button>
 
-
-                  <!-- Right Column (Wider) -->
-                  <div class="col-span-12">
-
-                    <div :class="`grid gap-4 h-full grid-cols-${2 + showColsCount}`">
-                      <div class="w-full mx-auto ">
-
-
-                        <div class="w-full mx-auto ">
-
-                          
-
-                        
-
-                            <form @submit.prevent="trigger" class="relative flex items-center mt-2" data-aos="fade-down"
-                              data-aos-delay="300">
-                              <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
-                                v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
-                                placeholder="Enter text to translate... / Saisissez le texte à traduire..." aria-label="Search anything" />
-                              <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
-                                <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16"
-                                  xmlns="http://www.w3.org/2000/svg">
-                                  <path class="fill-current text-gray-400"
-                                    d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
-                                </svg>
-                              </button>
-                            </form>
-
-                            <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
-                              :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
-                              placeholder="Pick a model" />
-
-                          <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p>
-                          <p class="italic pt-0">Cost per Interaction / Coût d'interaction: ${{ costOfInteraction().toFixed(3) }}</p>
-                          <br />
-
-                        </div>
+                  <div style="max-width:300px">
+                    <VueMultiselect v-model="selectedLng" :options="lngs" :searchable="true" :close-on-select="true" :preselect-first="true"
+                      :custom-label="customLng" :show-labels="false" placeholder="Select a language" />
+                  </div>
 
 
-                      </div>
+                  <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.asPlainText" class="mr-1 checkbox-large" />
+                    Paste Plain Text
+                  </label>
+
+                  <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.useLexicon" class="mr-1 checkbox-large" />
+                    Use Lexicon
+                  </label>
+
+                  <!-- <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.display.showLexicon" class="mr-1 checkbox-large" />
+                    Show Lexicon
+                  </label> -->
+                  <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.display.showReference" class="mr-1 checkbox-large" />
+                    Show Reference
+                  </label>
+
+                  <button @click="toLocalLexicon('en')"
+                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    + EN
+                  </button>
+
+                  <button @click="toLocalLexicon('fr')"
+                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    + FR
+                  </button>
 
 
-                      <template v-if="selectedPersona">
-                        <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPrompt"
-                          :model="selectedModel" :messageHistory="messageHistory" :trigger="triggerGenerate"
-                          @messageComplete="messageComplete" @messagePartial="messagePartial">
-                          <ChatWindow :messages="messageHistory" />
-                        </Socket>
+                </div>
 
 
+                <div :class="`grid gap-2 h-full grid-cols-${2 + showColsCount}`">
 
 
-                      </template>
+                  <div>
 
-                      <div class="w-full mx-auto ">
-                        Lexicon
-                      </div>
+                    <!-- <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
+                        v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+                        placeholder="Enter text to translate... / Saisissez le texte à traduire..."
+                        aria-label="Search anything" /> -->
 
 
+                    <DivInput placeholder="Enter text to translate... / Saisissez le texte à traduire..."
+                      v-model="chatPrompt" :asPlainText="settings.asPlainText" />
+
+                   
+                    <!-- {{ chatPrompt }} -->
+                    <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                      :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                      placeholder="Pick a model" />
+
+                    <div v-if="selectedPersona">
+                      <!-- <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p> -->
+                      <p class="italic pt-0">Cost per Interaction / Coût d'interaction: ${{
+                        costOfInteraction().toFixed(3) }}</p>
                     </div>
+
 
                   </div>
 
-                  <section class="col-span-12 w-full">
-                    <ChatList v-if="selectedPersona?.knowledgeProfiles?.length" :facts="factSearchResults"
-                      @promptQuestion="promptQuestion" />
-                  </section>
+
+                  <div v-if="selectedPersona">
+                    <Socket :key="selectedPersona.uuid" :persona="selectedPersona" :userPrompt="chatPromptWithLexicon"
+                      :model="selectedModel" :trigger="triggerGenerate" @messageComplete="messageComplete"
+                      @messagePartial="messagePartial">
+                      <!-- <ChatWindow :messages="messageHistory" /> -->
+
+
+                      <!-- <DivInput v-if = "messageHistory.length" v-model="messageHistory[messageHistory.length-1]" :asPlainText="settings.asPlainText" /> -->
+
+                    </Socket>
+
+                  </div>
+
+                  <div v-if="settings.display.showReference">
+
+                    <DivInput placeholder="Text to compare / Texte à comparer" v-model="referenceText"
+                      :asPlainText="settings.asPlainText" />
+
+                  </div>
+
 
                 </div>
+
               </template>
 
               <template v-slot:tab-2>
-                <h2>Coming in mPersona V2 (2024)</h2>
+
+
+                <button @click="toLocalLexicon"
+                  class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                  Add Lexicon Item
+                </button>
+
+                <button @click="uploadLexicon"
+                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                  Upload Lexicon
+                </button>
+
+                <button @click="downloadLexicon"
+                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                 Download Lexicon
+                </button>
+
+                <button @click="clearLexicon"
+                  class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                 Clear Lexicon
+                </button>
+
+                <table class=" w-full ">
+                  <thead class="bg-gray-200 dark:bg-gray-700">
+                    <tr>
+                      <th class="px-4 py-2">English</th>
+                      <th class="px-4 py-2">French</th>
+                      <th class="px-4 py-2">Remove</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(entry, index) in localLexicon" :key="index">
+                      <td class="border px-4 py-2">
+                        <input type="text" v-model="entry.en"
+                          class="w-full form-input px-4 py-2 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                      </td>
+                      <td class="border px-4 py-2">
+                        <input type="text" v-model="entry.fr"
+                          class=" w-full form-input px-4 py-2 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white" />
+                      </td>
+                      <td class="text-center">
+
+                        <button @click="deleteLexiconItem(index)"
+                          class="w-auto whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                          X
+                        </button>
+
+
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
               </template>
             </Tabs>
           </section>
@@ -142,9 +220,10 @@
 
 <script setup>
 
-import { ref, onMounted, onUnmounted, nextTick, watch, watchEffect } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, watch, watchEffect, computed } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import DisplayPersona from '@/components/DisplayPersona.vue'
+import DivInput from '@/components/DivInput.vue'
 import DisplayPersonaStack from '@/components/DisplayPersonaStack.vue'
 import Socket from '@/components/Socket.vue'
 import ChatWindow from '@/components/ChatWindow.vue'
@@ -165,19 +244,47 @@ const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = use
 const { rosters, selectedRoster, getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
 
+
+
+let lngs = ref([
+
+  { type: "auto", label: { en: "Automatically Detect", fr: "" } },
+  { type: "enToFr", label: { en: "English to French", fr: "" } },
+  { type: "frToEn", label: { en: "French to English", fr: "" } },
+
+])
+
+
+let selectedLng = ref(null)
+let lexiconInstructions = ref("\n\nEnsure that in your translation you ALWAYS use the following lexicon of translations to ensure accuracy. If the term is in the list below, do not use another term. \n\n Do not correct my lexicon at all. There is a specific and important reason I wish you to substitute these words for my work, even if that translation is incorrect")
+
 let props = defineProps({ rosterId: { type: String, default: null } })
 let triggerGenerate = ref(false);
 let chatPrompt = ref("");
+let chatPromptWithLexicon = computed(() => {
+
+  let direction = "";
+  if(selectedLng?.value?.type !== 'auto') direction = " from " + selectedLng?.value?.label?.en ;
+  let chatValue = `Translate the following text${direction}:\n` + chatPrompt.value;
+  if (localLexicon.value.length && settings.value.useLexicon) {
+    chatValue += lexiconInstructions.value + localLexicon.value.map(obj => JSON.stringify(obj)).join(', ');
+  }
+
+  return chatValue;
+});
+let referenceText = ref("");
+let localLexicon = ref([])
 let sessionId = ref(uuidv4())
 let messageHistory = ref([]);
 const textarea = ref(null);
 let selectedPersonaIndex = ref(null)
 const isAutoScrollActive = ref(true);
 const customLabelModel = (option) => option ? option.label : '';
+const customLng = (option) => option ? option.label.en : '';
 
-let showCols = ref({showLexicon:false, showReference:false})
+let settings = ref({ display: {  showReference: false }, useLexicon:true, asPlainText: true })
 let showColsCount = computed(() => {
-  return Object.values(showCols.value).filter(value => value).length;
+  return Object.values(settings.value.display).filter(value => value).length;
 });
 
 let activeTab = ref(0)
@@ -188,6 +295,8 @@ const tabs = ref([
 ]);
 
 onMounted(async () => {
+
+
   setDark(false)
   if (props.rosterId) {
     await getRosterFromUuid(props.rosterId);
@@ -216,12 +325,9 @@ function trigger() {
   triggerGenerate.value = !triggerGenerate.value;
 
   //Get the facts
-  let knowledgeProfileUuids = [];
-  if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
-  if (chatPrompt?.value?.length) searchFacts(chatPrompt.value, knowledgeProfileUuids)
-  nextTick(() => {
-    chatPrompt.value = "";
-  })
+  // let knowledgeProfileUuids = [];
+  // if (selectedPersona?.value?.knowledgeProfiles?.length) knowledgeProfileUuids = selectedPersona.value.knowledgeProfiles.map((kp) => { return kp.uuid }) || [];
+
 }
 
 function messagePartial(val) {
@@ -265,7 +371,7 @@ watchEffect(() => {
 });
 
 function costOfInteraction() {
-  let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPrompt.value.length;
+  let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPromptWithLexicon.value.length;
   return (lengthOfHistory / 4000) * 0.01;
 }
 
@@ -305,16 +411,16 @@ function cleanseMessageHistory(messageHistory) {
 }
 
 
-const adjustHeight = () => {
-  nextTick(() => {
-    textarea.value.style.height = 'auto';
-    textarea.value.style.height = (textarea.value.scrollHeight + 10) + 'px';
-  });
-};
+// const adjustHeight = () => {
+//   nextTick(() => {
+//     textarea.value.style.height = 'auto';
+//     textarea.value.style.height = (textarea.value.scrollHeight + 10) + 'px';
+//   });
+// };
 
-watch(chatPrompt, () => {
-  adjustHeight();
-});
+// watch(chatPrompt, () => {
+//   adjustHeight();
+// });
 
 function promptQuestion(question) {
   chatPrompt.value = question;
@@ -348,5 +454,68 @@ function selectPersona(persona, index) {
   activeTab.value = 1;
 }
 
+
+
+function toLocalLexicon(lng) {
+  let newEntry = { en: "", fr: "" };
+
+  if (lng) {
+    let text = getSelectedText().trim();
+    if (lng == 'en') newEntry.en = text
+    else newEntry.fr = text;
+  }
+
+  localLexicon.value.unshift(newEntry);
+  activeTab.value = 2;
+
+}
+
+function deleteLexiconItem(index) {
+  localLexicon.value.splice(index, 1)
+}
+
+function getSelectedText() {
+  if (window.getSelection) {
+    return window.getSelection().toString();
+  }
+  return '';
+}
+
+
+
+const clearLexicon = () => {
+  localLexicon.value = [];
+};
+
+
+const downloadLexicon = () => {
+  const blob = new Blob([JSON.stringify(localLexicon.value)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'localLexicon.json';
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+const uploadLexicon = () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const text = await file.text();
+        const json = JSON.parse(text);
+        localLexicon.value = [...localLexicon.value, ...json];
+      } catch (error) {
+        console.error('Error parsing JSON:', error);
+      }
+    }
+  };
+
+  input.click();
+};
 
 </script>
