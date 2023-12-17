@@ -83,6 +83,11 @@
                     Show Lexicon
                   </label> -->
                   <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.showPrompt" class="mr-1 checkbox-large" />
+                    Show Prompt
+                  </label>
+
+                  <label class="label-style whitespace-nowrap">
                     <input type="checkbox" v-model="settings.display.showReference" class="mr-1 checkbox-large" />
                     Show Reference
                   </label>
@@ -127,7 +132,14 @@
                         costOfInteraction().toFixed(3) }}</p>
                     </div>
 
+                    <div v-if="settings.showPrompt">
+                      Full prompt to LLM:<br/>
 
+                      <DivInput placeholder="Full prompt preview" v-model="chatPromptWithLexicon"
+                        :asPlainText="settings.asPlainText" />
+
+                      
+                    </div>
                   </div>
 
 
@@ -137,9 +149,10 @@
                       @messagePartial="messagePartial">
                       <!-- <ChatWindow :messages="messageHistory" /> -->
 
-                      <DivInput placeholder="English Text" v-model="latestMessage" :asPlainText="settings.asPlainText" />
+                      <DivInput placeholder="Persona response..." v-model="latestMessage"
+                        :asPlainText="settings.asPlainText" />
 
-                      
+
 
                       <!-- <DivInput v-if = "messageHistory.length" v-model="messageHistory[messageHistory.length-1]" :asPlainText="settings.asPlainText" /> -->
 
@@ -216,26 +229,47 @@
               </template>
 
               <template v-slot:tab-3>
+
+                
+                <button @click="triggerLexicon"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Generate Lexicon
+                  </button>
+
+                  <button v-if = "lexiconExtracts?.[0]?.extracts?.json?.[0]?.length" @click="addToLexicon"
+                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Add to Lexicon ({{ lexiconExtracts?.[0]?.extracts?.json?.[0]?.length }} items)
+                  </button>
+
+
+                  <Socket v-if = "selectedPersona && lexiconSocketUuid" :key="selectedPersona.uuid + 'lexicon'" :sessionId = "lexiconSocketUuid" :persona="selectedPersona" :userPrompt="lexiconBuilderPromptWithAttachments"
+                      :model="selectedModel" :trigger="triggerGenerateLexicon" @messageComplete="messageLexicon"
+                      @messagePartial="messageLexicon">
+                      <!-- <ChatWindow :messages="messageHistory" /> -->
+
+                      <!-- <DivInput placeholder="Lexicon response..." v-model="latestLexiconMessage"
+                        :asPlainText="false" />   -->
+
+
+                    </Socket>
+
+              
+
                 <div class="grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-
-
+               
                   <div>
                     Original Text
-                    <DivInput placeholder="English Text" v-model="chatPrompt" :asPlainText="settings.asPlainText" />
+                    <DivInput placeholder="Original text" v-model="chatPrompt" :asPlainText="settings.asPlainText" />
                   </div>
 
                   <div>
-                    Translation
-                    <DivInput placeholder="English Text" v-model="latestMessage" :asPlainText="settings.asPlainText" />
-
-
+                    Translation (AI translated)
+                    <DivInput placeholder="Translated text" v-model="latestMessage" :asPlainText="settings.asPlainText" />
                   </div>
 
                   <div>
-                    Reference
-                    <DivInput placeholder="English Text" v-model="referenceText" :asPlainText="settings.asPlainText" />
-
-
+                    Reference (Correct translation)
+                    <DivInput placeholder="Reference text" v-model="referenceText" :asPlainText="settings.asPlainText" />
                   </div>
 
                 </div>
@@ -266,10 +300,12 @@ import VueMultiselect from 'vue-multiselect'
 
 
 //Composables
+
 import { useModels } from '@/composables/useModels.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useRosters } from '@/composables/useRosters.js'
 import { useFacts } from '@/composables/useFacts.js'
+import { useWebsockets } from '@/composables/useWebsockets.js';
 
 const { adminModels, selectedModel } = useModels()
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
@@ -277,6 +313,8 @@ const { rosters, selectedRoster, getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
 
 
+const { sessionsContent } = useWebsockets();
+const lexiconExtracts = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == lexiconSocketUuid.value }));
 
 let lngs = ref([
 
@@ -292,30 +330,71 @@ let lexiconInstructions = ref("\n\nEnsure that in your translation you ALWAYS us
 
 let props = defineProps({ rosterId: { type: String, default: null } })
 let triggerGenerate = ref(false);
-let chatPrompt = ref("");
-let chatPromptWithLexicon = computed(() => {
 
+
+let chatPrompt = ref("");
+
+
+
+let chatPromptWithLexicon = computed(() => {
   let direction = "";
   if (selectedLng?.value?.type !== 'auto') direction = " from " + selectedLng?.value?.label?.en;
   let chatValue = `Translate the following text${direction}:\n` + chatPrompt.value;
+
   if (localLexicon.value.length && settings.value.useLexicon) {
-    chatValue += lexiconInstructions.value + localLexicon.value.map(obj => JSON.stringify(obj)).join(', ');
+    // Cleanse chatPrompt.value of HTML if it's HTML
+    const cleansedChatPrompt = stripHtml(chatPrompt.value);
+
+    // Filter the localLexicon based on the cleansedChatPrompt
+    const filteredLexicon = localLexicon.value.filter((term) => {
+      return includesIgnoreCaseAndInvisible(cleansedChatPrompt, term.en) || includesIgnoreCaseAndInvisible(cleansedChatPrompt, term.fr);
+    });
+
+    // Append the filtered lexicon to the chatValue
+    if (filteredLexicon.length) {
+      chatValue += lexiconInstructions.value + filteredLexicon.map(obj => JSON.stringify(obj)).join(', ');
+    }
   }
 
   return chatValue;
 });
+
+
+// Helper function to remove HTML tags from a string
+function stripHtml(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+}
+
+// Helper function to escape a string for use in a regular expression
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+// Helper function to check if a string includes another string, ignoring case and invisible characters
+function includesIgnoreCaseAndInvisible(str, search) {
+  const escapedSearch = escapeRegExp(search).replace(/\s+/g, '').toLowerCase();
+  return str.replace(/\s+/g, '').toLowerCase().includes(escapedSearch);
+}
+
 let referenceText = ref("");
 let latestMessage = ref("")
+
 let localLexicon = ref([])
-let sessionId = ref(uuidv4())
+let lexiconBuilderPrompt = ref(`Below are 3 samples of text. The first is the original text provided for translation. The second is an attempted translation which may include incorrect syntax. The third is the correct translation. Evaluate the attempted translation against the correct translation to identify differences. Then, build an array of JSON objects structured like this [{"en","[The english term which was translated]","fr":"[The correct French term which should have been used from the official translation]"}]. Build an object in the array for each difference in this format. Do not say anything else other than returning the JSON array. Strictly only return JSON under all circumstances. `);
+let lexiconBuilderPromptWithAttachments = computed(() => {
+  return lexiconBuilderPrompt.value + "\n\n# 1. Original Text: " + chatPrompt.value + "\n\n # 2. Translated Text with potential issues: \n\n" + latestMessage.value  + "\n\n # 3. Correct translate to compare: \n\n" + referenceText.value ;
+});
+let latestLexiconMessage = ref("")
+let triggerGenerateLexicon = ref(false);
+let lexiconSocketUuid = ref(null);
 let messageHistory = ref([]);
-const textarea = ref(null);
 let selectedPersonaIndex = ref(null)
 const isAutoScrollActive = ref(true);
 const customLabelModel = (option) => option ? option.label : '';
 const customLng = (option) => option ? option.label.en : '';
 
-let settings = ref({ display: { showReference: false }, useLexicon: true, asPlainText: true })
+let settings = ref({ display: { showReference: false }, showPrompt:true, useLexicon: true, asPlainText: true })
 let showColsCount = computed(() => {
   return Object.values(settings.value.display).filter(value => value).length;
 });
@@ -330,6 +409,7 @@ const tabs = ref([
 
 onMounted(async () => {
 
+  lexiconSocketUuid.value = uuidv4()
 
   setDark(false)
   if (props.rosterId) {
@@ -364,6 +444,23 @@ function trigger() {
 
 }
 
+function triggerLexicon() {
+  console.log('Trigger Lexicon')
+  triggerGenerateLexicon.value = !triggerGenerateLexicon.value;
+}
+
+function addToLexicon()
+{
+  console.log("lexiconExtracts.value", lexiconExtracts.value)
+  if(lexiconExtracts?.value?.[0]?.extracts?.json?.[0]?.length)
+  {
+   let newValues = lexiconExtracts.value[0].extracts.json[0];
+   newValues.forEach((val)=>{
+    localLexicon.value.unshift(val);
+   })
+  }
+}
+
 function messagePartial(val) {
 
   if (val?.message?.length) latestMessage.value = val.message;
@@ -389,6 +486,13 @@ function messageComplete(val) {
 }
 
 
+
+function messageLexicon(val) {
+if (val?.message?.length) latestLexiconMessage.value = val.message;
+}
+
+
+
 const handleScroll = () => {
   const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight;
   isAutoScrollActive.value = isAtBottom;
@@ -407,8 +511,13 @@ watchEffect(() => {
 });
 
 function costOfInteraction() {
-  let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPromptWithLexicon.value.length;
-  return (lengthOfHistory / 4000) * 0.01;
+
+  // let lengthOfHistory = JSON.stringify(messageHistory.value).length + chatPromptWithLexicon.value.length;
+  // return (lengthOfHistory / 4000) * 0.01;
+
+  let lengthOfPrompt = (selectedPersona?.value?.basePrompt?.length || 0) + (chatPromptWithLexicon?.value?.length || 0);
+  return lengthOfPrompt / 4000 * 0.01;
+
 }
 
 function cleanseMessageHistory(messageHistory) {
