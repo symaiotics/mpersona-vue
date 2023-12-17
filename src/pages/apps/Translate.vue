@@ -62,8 +62,9 @@
                   </button>
 
                   <div style="max-width:300px">
-                    <VueMultiselect v-model="selectedLng" :options="lngs" :searchable="true" :close-on-select="true" :preselect-first="true"
-                      :custom-label="customLng" :show-labels="false" placeholder="Select a language" />
+                    <VueMultiselect v-model="selectedLng" :options="lngs" :searchable="true" :close-on-select="true"
+                      :preselect-first="true" :custom-label="customLng" :show-labels="false"
+                      placeholder="Select a language" />
                   </div>
 
 
@@ -100,7 +101,7 @@
                 </div>
 
 
-                <div :class="`grid gap-2 h-full grid-cols-${2 + showColsCount}`">
+                <div :class="`grid gap-2 h-full sm:grid-cols-1 md:grid-cols-${2 + showColsCount}`">
 
 
                   <div>
@@ -114,7 +115,7 @@
                     <DivInput placeholder="Enter text to translate... / Saisissez le texte à traduire..."
                       v-model="chatPrompt" :asPlainText="settings.asPlainText" />
 
-                   
+
                     <!-- {{ chatPrompt }} -->
                     <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
                       :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
@@ -136,6 +137,9 @@
                       @messagePartial="messagePartial">
                       <!-- <ChatWindow :messages="messageHistory" /> -->
 
+                      <DivInput placeholder="English Text" v-model="latestMessage" :asPlainText="settings.asPlainText" />
+
+                      
 
                       <!-- <DivInput v-if = "messageHistory.length" v-model="messageHistory[messageHistory.length-1]" :asPlainText="settings.asPlainText" /> -->
 
@@ -170,12 +174,12 @@
 
                 <button @click="downloadLexicon"
                   class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                 Download Lexicon
+                  Download Lexicon
                 </button>
 
                 <button @click="clearLexicon"
                   class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                 Clear Lexicon
+                  Clear Lexicon
                 </button>
 
                 <table class=" w-full ">
@@ -208,6 +212,34 @@
                     </tr>
                   </tbody>
                 </table>
+
+              </template>
+
+              <template v-slot:tab-3>
+                <div class="grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+
+
+                  <div>
+                    Original Text
+                    <DivInput placeholder="English Text" v-model="chatPrompt" :asPlainText="settings.asPlainText" />
+                  </div>
+
+                  <div>
+                    Translation
+                    <DivInput placeholder="English Text" v-model="latestMessage" :asPlainText="settings.asPlainText" />
+
+
+                  </div>
+
+                  <div>
+                    Reference
+                    <DivInput placeholder="English Text" v-model="referenceText" :asPlainText="settings.asPlainText" />
+
+
+                  </div>
+
+                </div>
+
 
               </template>
             </Tabs>
@@ -264,7 +296,7 @@ let chatPrompt = ref("");
 let chatPromptWithLexicon = computed(() => {
 
   let direction = "";
-  if(selectedLng?.value?.type !== 'auto') direction = " from " + selectedLng?.value?.label?.en ;
+  if (selectedLng?.value?.type !== 'auto') direction = " from " + selectedLng?.value?.label?.en;
   let chatValue = `Translate the following text${direction}:\n` + chatPrompt.value;
   if (localLexicon.value.length && settings.value.useLexicon) {
     chatValue += lexiconInstructions.value + localLexicon.value.map(obj => JSON.stringify(obj)).join(', ');
@@ -273,6 +305,7 @@ let chatPromptWithLexicon = computed(() => {
   return chatValue;
 });
 let referenceText = ref("");
+let latestMessage = ref("")
 let localLexicon = ref([])
 let sessionId = ref(uuidv4())
 let messageHistory = ref([]);
@@ -282,7 +315,7 @@ const isAutoScrollActive = ref(true);
 const customLabelModel = (option) => option ? option.label : '';
 const customLng = (option) => option ? option.label.en : '';
 
-let settings = ref({ display: {  showReference: false }, useLexicon:true, asPlainText: true })
+let settings = ref({ display: { showReference: false }, useLexicon: true, asPlainText: true })
 let showColsCount = computed(() => {
   return Object.values(settings.value.display).filter(value => value).length;
 });
@@ -291,7 +324,8 @@ let activeTab = ref(0)
 const tabs = ref([
   { label: 'Roster / Équipe' },
   { label: 'Translate / Traduire' },
-  { label: 'Lexicon / Lexique' }
+  { label: 'Lexicon / Lexique' },
+  { label: 'Lexicon Builder / Générateur de lexique' }
 ]);
 
 onMounted(async () => {
@@ -331,6 +365,8 @@ function trigger() {
 }
 
 function messagePartial(val) {
+
+  if (val?.message?.length) latestMessage.value = val.message;
   if (messageHistory?.value?.length) {
     if (messageHistory.value[messageHistory.value.length - 1].role == 'user') {
       messageHistory.value.push({ role: "system", content: val.message })
@@ -344,7 +380,7 @@ function messagePartial(val) {
 
 
 function messageComplete(val) {
-  console.log("MC", val)
+  if (val?.message?.length) latestMessage.value = val.message;
   if (messageHistory?.value?.length) {
     if (messageHistory.value[messageHistory.value.length - 1].role == 'system') {
       messageHistory.value[messageHistory.value.length - 1].content = val.message;
