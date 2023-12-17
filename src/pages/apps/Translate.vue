@@ -133,12 +133,12 @@
                     </div>
 
                     <div v-if="settings.showPrompt">
-                      Full prompt to LLM:<br/>
+                      Full prompt to LLM:<br />
 
                       <DivInput placeholder="Full prompt preview" v-model="chatPromptWithLexicon"
                         :asPlainText="settings.asPlainText" />
 
-                      
+
                     </div>
                   </div>
 
@@ -230,33 +230,34 @@
 
               <template v-slot:tab-3>
 
-                
+
                 <button @click="triggerLexicon"
-                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                    Generate Lexicon
-                  </button>
+                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                  Generate Lexicon
+                </button>
 
-                  <button v-if = "lexiconExtracts?.[0]?.extracts?.json?.[0]?.length" @click="addToLexicon"
-                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                    Add to Lexicon ({{ lexiconExtracts?.[0]?.extracts?.json?.[0]?.length }} items)
-                  </button>
+                <button v-if="lexiconExtracts?.[0]?.extracts?.json?.[0]?.length" @click="addToLexicon"
+                  class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                  Add to Lexicon ({{ lexiconExtracts?.[0]?.extracts?.json?.[0]?.length }} items)
+                </button>
 
 
-                  <Socket v-if = "selectedPersona && lexiconSocketUuid" :key="selectedPersona.uuid + 'lexicon'" :sessionId = "lexiconSocketUuid" :persona="selectedPersona" :userPrompt="lexiconBuilderPromptWithAttachments"
-                      :model="selectedModel" :trigger="triggerGenerateLexicon" @messageComplete="messageLexicon"
-                      @messagePartial="messageLexicon">
-                      <!-- <ChatWindow :messages="messageHistory" /> -->
+                <Socket v-if="selectedPersona && lexiconSocketUuid" :key="selectedPersona.uuid + 'lexicon'"
+                  :sessionId="lexiconSocketUuid" :persona="selectedPersona"
+                  :userPrompt="lexiconBuilderPromptWithAttachments" :model="selectedModel"
+                  :trigger="triggerGenerateLexicon" @messageComplete="messageLexicon" @messagePartial="messageLexicon">
+                  <!-- <ChatWindow :messages="messageHistory" /> -->
 
-                      <!-- <DivInput placeholder="Lexicon response..." v-model="latestLexiconMessage"
+                  <!-- <DivInput placeholder="Lexicon response..." v-model="latestLexiconMessage"
                         :asPlainText="false" />   -->
 
 
-                    </Socket>
+                </Socket>
 
-              
+
 
                 <div class="grid grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-               
+
                   <div>
                     Original Text
                     <DivInput placeholder="Original text" v-model="chatPrompt" :asPlainText="settings.asPlainText" />
@@ -383,7 +384,7 @@ let latestMessage = ref("")
 let localLexicon = ref([])
 let lexiconBuilderPrompt = ref(`Below are 3 samples of text. The first is the original text provided for translation. The second is an attempted translation which may include incorrect syntax. The third is the correct translation. Evaluate the attempted translation against the correct translation to identify differences. Then, build an array of JSON objects structured like this [{"en","[The english term which was translated]","fr":"[The correct French term which should have been used from the official translation]"}]. Build an object in the array for each difference in this format. Do not say anything else other than returning the JSON array. Strictly only return JSON under all circumstances. `);
 let lexiconBuilderPromptWithAttachments = computed(() => {
-  return lexiconBuilderPrompt.value + "\n\n# 1. Original Text: " + chatPrompt.value + "\n\n # 2. Translated Text with potential issues: \n\n" + latestMessage.value  + "\n\n # 3. Correct translate to compare: \n\n" + referenceText.value ;
+  return lexiconBuilderPrompt.value + "\n\n# 1. Original Text: " + chatPrompt.value + "\n\n # 2. Translated Text with potential issues: \n\n" + latestMessage.value + "\n\n # 3. Correct translate to compare: \n\n" + referenceText.value ;
 });
 let latestLexiconMessage = ref("")
 let triggerGenerateLexicon = ref(false);
@@ -394,7 +395,7 @@ const isAutoScrollActive = ref(true);
 const customLabelModel = (option) => option ? option.label : '';
 const customLng = (option) => option ? option.label.en : '';
 
-let settings = ref({ display: { showReference: false }, showPrompt:true, useLexicon: true, asPlainText: true })
+let settings = ref({ display: { showReference: false }, showPrompt: true, useLexicon: true, asPlainText: true })
 let showColsCount = computed(() => {
   return Object.values(settings.value.display).filter(value => value).length;
 });
@@ -449,15 +450,20 @@ function triggerLexicon() {
   triggerGenerateLexicon.value = !triggerGenerateLexicon.value;
 }
 
-function addToLexicon()
-{
+function addToLexicon() {
   console.log("lexiconExtracts.value", lexiconExtracts.value)
-  if(lexiconExtracts?.value?.[0]?.extracts?.json?.[0]?.length)
-  {
-   let newValues = lexiconExtracts.value[0].extracts.json[0];
-   newValues.forEach((val)=>{
-    localLexicon.value.unshift(val);
-   })
+  if (lexiconExtracts?.value?.[0]?.extracts?.json?.[0]?.length) {
+    let newValues = lexiconExtracts.value[0].extracts.json[0];
+    newValues.forEach((val) => {
+
+      //Dont add redundant
+      const exists = localLexicon.value.some(lexiconItem => lexiconItem.en.toLowerCase() === val.en.toLowerCase());
+      if (!exists) {
+        // If it doesn't exist, unshift it onto localLexicon
+        localLexicon.value.unshift(val);
+      }
+
+    })
   }
 }
 
@@ -488,7 +494,7 @@ function messageComplete(val) {
 
 
 function messageLexicon(val) {
-if (val?.message?.length) latestLexiconMessage.value = val.message;
+  if (val?.message?.length) latestLexiconMessage.value = val.message;
 }
 
 

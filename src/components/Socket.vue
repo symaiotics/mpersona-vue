@@ -59,8 +59,8 @@
                 <ClipboardPlus @click="copyToClipboard(stripHtmlTags(completedMessageMarkdown))"
                     class="text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300" :size="48" />
 
-                <template v-if="thisSessionsContent?.[0]?.extracts?.value?.json">
-                    <div v-for="(json, index) in thisSessionsContent[0].extracts.value.json"
+                <template v-if="thisSessionsContent?.[0]?.extracts?.json">
+                    <div v-for="(json, index) in thisSessionsContent[0].extracts.json"
                         :key="'socket' + sessionId + index">
 
                         <CodeJson @click="copyToClipboard(json)" class="text-black dark:text-white" :size="48" />
@@ -68,8 +68,8 @@
                     </div>
                 </template>
 
-                <template v-if="thisSessionsContent?.[0]?.extracts?.value?.code">
-                    <div v-for="(code, index) in thisSessionsContent[0].extracts.value.code"
+                <template v-if="thisSessionsContent?.[0]?.extracts?.code">
+                    <div v-for="(code, index) in thisSessionsContent[0].extracts.code"
                         :key="'socket' + sessionId + index">
                     
                         <LanguageJavascript v-if = "code.key == 'javascript'" @click="copyToClipboard(code.code)" class="text-black dark:text-white" :size="48" />
