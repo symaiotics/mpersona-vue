@@ -353,7 +353,7 @@ let chatPromptWithLexicon = computed(() => {
 
     // Append the filtered lexicon to the chatValue
     if (filteredLexicon.length) {
-      chatValue += lexiconInstructions.value + filteredLexicon.map(obj => JSON.stringify(obj)).join(', ');
+      chatValue += lexiconInstructions.value + "\n"+ filteredLexicon.map(obj => JSON.stringify(obj)).join(',\n');
     }
   }
 
