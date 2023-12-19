@@ -172,7 +172,87 @@
 
               </template>
 
+
               <template v-slot:tab-2>
+
+
+
+                <button @click="translateFormatted"
+                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                  Translate with Formats
+                </button>
+                <button @click="copyTranslated"
+                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                  Copy
+                </button>
+
+                <div :class="`grid gap-2 h-full sm:grid-cols-1 md:grid-cols-4`">
+
+
+
+                  <div class="col-span-3 flex-grow">
+
+                    <!-- <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
+      v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+      placeholder="Enter text to translate... / Saisissez le texte à traduire..."
+      aria-label="Search anything" /> -->
+
+
+                    <DivInput ref = "chatPromptFormattedDom" placeholder="Enter text to translate... / Saisissez le texte à traduire..."
+                      v-model="chatPromptFormatted" @selectionChange="formattedSelectionChange" :asPlainText="false" />
+
+                    <!-- <div>{{chatPromptFormatted}}</div> -->
+
+                    <!-- {{ chatPrompt }} -->
+                    <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                      :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                      placeholder="Pick a model" />
+
+                    <div v-if="selectedPersona">
+                      <!-- <p class="italic pt-2 mb-0 pb-1">{{ selectedPersona.name }}</p> -->
+                      <p class="italic pt-0">Cost per Interaction / Coût d'interaction: ${{
+                        costOfInteraction().toFixed(3) }}</p>
+                    </div>
+
+                    <div v-if="settings.showPrompt">
+                      Full prompt to LLM:<br />
+
+                      <DivInput placeholder="Full prompt preview" v-model="chatPromptWithLexicon"
+                        :asPlainText="settings.asPlainText" />
+
+
+                    </div>
+                  </div>
+
+
+                  <div class="flex-grow" v-if="selectedPersona && formattedSocketUuid">
+                    <Socket :key="selectedPersona.uuid" :sessionId="formattedSocketUuid" :persona="selectedPersona"
+                      :userPrompt="chatPromptJson" :model="selectedModel" :trigger="triggerGenerateFormatted"
+                      @messageComplete="messageCompleteFormatted" @messagePartial="messagePartialFormatted">
+                      <!-- <ChatWindow :messages="messageHistory" /> -->
+
+
+
+
+
+                      <!-- <DivInput v-if = "messageHistory.length" v-model="messageHistory[messageHistory.length-1]" :asPlainText="settings.asPlainText" /> -->
+
+                    </Socket>
+
+                  </div>
+
+                  <div v-if="settings.display.showReference">
+
+                    <DivInput placeholder="Text to compare / Texte à comparer" v-model="referenceText"
+                      :asPlainText="settings.asPlainText" />
+
+                  </div>
+
+
+                </div>
+
+              </template>
+              <template v-slot:tab-3>
 
 
                 <button @click="toLocalLexicon"
@@ -228,7 +308,7 @@
 
               </template>
 
-              <template v-slot:tab-3>
+              <template v-slot:tab-4>
 
 
                 <button @click="triggerLexicon"
@@ -299,6 +379,7 @@ import Tabs from '@/components/Tabs.vue';
 import canada from "@/images/canada.svg";
 import VueMultiselect from 'vue-multiselect'
 
+import { notify } from "notiwind"
 
 //Composables
 
@@ -316,6 +397,7 @@ const { searchFacts, factSearchResults } = useFacts()
 
 const { sessionsContent } = useWebsockets();
 const lexiconExtracts = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == lexiconSocketUuid.value }));
+const formattedExtracts = computed(() => sessionsContent.value.filter((session) => { return session.sessionId == formattedSocketUuid.value }));
 
 let lngs = ref([
 
@@ -330,11 +412,19 @@ let selectedLng = ref(null)
 let lexiconInstructions = ref("\n\nEnsure that in your translation you ALWAYS use the following lexicon of translations to ensure accuracy. If the term is in the list below, do not use another term. \n\n Do not correct my lexicon at all. There is a specific and important reason I wish you to substitute these words for my work, even if that translation is incorrect")
 
 let props = defineProps({ rosterId: { type: String, default: null } })
-let triggerGenerate = ref(false);
 
+//Triggers for the different functions
+let triggerGenerate = ref(false);
+let triggerGenerateLexicon = ref(false);
+let triggerGenerateFormatted = ref(false);
 
 let chatPrompt = ref("");
 
+//Formatting translation
+let chatPromptFormatted = ref("")
+let chatPromptFormattedDom = ref(null)
+let chatPromptFormattedSelection = ref(null)
+let chatPromptJson = ref("")
 
 
 let chatPromptWithLexicon = computed(() => {
@@ -353,7 +443,7 @@ let chatPromptWithLexicon = computed(() => {
 
     // Append the filtered lexicon to the chatValue
     if (filteredLexicon.length) {
-      chatValue += lexiconInstructions.value + "\n"+ filteredLexicon.map(obj => JSON.stringify(obj)).join(',\n');
+      chatValue += lexiconInstructions.value + "\n" + filteredLexicon.map(obj => JSON.stringify(obj)).join(',\n');
     }
   }
 
@@ -379,21 +469,27 @@ function includesIgnoreCaseAndInvisible(str, search) {
 }
 
 let referenceText = ref("");
+
 let latestMessage = ref("")
+let latestLexiconMessage = ref("")
+let latestMessageFormatted = ref("")
 
 let localLexicon = ref([])
 let lexiconBuilderPrompt = ref(`Below are 3 samples of text. The first is the original text provided for translation. The second is an attempted translation which may include incorrect syntax. The third is the correct translation. Evaluate the attempted translation against the correct translation to identify differences. Then, build an array of JSON objects structured like this [{"en","[The english term which was translated]","fr":"[The correct French term which should have been used from the official translation]"}]. Build an object in the array for each difference in this format. Do not say anything else other than returning the JSON array. Strictly only return JSON under all circumstances. `);
 let lexiconBuilderPromptWithAttachments = computed(() => {
-  return lexiconBuilderPrompt.value + "\n\n# 1. Original Text: " + chatPrompt.value + "\n\n # 2. Translated Text with potential issues: \n\n" + latestMessage.value + "\n\n # 3. Correct translate to compare: \n\n" + referenceText.value ;
+  return lexiconBuilderPrompt.value + "\n\n# 1. Original Text: " + chatPrompt.value + "\n\n # 2. Translated Text with potential issues: \n\n" + latestMessage.value + "\n\n # 3. Correct translate to compare: \n\n" + referenceText.value;
 });
-let latestLexiconMessage = ref("")
-let triggerGenerateLexicon = ref(false);
 let lexiconSocketUuid = ref(null);
+let formattedSocketUuid = ref(null);
 let messageHistory = ref([]);
 let selectedPersonaIndex = ref(null)
 const isAutoScrollActive = ref(true);
 const customLabelModel = (option) => option ? option.label : '';
 const customLng = (option) => option ? option.label.en : '';
+
+
+
+
 
 let settings = ref({ display: { showReference: false }, showPrompt: true, useLexicon: true, asPlainText: true })
 let showColsCount = computed(() => {
@@ -404,6 +500,7 @@ let activeTab = ref(0)
 const tabs = ref([
   { label: 'Roster / Équipe' },
   { label: 'Translate / Traduire' },
+  { label: 'Formatted / Formaté' },
   { label: 'Lexicon / Lexique' },
   { label: 'Lexicon Builder / Générateur de lexique' }
 ]);
@@ -411,6 +508,7 @@ const tabs = ref([
 onMounted(async () => {
 
   lexiconSocketUuid.value = uuidv4()
+  formattedSocketUuid.value = uuidv4()
 
   setDark(false)
   if (props.rosterId) {
@@ -450,6 +548,196 @@ function triggerLexicon() {
   triggerGenerateLexicon.value = !triggerGenerateLexicon.value;
 }
 
+//Redo the full element
+function translateFormatted() {
+  // if (chatPromptFormattedSelection.value.start) {
+    let extract = extractTextAndReplaceWithUUIDs(chatPromptFormatted.value);
+    chatPromptJson.value = "Return the following JSON with structure intact fully translated:\n\n Ensure the entire JSON array is translated, and maintain the UUIDs. Maintain all whitespaces as well. Don't just translate the items in isolation, consider how they might fit together as fragments of a sentence if applicable." + JSON.stringify(extract.textElements);
+    chatPromptFormatted.value = extract.updatedHtmlString;
+    triggerGenerateFormatted.value = !triggerGenerateFormatted.value;
+  // }
+}
+async function copyTranslated() {
+  if (chatPromptFormatted.value) {
+    try {
+      const blob = new Blob([chatPromptFormatted.value], { type: 'text/html' });
+      const data = [new ClipboardItem({ 'text/html': blob })];
+      await navigator.clipboard.write(data);
+      console.log('Copied to clipboard');
+      notify({ group: "success", title: "Success", text: "Copied to Clipboard" }, 4000) // 4s
+
+
+    } catch (err) {
+      console.error('Failed to copy to clipboard', err);
+    }
+  }
+}
+
+
+function cloneVisibleElements(element) {
+  console.log(element); // Add this line to log the element
+
+  // Clone the element if it's visible
+  if (element && element.nodeType === Node.ELEMENT_NODE && element.offsetWidth !== 0 && element.offsetHeight !== 0) {
+    const clone = element.cloneNode(false);
+    Array.from(element.children).forEach(child => {
+      const childClone = cloneVisibleElements(child);
+      if (childClone) {
+        clone.appendChild(childClone);
+      }
+    });
+    return clone;
+  }
+  return null;
+}
+
+function formattedSelectionChange(val) {
+  chatPromptFormattedSelection.value = val;
+  console.log(val)
+}
+
+//First working version
+// function extractTextAndReplaceWithUUIDs(htmlString) {
+//   const parser = new DOMParser();
+//   const doc = parser.parseFromString(htmlString, 'text/html');
+//   const textElements = [];
+
+//   function processNode(node) {
+//     // Skip script and style nodes, as well as comments
+//     if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') ||
+//         node.nodeType === Node.COMMENT_NODE) {
+//       return;
+//     }
+//     if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
+//       const uuid = uuidv4().substring(0,8);
+//       textElements.push({ uuid: uuid, text: node.nodeValue }); //.trim()
+//       node.nodeValue = uuid;
+//     } else if (node.nodeType === Node.ELEMENT_NODE) {
+//       Array.from(node.childNodes).forEach(processNode);
+//     }
+//   }
+
+//   Array.from(doc.body.childNodes).forEach(processNode);
+
+//   // Serialize the document back to a string
+//   const serializer = new XMLSerializer();
+//   const updatedHtmlString = serializer.serializeToString(doc.body);
+
+//   return {
+//     updatedHtmlString: updatedHtmlString,
+//     textElements: textElements
+//   };
+// }
+
+
+// function restoreTextFromUUIDs(updatedHtmlString, textElements) {
+//   let restoredHtmlString = updatedHtmlString;
+
+//   textElements.forEach((val) => {
+//     // Use a regular expression to replace the UUID globally, accounting for potential HTML encoding
+//     const uuidRegex = new RegExp(val.uuid, 'g');
+//     restoredHtmlString = restoredHtmlString.replace(uuidRegex, val.text);
+//   });
+
+//   return restoredHtmlString;
+// }
+
+//Do whole HTML string
+//Version 2
+// function extractTextAndReplaceWithUUIDs(htmlString) {
+//   const parser = new DOMParser();
+//   const doc = parser.parseFromString(htmlString, 'text/html');
+//   const textElements = [];
+
+//   function processNode(node) {
+//     if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') ||
+//       node.nodeType === Node.COMMENT_NODE) {
+//       return;
+//     }
+//     if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
+//       const uuid = uuidv4().substring(0, 8);
+//       textElements.push({ uuid: uuid, text: node.nodeValue }); //.trim()
+//       const span = doc.createElement('span');
+//       span.setAttribute('tId', uuid);
+//       span.textContent = node.nodeValue;
+//       span.style.color = 'red'; // Style the text content to be bright red
+//       node.parentNode.replaceChild(span, node);
+//     } else if (node.nodeType === Node.ELEMENT_NODE) {
+//       Array.from(node.childNodes).forEach(processNode);
+//     }
+//   }
+
+//   Array.from(doc.body.childNodes).forEach(processNode);
+
+//   const serializer = new XMLSerializer();
+//   const updatedHtmlString = serializer.serializeToString(doc.body);
+
+//   return {
+//     updatedHtmlString: updatedHtmlString,
+//     textElements: textElements
+//   };
+// }
+
+
+//Version 3
+function extractTextAndReplaceWithUUIDs(htmlString) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString('<!doctype html><body>' + htmlString + '</body>', 'text/html');
+  const fragment = doc.createDocumentFragment();
+  Array.from(doc.body.childNodes).forEach(node => fragment.appendChild(node));
+
+  const textElements = [];
+
+  function processNode(node) {
+    if (node.nodeType === Node.ELEMENT_NODE && (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') ||
+      node.nodeType === Node.COMMENT_NODE) {
+      return;
+    }
+    if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
+      const uuid = uuidv4().substring(0, 8);
+      textElements.push({ uuid: uuid, text: node.nodeValue });
+      const span = document.createElement('span');
+      span.setAttribute('tId', uuid);
+      span.textContent = node.nodeValue;
+      span.style.color = 'red';
+      node.parentNode.replaceChild(span, node);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      Array.from(node.childNodes).forEach(processNode);
+    }
+  }
+
+  Array.from(fragment.childNodes).forEach(processNode);
+
+  const serializer = new XMLSerializer();
+  const updatedHtmlString = serializer.serializeToString(fragment);
+
+  return {
+    updatedHtmlString: updatedHtmlString,
+    textElements: textElements
+  };
+}
+
+
+
+function restoreTextFromUUIDs(updatedHtmlString, textElements) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(updatedHtmlString, 'text/html');
+
+  textElements.forEach((val) => {
+    const elements = doc.querySelectorAll(`span[tId="${val.uuid}"]`);
+    elements.forEach((element) => {
+      const textNode = document.createTextNode(val.text); // Create a text node with the original text
+      element.parentNode.replaceChild(textNode, element); // Replace the span with the text node
+    });
+  });
+
+  const serializer = new XMLSerializer();
+  const restoredHtmlString = serializer.serializeToString(doc.body);
+
+  return restoredHtmlString;
+}
+
+
 function addToLexicon() {
   console.log("lexiconExtracts.value", lexiconExtracts.value)
   if (lexiconExtracts?.value?.[0]?.extracts?.json?.[0]?.length) {
@@ -464,6 +752,8 @@ function addToLexicon() {
       }
 
     })
+    notify({ group: "success", title: "Success", text: "added to lexicon" }, 4000) // 4s
+
   }
 }
 
@@ -491,6 +781,26 @@ function messageComplete(val) {
   }
 }
 
+
+
+function messagePartialFormatted(val) {
+
+  if (val?.message?.length) latestMessageFormatted.value = val.message;
+
+}
+
+
+function messageCompleteFormatted(val) {
+  if (val?.message?.length) latestMessageFormatted.value = val.message;
+
+
+  if (formattedExtracts?.value?.[0]?.extracts?.json?.[0]?.length) {
+
+    let newValues = formattedExtracts.value[0].extracts.json[0];
+    chatPromptFormatted.value = restoreTextFromUUIDs(chatPromptFormatted.value, newValues)
+  }
+
+}
 
 
 function messageLexicon(val) {

@@ -1,14 +1,14 @@
 <template>
     <div ref="editableDiv" contenteditable="true" @input="handleInput" @keydown="handleKeyDown" @keyup.enter="handleEnter"
-        @paste="handlePaste" :class="['editable', 'form-input', 'w-full', 'pl-4', 'overflow-auto']"
-        :placeholder="props.placeholder" aria-label="Search anything" :style="{ minHeight: '20px', maxHeight: '600px' }">
+        @paste="handlePaste" @mouseup="handleMouseUp" :class="['editable', 'form-input', 'w-full', 'pl-4', 'overflow-auto']"
+        :placeholder="props.placeholder" aria-label="Search anything"  :style="{ minHeight: '20px', maxHeight: '600px' }">
     </div>
 </template>
   
 <script setup>
 import { ref, watch, onMounted, nextTick } from 'vue';
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'selectionChange']);
 //   const modelValue = ref('');
 const editableDiv = ref(null);
 
@@ -113,6 +113,8 @@ function handlePaste(event) {
     // emit('update:modelValue', editableDiv.value.textContent);
     emit('update:modelValue', editableDiv.value.innerHTML);
 }
+
+
 function trigger() {
     // Implement your trigger logic here
 }
@@ -126,45 +128,77 @@ function ensureCursorTarget() {
 }
 
 
-function calculateCursorPosition(editableDiv) {
+
+
+function handleMouseUp() {
     const selection = window.getSelection();
-    if (selection.rangeCount === 0) return null; // No selection, return null
+    if (!selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        const selectedHtml = range.cloneContents();
+        const div = document.createElement('div');
+        div.appendChild(selectedHtml);
+        const htmlString = div.innerHTML;
 
-    const range = selection.getRangeAt(0);
-    const preCaretRange = range.cloneRange(); // Clone the current range
-    preCaretRange.selectNodeContents(editableDiv); // Select all text
-    preCaretRange.setEnd(range.endContainer, range.endOffset); // Set the end of the range to the cursor position
-    const cursorPosition = preCaretRange.toString().length; // The cursor position is the length of the range
-    return cursorPosition;
-}
+        const start = calculateCursorPosition(range.startContainer, range.startOffset);
+        const end = calculateCursorPosition(range.endContainer, range.endOffset);
 
-function restoreCursorPosition(editableDiv, cursorPosition) {
-    const selection = window.getSelection();
-    const range = document.createRange();
-    range.setStart(editableDiv, 0);
-    range.collapse(true);
-
-    const childNodes = Array.from(editableDiv.childNodes);
-    let currentPos = 0;
-
-    for (const node of childNodes) {
-        if (node.nodeType === 3) { // Node is a text node
-            const nextPos = currentPos + node.length;
-            if (cursorPosition <= nextPos) {
-                // Found the node where the cursor should be
-                range.setStart(node, cursorPosition - currentPos);
-                range.collapse(true);
-                break;
-            }
-            currentPos = nextPos;
-        } else {
-            // Handle other node types if necessary
-        }
+        emit('selectionChange', {
+            original:props.modelValue,
+            start,
+            end,
+            startContainer: range.startContainer,
+            endContainer: range.endContainer,
+            html: htmlString
+        });
     }
-
-    selection.removeAllRanges();
-    selection.addRange(range);
 }
+
+function calculateCursorPosition(container, offset) {
+    const range = document.createRange();
+    range.setStart(editableDiv.value, 0);
+    range.setEnd(container, offset);
+    return range.toString().length;
+}
+
+// function calculateCursorPosition(editableDiv) {
+//     const selection = window.getSelection();
+//     if (selection.rangeCount === 0) return null; // No selection, return null
+
+//     const range = selection.getRangeAt(0);
+//     const preCaretRange = range.cloneRange(); // Clone the current range
+//     preCaretRange.selectNodeContents(editableDiv); // Select all text
+//     preCaretRange.setEnd(range.endContainer, range.endOffset); // Set the end of the range to the cursor position
+//     const cursorPosition = preCaretRange.toString().length; // The cursor position is the length of the range
+//     return cursorPosition;
+// }
+
+// function restoreCursorPosition(editableDiv, cursorPosition) {
+//     const selection = window.getSelection();
+//     const range = document.createRange();
+//     range.setStart(editableDiv, 0);
+//     range.collapse(true);
+
+//     const childNodes = Array.from(editableDiv.childNodes);
+//     let currentPos = 0;
+
+//     for (const node of childNodes) {
+//         if (node.nodeType === 3) { // Node is a text node
+//             const nextPos = currentPos + node.length;
+//             if (cursorPosition <= nextPos) {
+//                 // Found the node where the cursor should be
+//                 range.setStart(node, cursorPosition - currentPos);
+//                 range.collapse(true);
+//                 break;
+//             }
+//             currentPos = nextPos;
+//         } else {
+//             // Handle other node types if necessary
+//         }
+//     }
+
+//     selection.removeAllRanges();
+//     selection.addRange(range);
+// }
 
 
 
