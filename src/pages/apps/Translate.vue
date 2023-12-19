@@ -54,7 +54,7 @@
                     @selectPersona="selectPersona" />
                 </div> -->
 
-                <div class="flex items-center mb-2 space-x-6">
+                <div class="flex items-center mb-2 space-x-2">
 
                   <button @click="trigger"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
@@ -177,14 +177,36 @@
 
 
 
-                <button @click="translateFormatted"
-                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                  Translate with Formats
-                </button>
-                <button @click="copyTranslated"
-                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                  Copy
-                </button>
+                <div class="flex items-center mb-2 space-x-2">
+
+
+                  <button @click="translateFormatted"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Translate with Formats
+                  </button>
+                  <button @click="copyTranslated"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Copy
+                  </button>
+
+                  <div style="max-width:300px">
+                    <VueMultiselect v-model="selectedLng" :options="lngs" :searchable="true" :close-on-select="true"
+                      :preselect-first="true" :custom-label="customLng" :show-labels="false"
+                      placeholder="Select a language" />
+                  </div>
+
+                  <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.useLexicon" class="mr-1 checkbox-large" />
+                    Use Lexicon
+                  </label>
+
+                  <label class="label-style whitespace-nowrap">
+                    <input type="checkbox" v-model="settings.showPrompt" class="mr-1 checkbox-large" />
+                    Show Prompt
+                  </label>
+
+                  
+                </div>
 
                 <div :class="`grid gap-2 h-full sm:grid-cols-1 md:grid-cols-4`">
 
@@ -192,16 +214,11 @@
 
                   <div class="col-span-3 flex-grow">
 
-                    <!-- <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }"
-      v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
-      placeholder="Enter text to translate... / Saisissez le texte à traduire..."
-      aria-label="Search anything" /> -->
-
-
-                    <DivInput ref = "chatPromptFormattedDom" placeholder="Enter text to translate... / Saisissez le texte à traduire..."
+        
+                    <DivInput ref="chatPromptFormattedDom"
+                      placeholder="Enter text to translate... / Saisissez le texte à traduire..."
                       v-model="chatPromptFormatted" @selectionChange="formattedSelectionChange" :asPlainText="false" />
 
-                    <!-- <div>{{chatPromptFormatted}}</div> -->
 
                     <!-- {{ chatPrompt }} -->
                     <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
@@ -217,7 +234,7 @@
                     <div v-if="settings.showPrompt">
                       Full prompt to LLM:<br />
 
-                      <DivInput placeholder="Full prompt preview" v-model="chatPromptWithLexicon"
+                      <DivInput placeholder="Full prompt preview" v-model="chatPromptFormattedWithLexicon"
                         :asPlainText="settings.asPlainText" />
 
 
@@ -227,8 +244,9 @@
 
                   <div class="flex-grow" v-if="selectedPersona && formattedSocketUuid">
                     <Socket :key="selectedPersona.uuid" :sessionId="formattedSocketUuid" :persona="selectedPersona"
-                      :userPrompt="chatPromptJson" :model="selectedModel" :trigger="triggerGenerateFormatted"
-                      @messageComplete="messageCompleteFormatted" @messagePartial="messagePartialFormatted">
+                      :userPrompt="chatPromptFormattedWithLexicon" :model="selectedModel"
+                      :trigger="triggerGenerateFormatted" @messageComplete="messageCompleteFormatted"
+                      @messagePartial="messagePartialFormatted">
                       <!-- <ChatWindow :messages="messageHistory" /> -->
 
 
@@ -451,6 +469,31 @@ let chatPromptWithLexicon = computed(() => {
 });
 
 
+let chatPromptFormattedWithLexicon = computed(() => {
+  let direction = "";
+  if (selectedLng?.value?.type !== 'auto') direction = " from " + selectedLng?.value?.label?.en;
+  let chatValue = `Translate the following text${direction}:\n` + chatPrompt.value;
+  chatValue += "\n\nReturn the following JSON with structure intact fully translated:\n\n Ensure the entire JSON array is translated, and maintain the UUIDs. Maintain all whitespaces as well. Don't just translate the items in isolation, consider how they might fit together as fragments of a sentence if applicable." + JSON.stringify(chatPromptJson.value);
+
+  if (localLexicon.value.length && settings.value.useLexicon) {
+    // Cleanse chatPrompt.value of HTML if it's HTML
+    const cleansedChatPrompt = stripHtml(chatPromptFormatted.value);
+
+    // Filter the localLexicon based on the cleansedChatPrompt
+    const filteredLexicon = localLexicon.value.filter((term) => {
+      return includesIgnoreCaseAndInvisible(cleansedChatPrompt, term.en) || includesIgnoreCaseAndInvisible(cleansedChatPrompt, term.fr);
+    });
+
+    // Append the filtered lexicon to the chatValue
+    if (filteredLexicon.length) {
+      chatValue += lexiconInstructions.value + "\n" + filteredLexicon.map(obj => JSON.stringify(obj)).join(',\n');
+    }
+  }
+
+  return chatValue;
+});
+
+
 // Helper function to remove HTML tags from a string
 function stripHtml(html) {
   const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -550,12 +593,10 @@ function triggerLexicon() {
 
 //Redo the full element
 function translateFormatted() {
-  // if (chatPromptFormattedSelection.value.start) {
-    let extract = extractTextAndReplaceWithUUIDs(chatPromptFormatted.value);
-    chatPromptJson.value = "Return the following JSON with structure intact fully translated:\n\n Ensure the entire JSON array is translated, and maintain the UUIDs. Maintain all whitespaces as well. Don't just translate the items in isolation, consider how they might fit together as fragments of a sentence if applicable." + JSON.stringify(extract.textElements);
-    chatPromptFormatted.value = extract.updatedHtmlString;
-    triggerGenerateFormatted.value = !triggerGenerateFormatted.value;
-  // }
+  let extract = extractTextAndReplaceWithUUIDs(chatPromptFormatted.value);
+  chatPromptJson.value = extract.textElements;
+  chatPromptFormatted.value = extract.updatedHtmlString;
+  triggerGenerateFormatted.value = !triggerGenerateFormatted.value;
 }
 async function copyTranslated() {
   if (chatPromptFormatted.value) {
@@ -927,7 +968,7 @@ function toLocalLexicon(lng) {
   }
 
   localLexicon.value.unshift(newEntry);
-  activeTab.value = 2;
+  activeTab.value = 3;
 
 }
 
