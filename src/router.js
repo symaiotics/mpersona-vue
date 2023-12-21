@@ -16,6 +16,7 @@ import GC from '@/pages/apps/GC.vue'
 import GOV from '@/pages/apps/GOV.vue'
 import OCCSC from '@/pages/apps/OCCSC.vue'
 import Translate from '@/pages/apps/Translate.vue'
+import KnowledgeMappings from '@/pages/apps/KnowledgeMappings.vue'
 
 import Blog from './pages/Blog.vue'
 import Help from './pages/Help.vue'
@@ -96,6 +97,13 @@ const router = createRouter({
       path: '/apps/translate/:rosterId?',
       name: 'translate',
       component: Translate,
+      props:true,
+    },
+    ,
+    {
+      path: '/apps/knowledgeMappings/:rosterId?',
+      name: 'knowledgeMappings',
+      component: KnowledgeMappings,
       props:true,
     },
 
