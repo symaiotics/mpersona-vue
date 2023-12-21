@@ -35,6 +35,12 @@
           <section class="mb-6 w-full">
             <Tabs :tabs="tabs" v-model="activeTab">
               <template v-slot:tab-0>
+                <h2 v-if="selectedRoster" id="wb-cont"
+                  class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight mb-2">
+                  These Personas will be supporting your RE support process.
+                </h2>
+
+
                 <div v-if="selectedRoster">
                   <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     <template v-for="(persona, index) in selectedRoster.personas" :key="persona.uuid">
@@ -47,6 +53,21 @@
               </template>
 
               <template v-slot:tab-1>
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Configure your service categories
+                </h2>
+
+                <button class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  @click="addCategory">
+                  Add Category
+                </button>
+
+                <KnowledgeCategory v-model:data="localCategories" @removeCategory="removeCategory"
+                  @removeKeyword="removeKeyword"></KnowledgeCategory>
+
+
+              </template>
+              <template v-slot:tab-2>
 
 
                 <div class="flex flex-wrap -mx-3">
@@ -99,13 +120,16 @@
                         :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
                         placeholder="Pick a model" />
 
-                      <!-- <div v-if = "selectedWordFile">{{ selectedWordFile }}</div> -->
-                      <div v-for="(extract, index) in selectedWordFile.extracts" :key="extract.sessionId + index">
-                        <!-- <div v-if="extract.status == 'completed' "> -->
-                        <KnowledgeSegment :data='extract' :showCheckbox="true" />
-                        <!-- </div> -->
-                      </div>
 
+                      <!-- <div v-for="(extract, index) in selectedWordFile.extracts" :key="extract.sessionId + index"> -->
+
+                      <KnowledgeSegment v-for="(extract, index) in selectedWordFile.extracts"
+                        :key="extract.sessionId + index" :data="extract" :showCheckbox="true"
+                        @update:data="payload => updateExtract(payload.data, index)" />
+
+                      <!-- <KnowledgeSegment :data="extract" :showCheckbox="true"
+                          @update:data="payload => updateExtract(payload.data, payload.index)" />
+                      </div> -->
 
 
                       <div v-if="selectedPersona">
@@ -128,7 +152,7 @@
                   </div>
                 </div>
               </template>
-              <template v-slot:tab-2>
+              <template v-slot:tab-3>
                 Build a Mapping
 
                 <div class="grid gap-2 sm:grid-cols-1 md:grid-cols-4">
@@ -189,6 +213,82 @@
                 </div>
 
               </template>
+
+              <template v-slot:tab-4>
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Step 1: Triage
+                </h2>
+                <p>Enter your complex RE question to triage it against categories. Triage will help to find similar
+                  questions with which to compare the response.</p>
+
+
+
+                <div   class="flex items-center mb-2 space-x-2">
+                  <button @click="triageReQuestion"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                    Triage
+                  </button>
+                </div>
+
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                  <div class="col-span-2">
+
+                    <DivInput placeholder="Enter a complex RE question" v-model="reQuestion" :asPlainText="false" />
+                  </div>
+
+
+
+                  <div v-if="selectedRoster">
+
+                    <Socket v-if = " reQuestionTriageResults.status = 'completed'" :sessionId="reQuestionSessionId" :persona="selectedPersona" :userPrompt="reQuestionPrompt"
+                      :model="selectedModel" :trigger="reQuestionTrigger"
+                      @messageComplete="payload => messageCompleteReQuestion(payload, index)"
+                      @messagePartial="payload => messagePartialReQuestion(payload, index)">
+                    </Socket>
+
+                    <DisplayPersona v-else :persona="selectedPersona" alignment="center" />
+
+
+                  </div>
+
+                  <div class="col-span-3">
+                    <KnowledgeSegment :showAll = 'true' :data="reQuestionTriageResults" :showCheckbox="true" />
+                  </div>
+                </div>
+
+
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Step 2: Map
+                </h2>
+                <p>Evaluate the suggested Knowledge Mappings based on the alignment to your categories. Or you may use
+                  your own mappings to compare the quality of the outputs</p>
+
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Step 3: Review
+                </h2>
+                <p>Review the response and the associated sources for the answers. Jump to key locations and sources
+                  within the source documents to build a bibliography</p>
+
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Step 4: Refine
+                </h2>
+                <p>Review with feedback to the AI Persona to make necessary changes</p>
+
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Step 5: Approve
+                </h2>
+                <p> Approve draft and prepare translation</p>
+
+                <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Step 5: Save
+                </h2>
+                <p> Save the finalized response into the database for future reference</p>
+
+
+              </template>
+
             </Tabs>
           </section>
         </div>
@@ -210,6 +310,7 @@ import VueMultiselect from 'vue-multiselect'
 import DragAndDropWord from '@/components/DragAndDropWord.vue';
 import WordPreview from '@/components/WordPreview.vue';
 import KnowledgeSegment from '@/components/KnowledgeSegment.vue';
+import KnowledgeCategory from '@/components/KnowledgeCategory.vue';
 
 import { notify } from "notiwind"
 
@@ -233,6 +334,7 @@ const { sessionsContent } = useWebsockets();
 let activeTab = ref(0)
 const tabs = ref([
   { label: 'Roster ' },
+  { label: 'Categories' },
   { label: 'Files ' },
   { label: 'Mappings ' },
   { label: 'Interact ' },
@@ -256,14 +358,33 @@ let selectedPersonaIndex = ref(null)
 const isAutoScrollActive = ref(true);
 
 
+
+//Mappings
 let extractPrompt = ref("")
 let wordPreviewSelectedContent = ref(null)
 let newMapping = ref({ name: null, description: null })
 
 
+//RE Qustion
+let reQuestion = ref(null)
+let reQuestionPrompt = ref(null)
+let reQuestionSessionId = ref(null)
+let reQuestionTrigger = ref(false);
+let reQuestionTriageResults = ref({ status: "pending", prompt: null, message: null, json: null })
+
+
+//Starter categories which can be overwritten
+const localCategories = ref([
+  { alpha: "policy", code: 0, context: "Reporting Entities (REs) need clear guidance on interpreting legislation, including examples and risk assessment frameworks. They require detailed reporting instructions, compliance program development support, and best practices for record-keeping and client identification. Updates on financial crime trends, legislative changes, and technology use are crucial. REs also benefit from educational outreach such as workshops and webinars, feedback on compliance reviews, and dedicated support channels for prompt assistance with compliance-related questions. This support helps REs fulfill their legal obligations and combat money laundering and terrorist financing effectively.", name: { en: "Policy and Guidance", fr: "" }, description: { en: "Reporting entities require guidance on how to interpret the PCMLTFA, Schedules, Regulations, Forms, Validation Rules, and Reporting Requirements.", fr: "" }, keywords: ["policy", "interpretation", "guidance", "requirements", "compliance", "supervision"] },
+  { alpha: "policy", code: 1, context: "FINTRAC (Financial Transactions and Reports Analysis Centre of Canada) validation rules are designed to ensure the accuracy and completeness of financial transaction reports submitted by reporting entities. These rules check for logical consistency, mandatory field completion, correct formatting, and adherence to regulatory requirements. If a report fails validation, the submitting institution is notified to correct and resubmit the data. This process helps prevent money laundering and terrorist financing by ensuring high-quality data is available for analysis by FINTRAC.", name: { en: "Validation Rules", fr: "" }, description: { en: "Reportting Entities require support in submitting reports, which are evaluated against a complex set of validation rules. Each report type has its own set of validation rules.", fr: "" }, keywords: ["validation", "rules", "mandatory", "schedules", "submission", "error", "reject"] },
+  { alpha: "policy", code: 2, context: "Reporting entities often face challenges with data quality issues such as incomplete or inaccurate information, incorrect formatting, and failure to adhere to the precise data standards set by FINTRAC. They also struggle with understanding the complex and evolving legal requirements for reporting certain types of transactions. Keeping up with changes in reporting thresholds, identifying suspicious activities accurately, and managing the high volume of transactions that must be monitored and reported can be resource-intensive. Additionally, entities must ensure the confidentiality and security of the data they submit, which adds a layer of complexity to the reporting process.", name: { en: "Data Integrity & Reporting Requirements", fr: "" }, description: { en: "Support for understanding data reporting requirements and specific reporting requirements per regulated sector.", fr: "" }, keywords: ["reporting", "requirements", "data", "quality", "legislation"] },
+  { alpha: "policy", code: 3, context: "Providing technical support to FINTRAC reporting entities to onboard with FINTRAC's API Ingest infrastructure", name: { en: "Technical API Support", fr: "" }, description: { en: "Reportting Entities require technical support to gain access to FINTRAC's API infrastructure.", fr: "" }, keywords: ["api", "batch", "rest", "authentication", "system to system"] },
+]);
+
 onMounted(async () => {
 
   extractSocketUuid.value = uuidv4()
+  reQuestionSessionId.value = uuidv4()
 
   setDark(false)
   if (props.rosterId) {
@@ -317,18 +438,32 @@ function clearFilePreviews() {
 }
 
 function summarizeSelectedFile() {
-  extractPrompt.value = 'Summarize the following file contents:\n\n';
-  console.log(wordPreviewSelectedContent.value)
+
+  if (!Array.isArray(selectedWordFile?.value?.extracts)) selectedWordFile.value.extracts = [];
+  let newPrompt = 'Summarize the following file contents:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + stripHtml(selectedWordFile.value.htmlContent);
+  let newExtract = { status: "pending", sessionId: uuidv4(), prompt: newPrompt, trigger: false, message: null, json: null }
+  selectedWordFile.value.extracts.push(newExtract);
+  let selectedIndex = selectedWordFile.value.extracts.length - 1;
+  nextTick((() => { selectedWordFile.value.extracts[selectedIndex].trigger = !selectedWordFile.value.extracts[selectedIndex].trigger }))
+
 }
 
 function extractSegment() {
   if (wordPreviewSelectedContent?.value?.text?.length) {
     if (!Array.isArray(selectedWordFile?.value?.extracts)) selectedWordFile.value.extracts = [];
-    let newPrompt = 'Summarize the following contents:\n\n' + wordPreviewSelectedContent.value.text;
+    let newPrompt = 'Summarize the following contents:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + wordPreviewSelectedContent.value.text;
     let newExtract = { status: "pending", sessionId: uuidv4(), prompt: newPrompt, trigger: false, message: null, json: null }
     selectedWordFile.value.extracts.push(newExtract);
     let selectedIndex = selectedWordFile.value.extracts.length - 1;
     nextTick((() => { selectedWordFile.value.extracts[selectedIndex].trigger = !selectedWordFile.value.extracts[selectedIndex].trigger }))
+  }
+}
+
+function triageReQuestion() {
+  if (reQuestion?.value?.length) {
+    reQuestionPrompt.value = 'Summarize the following question or request:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + reQuestion.value;
+    reQuestionTriageResults.value = { status: "pending", prompt: reQuestionPrompt.value, message: null, json: null }
+    reQuestionTrigger.value = !reQuestionTrigger.value;
   }
 }
 
@@ -338,16 +473,16 @@ function selectionChange(val) {
   console.log(wordPreviewSelectedContent.value)
 }
 
-function trigger() {
-  //Save the history
-  // messageHistory.value.push({ role: "user", content: chatPrompt.value })
-  triggerGenerate.value = !triggerGenerate.value;
-}
+// function trigger() {
+//   //Save the history
+//   // messageHistory.value.push({ role: "user", content: chatPrompt.value })
+//   triggerGenerate.value = !triggerGenerate.value;
+// }
 
 
-function previewSelectionChange(val) {
-  console.log(val)
-}
+// function previewSelectionChange(val) {
+//   console.log(val)
+// }
 
 
 function messageCompleteExtract(val, index) {
@@ -369,6 +504,32 @@ function messagePartialExtract(val, index) {
     selectedWordFile.value.extracts[index].message = val.message;
   }
 }
+
+
+
+
+function messageCompleteReQuestion(val, index) {
+  // Your logic here, using payload and index
+  if (val?.message?.length) {
+    let thisSessionContent = sessionsContent.value.filter((session) => { return session.sessionId == reQuestionSessionId.value })
+    if (thisSessionContent?.[0]?.extracts?.json?.length) {
+      reQuestionTriageResults.value.json = thisSessionContent[0].extracts.json[0];
+    };
+
+    reQuestionTriageResults.value.message = val.message;
+    reQuestionTriageResults.value.status = 'completed';
+
+  }
+}
+
+function messagePartialReQuestion(val, index) {
+  // Your logic here, using payload and index
+   console.log(val.message);
+  if (val?.message?.length) {
+    reQuestionTriageResults.value.message = val.message;
+  }
+}
+
 
 
 const handleScroll = () => {
@@ -412,7 +573,7 @@ function selectPersona(persona, index) {
     }
   }
 
-  activeTab.value = 1;
+  activeTab.value = 2;
 }
 
 
@@ -422,10 +583,31 @@ function stripHtml(html) {
   return doc.body.textContent || '';
 }
 
+function addCategory() {
+  let blankCategory = { alpha: null, code: localCategories.value.length, context: null, name: { en: null, fr: null }, description: { en: null, fr: null }, keywords: [] }
+  localCategories.value.unshift(blankCategory)
+}
+
+function removeCategory(index) {
+  localCategories.value.splice(index, 1)
+}
+
+
+function removeKeyword(val) {
+  // console.log(val)
+  localCategories.value[val.categoryIndex].keywords.splice(val.keywordIndex, 1);
+}
 
 
 
+
+const updateExtract = (updatedData, index) => {
+  // console.log(updateData)
+  // Ensure that selectedWordFile is a reactive reference
+  selectedWordFile.value.extracts[index] = updatedData;
+};
 </script>
+
 
 
 <style scoped>
