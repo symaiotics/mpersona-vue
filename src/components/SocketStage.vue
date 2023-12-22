@@ -122,8 +122,6 @@ import { ref, computed, onMounted, watch } from 'vue';
 
 //Libs
 import VueMultiselect from 'vue-multiselect'
-// import D3GC from '@symaiotics/d3-graph-creator-tailwind'
-// import '@symaiotics/d3-graph-creator-tailwind/dist/style.css';
 
 //Components
 import Socket from '@/components/Socket.vue'

@@ -162,8 +162,6 @@
 import { ref, computed, onMounted } from 'vue';
 
 
-import D3GC from '@symaiotics/d3-graph-creator-tailwind'
-import '@symaiotics/d3-graph-creator-tailwind/dist/style.css';
 
 import Header from './../partials/Header.vue'
 import PageIllustration from './../partials/PageIllustration.vue'

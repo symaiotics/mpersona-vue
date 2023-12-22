@@ -63,7 +63,6 @@
             <p v-if="wsUuid">(Connected)</p>
           </div>
 
-          <AuthenticateGoogle  class = "pl-3" />
           <div class="form-switch flex flex-col justify-left ml-3 pt-2">
             <router-link v-if="token" to="/login">Logout</router-link>
             <router-link v-if="!token" to="/login">Login</router-link>
@@ -220,7 +219,6 @@
 <script setup>
 import Dropdown from '@/utils/Dropdown.vue'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import AuthenticateGoogle from '@/components/AuthenticateGoogle.vue';
 
 import { useTokens } from '@/composables/useTokens.js'
 import { useWebsockets } from '@/composables/useWebsockets.js'

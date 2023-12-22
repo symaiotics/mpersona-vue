@@ -9,7 +9,6 @@ import KnowledgeProfiles from '@/pages/KnowledgeProfiles.vue'
 import LinkPersona from '@/pages/LinkPersona.vue'
 import LinkRoster from '@/pages/LinkRoster.vue'
 import LinkKnowledgeProfile from '@/pages/LinkKnowledgeProfile.vue'
-import Assist from '@/pages/Assist.vue'
 import Chat from '@/pages/Chat.vue'
 import FT from '@/pages/apps/FT.vue'
 import GC from '@/pages/apps/GC.vue'
@@ -141,12 +140,6 @@ const router = createRouter({
       props: true
     },    
     
-    {
-      path: '/assist/:code?',
-      name: 'assist',
-      component: Assist,
-      props: true
-    },
     {
       path: '/linkKnowledgeProfile/:link?',
       name: 'linkKnowledgeProfile',
