@@ -86,70 +86,87 @@
 
                     <button @click="summarizeSelectedFile"
                       class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                      Summarize Selected File
+                      Step 1: Summarize Selected File
                     </button>
 
                     <button @click="extractSegment"
                       class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                      Extract Segement
+                      Step 2: Extract Selected Segement
                     </button>
+
+                    <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                      :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                      placeholder="Pick a model" />
+
                   </div>
 
 
-                  <div :class="`grid gap-2  sm:grid-cols-1 md:grid-cols-6`">
-                    <div id="wordPreviewCol" class="col-span-1 overflow-auto">
-                      <WordPreview v-if="filePreviews.length" :filePreviews="filePreviews" @selected="handleSelected"
-                        @deleteFile="deleteFile" />
+
+                  <div class="grid grid-cols-12 gap-4 h-full">
+
+                    <!-- Left Column (Skinny) - Aligned to Bottom -->
+                    <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col mx-auto ">
+                      <DisplayPersonaStack :personas="selectedRoster.personas"
+                        :selectedPersonaIndex="selectedPersonaIndex" @selectPersona="selectPersona" />
                     </div>
 
-                    <div class='col-span-3' v-if="selectedWordFile?.htmlContent">
+                    <div v-if="selectedRoster?.personas" class="col-span-11 flex flex-col ">
+                      <div :class="`grid gap-2  sm:grid-cols-1 md:grid-cols-6`">
+                        <div id="wordPreviewCol" class="col-span-1 overflow-auto">
+                          <WordPreview v-if="filePreviews.length" :filePreviews="filePreviews" @selected="handleSelected"
+                            @deleteFile="deleteFile" />
+                        </div>
 
-                      <!-- {{ selectedWordFile }} -->
-                      <DivInput placeholder="Word document contents" @selectionChange="selectionChange"
-                        v-model="selectedWordFile.htmlContent" :asPlainText="false" />
+                        <div class='col-span-3' v-if="selectedWordFile?.htmlContent">
 
-
-                    </div>
-
-                    <div class='col-span-2' v-if="selectedWordFile?.htmlContent">
-
-
-                      <DisplayPersona :persona="selectedPersona" alignment="center" />
-
-                      <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
-                        :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
-                        placeholder="Pick a model" />
+                          <!-- {{ selectedWordFile }} -->
+                          <DivInput placeholder="Word document contents" @selectionChange="selectionChange"
+                            v-model="selectedWordFile.htmlContent" :asPlainText="false" />
 
 
-                      <!-- <div v-for="(extract, index) in selectedWordFile.extracts" :key="extract.sessionId + index"> -->
+                        </div>
 
-                      <KnowledgeSegment v-for="(extract, index) in selectedWordFile.extracts"
-                        :key="extract.sessionId + index" :data="extract" :showCheckbox="true"
-                        @update:data="payload => updateExtract(payload.data, index)" />
+                        <div class='col-span-2' v-if="selectedWordFile?.htmlContent">
 
-                      <!-- <KnowledgeSegment :data="extract" :showCheckbox="true"
+
+                          <!-- <DisplayPersona :persona="selectedPersona" alignment="center" /> -->
+
+
+
+                          <!-- <div v-for="(extract, index) in selectedWordFile.extracts" :key="extract.sessionId + index"> -->
+
+                          <KnowledgeSegment v-for="(extract, index) in selectedWordFile.extracts"
+                            :key="extract.sessionId + index" :data="extract" :showCheckbox="true"
+                            :showAll="extract.expanded" :index="index"
+                            @update:data="payload => updateExtract(payload.data, index)"
+                            @toggleExpand="toggleExpand(index)" @deleteSegment="deleteSegment" @checked="handleChecked" />
+
+                          <!-- <KnowledgeSegment :data="extract" :showCheckbox="true"
                           @update:data="payload => updateExtract(payload.data, payload.index)" />
                       </div> -->
 
 
-                      <div v-if="selectedPersona">
-                        <div v-for="(extract, index) in selectedWordFile.extracts" :key="extract.sessionId">
-                          <div v-show="false">
-                            <Socket v-if="extract.status == 'pending'" :sessionId="extract.sessionId"
-                              :persona="selectedPersona" :userPrompt="extract.prompt" :model="selectedModel"
-                              :trigger="extract.trigger"
-                              @messageComplete="payload => messageCompleteExtract(payload, index)"
-                              @messagePartial="payload => messagePartialExtract(payload, index)">
-                            </Socket>
+                          <div v-if="selectedPersona">
+                            <div v-for="(extract, index) in selectedWordFile.extracts" :key="extract.sessionId">
+                              <div v-show="false">
+                                <Socket v-if="extract.status == 'pending'" :sessionId="extract.sessionId"
+                                  :persona="selectedPersona" :userPrompt="extract.prompt" :model="selectedModel"
+                                  :trigger="extract.trigger"
+                                  @messageComplete="payload => messageCompleteExtract(payload, index)"
+                                  @messagePartial="payload => messagePartialExtract(payload, index)">
+                                </Socket>
+                              </div>
+
+                            </div>
+
                           </div>
 
+
                         </div>
-
                       </div>
-
-
                     </div>
                   </div>
+
                 </div>
               </template>
               <template v-slot:tab-3>
@@ -223,53 +240,132 @@
 
 
 
-                <div   class="flex items-center mb-2 space-x-2">
-                  <button @click="triageReQuestion"
-                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                    Triage
-                  </button>
-                </div>
+                <div class="grid grid-cols-12 gap-4 h-full">
 
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-
-                  <div class="col-span-2">
-
-                    <DivInput placeholder="Enter a complex RE question" v-model="reQuestion" :asPlainText="false" />
+                  <!-- Left Column (Skinny) - Aligned to Bottom -->
+                  <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col mx-auto ">
+                    <DisplayPersonaStack :personas="selectedRoster.personas" :selectedPersonaIndex="selectedPersonaIndex"
+                      @selectPersona="selectPersona" />
                   </div>
 
+                  <div class="col-span-11  ">
 
+                    <div class="w-full">
+                      <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                        :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                        placeholder="Pick a model" />
+                    </div>
+
+                    <div class="flex items-center mb-2 space-x-2">
+                      <button @click="triageReQuestion"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                        Triage
+                      </button>
+                      <DivInput placeholder="Enter a complex RE question" v-model="reQuestion" :asPlainText="true" />
+                    </div>
+
+                    <div class="w-full">
+                      <KnowledgeSegment :showAll='true' :data="reQuestionTriageResults" :showCheckbox="true" />
+                    </div>
+                  </div>
 
                   <div v-if="selectedRoster">
-
-                    <Socket v-if = " reQuestionTriageResults.status = 'completed'" :sessionId="reQuestionSessionId" :persona="selectedPersona" :userPrompt="reQuestionPrompt"
-                      :model="selectedModel" :trigger="reQuestionTrigger"
+                    <Socket v-show="false" :sessionId="reQuestionSessionId" :persona="selectedPersona"
+                      :userPrompt="reQuestionPrompt" :model="selectedModel" :trigger="reQuestionTrigger"
                       @messageComplete="payload => messageCompleteReQuestion(payload, index)"
                       @messagePartial="payload => messagePartialReQuestion(payload, index)">
                     </Socket>
-
-                    <DisplayPersona v-else :persona="selectedPersona" alignment="center" />
-
-
-                  </div>
-
-                  <div class="col-span-3">
-                    <KnowledgeSegment :showAll = 'true' :data="reQuestionTriageResults" :showCheckbox="true" />
                   </div>
                 </div>
-
 
                 <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
                   Step 2: Map
                 </h2>
                 <p>Evaluate the suggested Knowledge Mappings based on the alignment to your categories. Or you may use
                   your own mappings to compare the quality of the outputs</p>
+                <p>Below are the most aligned knowledge segments to answer this question. </p>
+                <!-- <pre> {{ reQuestionTriageAlignment }}</pre> -->
+
+                <!-- {{ allExtracts }} -->
+                <div class="overflow-x-auto">
+                  <table class="min-w-full bg-white dark:bg-gray-800">
+                    <thead>
+                      <tr class="w-full h-16 border-gray-300 dark:border-gray-200 border-b py-8">
+                        <th class="pl-8 pr-6 text-left"></th>
+                        <th class="pr-6 text-left">Source</th>
+                        <th class="pr-6 text-left">Total Score</th>
+                        <th class="pr-6 text-left">Length</th>
+                        <th class="pr-6 text-left">Keyword Matches</th>
+                        <th class="pr-6 text-left">Category Difference</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="item in reQuestionTriageAlignment" :key="item.uuid"
+                        class="h-14 border-gray-300 dark:border-gray-200 border-b">
+                        <td class="pl-8 pr-6">
+                          <input type="checkbox" class="w-6 h-6"
+                            @change="updateChecked(item.uuid, $event.target.checked)">
+                        </td>
+                        <td class="pr-6">{{ item.source }}</td>
+                        <td class="pr-6">{{ item.totalScore.toFixed(2) }}</td>
+                        <td class="pr-6">{{ item.length }}</td>
+                        <td class="pr-6">{{ item.keywordMatches }}</td>
+                        <td class="pr-6">{{ item.categoryDifference }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p>Legend: <strong>80+: Very good / 60-80: Good / 20-60: Worth Evaluating / 20-: Poor alignment </strong>
+                </p>
 
                 <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
-                  Step 3: Review
+                  Step 3: Generate
                 </h2>
-                <p>Review the response and the associated sources for the answers. Jump to key locations and sources
-                  within the source documents to build a bibliography</p>
+                <p>Generate and review the response and the associated sources for the answers. Jump to key locations and
+                  sources within the source documents to build a bibliography</p>
+
+                <div class="grid grid-cols-12 gap-4 h-full">
+
+                  <!-- Left Column (Skinny) - Aligned to Bottom -->
+                  <div v-if="selectedRoster?.personas" class="col-span-1 flex flex-col mx-auto ">
+                    <DisplayPersonaStack :personas="selectedRoster.personas" :selectedPersonaIndex="selectedPersonaIndex"
+                      @selectPersona="selectPersona" />
+                  </div>
+
+                  <div class="col-span-11  ">
+
+                    <div class="w-full">
+                      <VueMultiselect v-model="selectedModel" :options="adminModels" :searchable="true"
+                        :close-on-select="true" :custom-label="customLabelModel" :show-labels="false"
+                        placeholder="Pick a model" />
+                    </div>
+
+                    <div class="flex items-center mb-2 space-x-2">
+                      <button @click="generateReAnswer"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
+                        Generate
+                      </button>
+                      <DivInput placeholder="Enter a complex RE question" v-model="reQuestion" :asPlainText="true" />
+                    </div>
+
+                    <div class="w-full">
+                      <DivInput placeholder="Generated Results" v-model="reAnswerResults" :asPlainText="false" />
+                      Knowledge items appended: {{ checkedItems.length }}
+                      <!-- <KnowledgeSegment :showAll='true' :data="reQuestionTriageResults" :showCheckbox="true" /> -->
+                    </div>
+                  </div>
+
+                  <div v-if="selectedRoster">
+                    <Socket v-show="false" :sessionId="reAnswerSessionId" :persona="selectedPersona"
+                      :userPrompt="reAnswerPrompt" :model="selectedModel" :trigger="reAnswerTrigger"
+                      @messageComplete="payload => messageCompleteReAnswer(payload, index)"
+                      @messagePartial="payload => messagePartialReAnswer(payload, index)">
+                    </Socket>
+                  </div>
+                </div>
+
+
+
 
                 <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
                   Step 4: Refine
@@ -282,7 +378,7 @@
                 <p> Approve draft and prepare translation</p>
 
                 <h2 class="font-lato font-bold text-2xl mt-10 mb-1 pb-1 border-b border-red-600 leading-tight">
-                  Step 5: Save
+                  Step 6: Save
                 </h2>
                 <p> Save the finalized response into the database for future reference</p>
 
@@ -299,9 +395,10 @@
 
 <script setup>
 
-import { ref, onMounted, onUnmounted, nextTick, watch, watchEffect, computed } from 'vue';
+import { ref, onMounted, onUnmounted, onBeforeMount, nextTick, watch, watchEffect, computed, reactive } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import DisplayPersona from '@/components/DisplayPersona.vue'
+import DisplayPersonaStack from '@/components/DisplayPersonaStack.vue'
 import DivInput from '@/components/DivInput.vue'
 import Socket from '@/components/Socket.vue'
 import Tabs from '@/components/Tabs.vue';
@@ -372,6 +469,153 @@ let reQuestionSessionId = ref(null)
 let reQuestionTrigger = ref(false);
 let reQuestionTriageResults = ref({ status: "pending", prompt: null, message: null, json: null })
 
+let reQuestionAlignmentFilter = ref("")
+
+const reQuestionTriageAlignment = computed(() => {
+  // Ensure that reQuestionTriageResults.value.json contains the subject JSON object
+  if (!reQuestionTriageResults.value.json) {
+    return [];
+  }
+  // Evaluate the criteria, sort by similarity score (descending), and return the comparison results
+  return allExtracts.value
+    .map(other => compareObjects(reQuestionTriageResults.value.json, other))
+    .sort((a, b) => b.totalScore - a.totalScore); // Assuming you want to sort in descending order
+});
+
+
+const allExtracts = computed(() => {
+  return filePreviews.value.reduce((accumulator, filePreview) => {
+    // Check if filePreview.extracts is an array before calling map
+    if (Array.isArray(filePreview.extracts)) {
+      const jsonExtracts = filePreview.extracts
+        .map(extract => {
+          // Include parent properties in the child .json object
+          return {
+            uuid: extract.uuid, // Include the parent uuid
+            text: extract.text,
+            source: extract.source, // Include the parent source
+            length: extract.text.length, // Include the length from the extract text
+            ...extract.json, // Spread the original json object
+          };
+        })
+        .filter(json => json != null); // Filter out null or undefined json objects
+      return accumulator.concat(jsonExtracts);
+    } else {
+      // If filePreview.extracts is not an array, just return the current accumulator
+      return accumulator;
+    }
+  }, []);
+});
+
+const compareObjects = (subject, other) => {
+  // Check if keywords and categories exist and are arrays in both subject and other
+
+
+  // Convert keywords to lowercase
+  const subjectKeywords = Array.isArray(subject.keywords) ? subject.keywords.map(kw => kw.toLowerCase()) : [];
+  const otherKeywords = Array.isArray(other.keywords) ? other.keywords.map(kw => kw.toLowerCase()) : [];
+
+  // Calculate keyword matches
+  let keywordMatches = subjectKeywords.filter(keyword => otherKeywords.includes(keyword)).length;
+
+  // Convert category codes to lowercase if they are strings
+  const subjectCategories = Array.isArray(subject.categories) ? subject.categories.map(cat => ({
+    ...cat,
+    code: typeof cat.code === 'string' ? cat.code.toLowerCase() : cat.code
+  })) : [];
+
+  const otherCategories = Array.isArray(other.categories) ? other.categories.map(cat => ({
+    ...cat,
+    code: typeof cat.code === 'string' ? cat.code.toLowerCase() : cat.code
+  })) : [];
+
+
+  // Calculate category score differences and similarity
+  let similarityScore = 0;
+  let maxPossibleScore = 0; // This will be the maximum possible score based on the subject's categories
+
+  subjectCategories.forEach(subjectCategory => {
+    const otherCategory = otherCategories.find(cat => cat.code === subjectCategory.code);
+
+    if (otherCategory && typeof subjectCategory.score === 'number' && typeof otherCategory.score === 'number') {
+      // Calculate the difference
+      const difference = Math.abs(subjectCategory.score - otherCategory.score);
+
+      // Update the similarity score, considering the actual scores
+      // A lower difference means higher similarity
+      // If both scores are 0, it doesn't contribute to similarity
+      if (subjectCategory.score > 0 || otherCategory.score > 0) {
+        similarityScore += (100 - difference) * Math.max(subjectCategory.score, otherCategory.score);
+      }
+
+      // Update the max possible score
+      maxPossibleScore += 100 * Math.max(subjectCategory.score, otherCategory.score);
+    }
+  });
+
+  // Normalize the similarity score to a scale of 0 to 100
+  let normalizedSimilarity = maxPossibleScore > 0 ? (similarityScore / maxPossibleScore) * 100 : 0;
+
+  // Calculate matching categories count
+  let matchingCategoriesCount = subjectCategories.reduce((count, subjectCategory) => {
+    return otherCategories.some(cat => cat.code === subjectCategory.code) ? count + 1 : count;
+  }, 0);
+
+  // Calculate category difference
+  const categoryDifference = subjectCategories.length - matchingCategoriesCount;
+  const totalScore = (keywordMatches * 5) + normalizedSimilarity - (categoryDifference * 10);
+  return {
+    uuid: other.uuid,
+    source: other.source,
+    text: other.text,
+    length: other.length,
+    totalScore,
+    keywordMatches,
+    similarityScore: normalizedSimilarity, // Replace categoryScoreDifferences with a single similarity score
+    categoryDifference
+  };
+};
+
+
+
+// Reactive set of checked UUIDs
+const checkedUuids = ref(new Set());
+
+// Computed property that derives the checked items based on checked UUIDs
+const checkedItems = computed(() => {
+  return reQuestionTriageAlignment.value.filter(item => checkedUuids.value.has(item.uuid));
+});
+
+function updateChecked(uuid, isChecked) {
+  if (isChecked) {
+    checkedUuids.value.add(uuid);
+  } else {
+    checkedUuids.value.delete(uuid);
+  }
+}
+
+
+
+// Watch for changes in the reQuestionTriageAlignment list
+watch(reQuestionTriageAlignment, (newAlignmentList) => {
+  // Get a set of UUIDs that are currently in the new alignment list
+  const currentUuids = new Set(newAlignmentList.map(item => item.uuid));
+
+  // Remove UUIDs from checkedUuids if they are not in the currentUuids set
+  for (let uuid of checkedUuids.value) {
+    if (!currentUuids.has(uuid)) {
+      checkedUuids.value.delete(uuid);
+    }
+  }
+}, { deep: true }); // Use deep watch if the items in the list are objects
+
+
+//RE Answer
+let reAnswerPrompt = ref(null)
+let reAnswerResults = ref(null)
+let reAnswerSessionId = ref(null)
+let reAnswerTrigger = ref(false);
+
 
 //Starter categories which can be overwritten
 const localCategories = ref([
@@ -381,10 +625,17 @@ const localCategories = ref([
   { alpha: "policy", code: 3, context: "Providing technical support to FINTRAC reporting entities to onboard with FINTRAC's API Ingest infrastructure", name: { en: "Technical API Support", fr: "" }, description: { en: "Reportting Entities require technical support to gain access to FINTRAC's API infrastructure.", fr: "" }, keywords: ["api", "batch", "rest", "authentication", "system to system"] },
 ]);
 
-onMounted(async () => {
+
+onBeforeMount(() => {
 
   extractSocketUuid.value = uuidv4()
   reQuestionSessionId.value = uuidv4()
+  reAnswerSessionId.value = uuidv4()
+
+
+})
+onMounted(async () => {
+
 
   setDark(false)
   if (props.rosterId) {
@@ -441,7 +692,7 @@ function summarizeSelectedFile() {
 
   if (!Array.isArray(selectedWordFile?.value?.extracts)) selectedWordFile.value.extracts = [];
   let newPrompt = 'Summarize the following file contents:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + stripHtml(selectedWordFile.value.htmlContent);
-  let newExtract = { status: "pending", sessionId: uuidv4(), prompt: newPrompt, trigger: false, message: null, json: null }
+  let newExtract = { uuid: uuidv4(), source: selectedWordFile.value.name, text: stripHtml(selectedWordFile.value.htmlContent), length: stripHtml(selectedWordFile.value.htmlContent).length, status: "pending", sessionId: uuidv4(), prompt: newPrompt, trigger: false, message: null, json: null }
   selectedWordFile.value.extracts.push(newExtract);
   let selectedIndex = selectedWordFile.value.extracts.length - 1;
   nextTick((() => { selectedWordFile.value.extracts[selectedIndex].trigger = !selectedWordFile.value.extracts[selectedIndex].trigger }))
@@ -452,18 +703,10 @@ function extractSegment() {
   if (wordPreviewSelectedContent?.value?.text?.length) {
     if (!Array.isArray(selectedWordFile?.value?.extracts)) selectedWordFile.value.extracts = [];
     let newPrompt = 'Summarize the following contents:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + wordPreviewSelectedContent.value.text;
-    let newExtract = { status: "pending", sessionId: uuidv4(), prompt: newPrompt, trigger: false, message: null, json: null }
+    let newExtract = { uuid: uuidv4(), source: selectedWordFile.value.name, text: wordPreviewSelectedContent.value.text, length: wordPreviewSelectedContent.value.text.length, status: "pending", sessionId: uuidv4(), prompt: newPrompt, trigger: false, message: null, json: null }
     selectedWordFile.value.extracts.push(newExtract);
     let selectedIndex = selectedWordFile.value.extracts.length - 1;
     nextTick((() => { selectedWordFile.value.extracts[selectedIndex].trigger = !selectedWordFile.value.extracts[selectedIndex].trigger }))
-  }
-}
-
-function triageReQuestion() {
-  if (reQuestion?.value?.length) {
-    reQuestionPrompt.value = 'Summarize the following question or request:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + reQuestion.value;
-    reQuestionTriageResults.value = { status: "pending", prompt: reQuestionPrompt.value, message: null, json: null }
-    reQuestionTrigger.value = !reQuestionTrigger.value;
   }
 }
 
@@ -507,6 +750,14 @@ function messagePartialExtract(val, index) {
 
 
 
+function triageReQuestion() {
+  if (reQuestion?.value?.length) {
+    // reQuestionPrompt.value = 'Summarize the following question or request:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + reQuestion.value;
+    reQuestionPrompt.value = 'Summarize the following question or request:\n\n' + reQuestion.value + '\n\nEvaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n')
+    reQuestionTriageResults.value = { status: "pending", prompt: reQuestionPrompt.value, message: null, json: null }
+    reQuestionTrigger.value = !reQuestionTrigger.value;
+  }
+}
 
 function messageCompleteReQuestion(val, index) {
   // Your logic here, using payload and index
@@ -524,9 +775,41 @@ function messageCompleteReQuestion(val, index) {
 
 function messagePartialReQuestion(val, index) {
   // Your logic here, using payload and index
-   console.log(val.message);
+  // console.log(val.message);
   if (val?.message?.length) {
     reQuestionTriageResults.value.message = val.message;
+  }
+}
+
+
+
+function generateReAnswer() {
+  if (reQuestion?.value?.length) {
+    // reQuestionPrompt.value = 'Summarize the following question or request:\n\n Evaluate this content against the following categories:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n') + "\n\nHere is the content:\n" + reQuestion.value;
+    reAnswerPrompt.value = 'Attempt to answer the following questions:\n\n' + reQuestion.value;
+    reAnswerPrompt.value += "\n\nIn your answer, reference the following information if applicable. Explain clearly in the INTERNAL USE ONLY section specifically what passages you referenced in your response. Provide an exact quote verbatim of the text that aligns to the answer." + checkedItems.value.map(item => JSON.stringify(item)).join(',\n');
+
+   
+    //+ '\n\nIn your response, consider the following knowledge:\n\n' + localCategories.value.map(category => JSON.stringify(category)).join(',\n')
+
+    reAnswerTrigger.value = !reAnswerTrigger.value;
+  }
+}
+
+function messageCompleteReAnswer(val, index) {
+  // Your logic here, using payload and index
+  if (val?.message?.length) {
+
+    reAnswerResults.value = val.message;
+
+  }
+}
+
+function messagePartialReAnswer(val, index) {
+  // Your logic here, using payload and index
+  // console.log(val.message);
+  if (val?.message?.length) {
+    reAnswerResults.value = val.message;
   }
 }
 
@@ -572,8 +855,8 @@ function selectPersona(persona, index) {
       messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
     }
   }
-
-  activeTab.value = 2;
+  // if(tab > -1) activeTab.value = tab;
+  // activeTab.value = 2;
 }
 
 
@@ -602,10 +885,24 @@ function removeKeyword(val) {
 
 
 const updateExtract = (updatedData, index) => {
-  // console.log(updateData)
+  // console.log(updatedData)
   // Ensure that selectedWordFile is a reactive reference
   selectedWordFile.value.extracts[index] = updatedData;
 };
+
+const handleChecked = (val) => {
+  selectedWordFile.value.extracts[val.index].checked = val.checked;
+  console.log(selectedWordFile.value)
+}
+
+
+const toggleExpand = (index) => {
+  selectedWordFile.value.extracts[index].expanded = !selectedWordFile.value.extracts[index].expanded;
+}
+
+function deleteSegment(index) {
+  selectedWordFile.value.extracts.splice(index, 1)
+}
 </script>
 
 

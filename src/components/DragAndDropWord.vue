@@ -16,6 +16,7 @@
 import { ref, defineEmits } from 'vue';
 import mammoth from 'mammoth';
 import html2canvas from 'html2canvas';
+import { v4 as uuidv4 } from 'uuid';
 
 const fileInput = ref(null);
 const isDraggingOver = ref(false);
@@ -49,6 +50,7 @@ const handleFilesChange = async (event) => {
 
     for (const file of docxFiles) {
         const fileMetadata = {
+            uuid:uuidv4(),
             name: file.name,
             type: file.type,
             size: file.size,
@@ -63,7 +65,7 @@ const handleFilesChange = async (event) => {
             const result = await mammoth.convertToHtml({ arrayBuffer });
             const html = result.value;
             fileMetadata.htmlContent = html; // Store the original HTML content
-
+            fileMetadata.text = stripHtml(html); // Store the stripped HTML content
             const blob = new Blob([`<html><body>${html}</body></html>`], { type: 'text/html' });
             const blobUrl = URL.createObjectURL(blob);
 
@@ -110,6 +112,12 @@ const handleFilesChange = async (event) => {
 
     emit('processingCompleted', filePreviews);
 };
+
+function stripHtml(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+}
+
 </script>
 
  

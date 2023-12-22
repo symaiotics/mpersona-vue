@@ -3,6 +3,14 @@
         <div v-if="showCheckbox" class="pr-4 flex items-center">
             <input type="checkbox" class="form-checkbox h-6 w-6" @change="emitChecked($event.target.checked)">
         </div>
+
+
+
+        <UnfoldMoreHorizontal @click="emitToggleExpand"
+            class="absolute top-12 left-4 text-black dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
+            :size="24" />
+
+
         <div class="flex-grow">
             <button @click="emitDeleteSegment"
                 class="absolute top-0 right-0 m-1 bg-red-500 text-white rounded-full p-1 text-xs w-6 h-6 flex items-center justify-center">
@@ -23,7 +31,7 @@
                     class="inline-block bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200 mr-2 mb-2"
                     v-for="(keyword, index) in keywords" :key="index">
                     {{ keyword }}
-                </span> ({{ keywordCount }})
+                </span> <span v-if = "!props.showAll">({{ keywordCount }})</span>
             </div>
 
             <!-- Progress bars for categories -->
@@ -40,6 +48,13 @@
   
 <script setup>
 import { computed } from 'vue';
+
+import ClipboardPlus from 'vue-material-design-icons/ClipboardPlus.vue';
+import ArrowExpandDown from 'vue-material-design-icons/ArrowExpandDown.vue';
+import ArrowExpandUp from 'vue-material-design-icons/ArrowExpandUp.vue';
+import UnfoldMoreHorizontal from 'vue-material-design-icons/UnfoldMoreHorizontal.vue';
+// UnfoldMoreHorizontal
+
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
@@ -54,7 +69,7 @@ const props = defineProps({
 
 
 
-const emit = defineEmits(['deleteSegment', 'checked', 'update:data']);
+const emit = defineEmits(['deleteSegment', 'checked', 'toggleExpand', 'update:data']);
 
 const emitDeleteSegment = () => {
     emit('deleteSegment', props.index);
@@ -72,16 +87,16 @@ const getNestedValue = (obj, path, defaultValue = undefined) => {
 
 const title = computed(() => {
     const summary = getNestedValue(props.data, ['json', 'summary', 'en'], '');
-    if(props.showAll) return summary;
-    else 
-    return summary.length > 50 ? summary.slice(0, 50) + '...' : summary;
+    if (props.showAll) return summary;
+    else
+        return summary.length > 50 ? summary.slice(0, 50) + '...' : summary;
 });
 
 const content = computed(() => {
     if (props.data.status == 'pending') {
         const altContent = getNestedValue(props.data, ['message'], '');
         if (altContent) {
-            if (props.showAll) return altContext
+            if (props.showAll) return altContent
             else return altContent.length > 200 ? altContent.slice(0, 200) + '...' : altContent;
 
         }
@@ -148,6 +163,10 @@ const emitUpdate = () => {
     emit('update:data', { data: updatedData, index: props.index });
 };
 
+
+const emitToggleExpand = () => {
+    emit('toggleExpand', props.index);
+}
 
 </script>
   
