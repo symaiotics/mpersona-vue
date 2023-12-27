@@ -18,7 +18,7 @@ const { sessions, stages, sessionsContent } = useWebsockets();
 const isDarkMode = ref(false);
 
 function updateDarkMode() {
-    const darkModeSession = sessionStorage.getItem('dark-mode');
+    const darkModeSession = localStorage.getItem('dark-mode');
     console.log("darkModeSession", darkModeSession)
     isDarkMode.value = darkModeSession === 'true';
     if (svg) svg.classed('dark', isDarkMode.value);

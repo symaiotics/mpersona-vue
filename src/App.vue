@@ -61,13 +61,16 @@
 import { onMounted } from 'vue'
 import AOS from 'aos'
 
+import { useLexicon } from '@/composables/useLexicon.js'
 import { useTokens } from '@/composables/useTokens.js'
 import { useWebsockets } from '@/composables/useWebsockets.js'
+const { getLexicon } = useLexicon();
 const { recallTokens } = useTokens();
 const { websocketConnection, wsUuid } = useWebsockets()
 
 onMounted(() => {
 
+  getLexicon();
   recallTokens();
   AOS.init({
     once: true,
@@ -83,7 +86,7 @@ onMounted(() => {
 
 
 function setDark(newValue) {
-  sessionStorage.setItem('dark-mode', newValue);
+  localStorage.setItem('dark-mode', newValue);
   if (newValue) {
     document.documentElement.classList.add('dark');
   } else {

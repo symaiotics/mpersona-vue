@@ -142,7 +142,7 @@ const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = use
 const { rosters, selectedRoster, getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
 
-let props = defineProps({ rosterId: { type: String, default: null } })
+let props = defineProps({ rosterUuid: { type: String, default: null } })
 let triggerGenerate = ref(false);
 let chatPrompt = ref("");
 let sessionId = ref(uuidv4())
@@ -161,8 +161,8 @@ const tabs = ref([
 
 onMounted(async () => {
   setDark(false)
-  if (props.rosterId) {
-    await getRosterFromUuid(props.rosterId);
+  if (props.rosterUuid) {
+    await getRosterFromUuid(props.rosterUuid);
   }
   window.addEventListener('scroll', handleScroll);
 
@@ -176,7 +176,7 @@ onUnmounted(() => {
 
 
 function setDark(newValue) {
-  sessionStorage.setItem('dark-mode', newValue);
+  localStorage.setItem('dark-mode', newValue);
   if (newValue) {
     document.documentElement.classList.add('dark');
   } else {

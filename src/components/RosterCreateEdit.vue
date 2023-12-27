@@ -190,7 +190,7 @@
             <button v-if="localRoster.uuid" @click="demo(localRoster.uuid, 'translate')"
                 class="btn text-white bg-green-500 hover:bg-green-400 m-4">Open Translation Wrapp</button>
 
-                <button v-if="localRoster.uuid" @click="demo(localRoster.uuid, 'knowledgeMappings')"
+                <button v-if="localRoster.uuid" @click="demo(localRoster.uuid, 'support')"
                 class="btn text-white bg-green-500 hover:bg-green-400 m-4">Open Knowledge Wrapp</button>
 
 

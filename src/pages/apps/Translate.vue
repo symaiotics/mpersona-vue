@@ -429,7 +429,7 @@ let lngs = ref([
 let selectedLng = ref(null)
 let lexiconInstructions = ref("\n\nEnsure that in your translation you ALWAYS use the following lexicon of translations to ensure accuracy. If the term is in the list below, do not use another term. \n\n Do not correct my lexicon at all. There is a specific and important reason I wish you to substitute these words for my work, even if that translation is incorrect")
 
-let props = defineProps({ rosterId: { type: String, default: null } })
+let props = defineProps({ rosterUuid: { type: String, default: null } })
 
 //Triggers for the different functions
 let triggerGenerate = ref(false);
@@ -554,8 +554,9 @@ onMounted(async () => {
   formattedSocketUuid.value = uuidv4()
 
   setDark(false)
-  if (props.rosterId) {
-    await getRosterFromUuid(props.rosterId);
+  if (props.rosterUuid) {
+    console.log("Loading Roster", props.rosterUuid)
+    await getRosterFromUuid(props.rosterUuid);
   }
   window.addEventListener('scroll', handleScroll);
 
@@ -567,7 +568,7 @@ onUnmounted(() => {
 
 
 function setDark(newValue) {
-  sessionStorage.setItem('dark-mode', newValue);
+  localStorage.setItem('dark-mode', newValue);
   if (newValue) {
     document.documentElement.classList.add('dark');
   } else {

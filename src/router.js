@@ -13,9 +13,9 @@ import Chat from '@/pages/Chat.vue'
 import FT from '@/pages/apps/FT.vue'
 import GC from '@/pages/apps/GC.vue'
 import GOV from '@/pages/apps/GOV.vue'
-import OCCSC from '@/pages/apps/OCCSC.vue'
 import Translate from '@/pages/apps/Translate.vue'
 import KnowledgeMappings from '@/pages/apps/KnowledgeMappings.vue'
+import Support from '@/pages/apps/Support.vue'
 
 import Blog from './pages/Blog.vue'
 import Help from './pages/Help.vue'
@@ -66,44 +66,45 @@ const router = createRouter({
       path: '/chat/:personaId?',
       name: 'chat',
       component: Chat,
-      props:true,
+      props: true,
     },
     {
-      path: '/apps/ft/:rosterId?',
+      path: '/apps/ft/:rosterUuid?',
       name: 'ft',
       component: FT,
-      props:true,
+      props: true,
     },
     {
-      path: '/apps/gc/:rosterId?',
+      path: '/apps/gc/:rosterUuid?',
       name: 'gc',
       component: GC,
-      props:true,
+      props: true,
     },
     {
       path: '/apps/gov/:personaId?',
       name: 'gov',
       component: GOV,
-      props:true,
+      props: true,
     },
+
     {
-      path: '/apps/occsc/:rosterId?',
-      name: 'occsc',
-      component: OCCSC,
-      props:true,
-    },
-    {
-      path: '/apps/translate/:rosterId?',
+      path: '/apps/translate/:rosterUuid?',
       name: 'translate',
       component: Translate,
-      props:true,
+      props: true,
     },
     ,
     {
-      path: '/apps/knowledgeMappings/:rosterId?',
+      path: '/apps/knowledgeMappings/:rosterUuid?',
       name: 'knowledgeMappings',
       component: KnowledgeMappings,
-      props:true,
+      props: true,
+    },
+    {
+      path: '/apps/support/:rosterUuid?',
+      name: 'support',
+      component: Support,
+      props: true,
     },
 
 
@@ -138,15 +139,15 @@ const router = createRouter({
       name: 'linkRoster',
       component: LinkRoster,
       props: true
-    },    
-    
+    },
+
     {
       path: '/linkKnowledgeProfile/:link?',
       name: 'linkKnowledgeProfile',
       component: LinkKnowledgeProfile,
       props: true
     },
-   
+
     {
       path: '/:pathMatch(.*)*',
       component: PageNotFound

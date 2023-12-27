@@ -404,10 +404,10 @@ import Socket from '@/components/Socket.vue'
 import Tabs from '@/components/Tabs.vue';
 import canada from "@/images/canada.svg";
 import VueMultiselect from 'vue-multiselect'
-import DragAndDropWord from '@/components/DragAndDropWord.vue';
-import WordPreview from '@/components/WordPreview.vue';
-import KnowledgeSegment from '@/components/KnowledgeSegment.vue';
-import KnowledgeCategory from '@/components/KnowledgeCategory.vue';
+import DragAndDropWord from '@/components/knowledgeMapping/DragAndDropWord.vue';
+import WordPreview from '@/components/knowledgeMapping/WordPreview.vue';
+import KnowledgeSegment from '@/components/knowledgeMapping/KnowledgeSegment.vue';
+import KnowledgeCategory from '@/components/knowledgeMapping/KnowledgeCategory.vue';
 
 import { notify } from "notiwind"
 
@@ -438,7 +438,7 @@ const tabs = ref([
   { label: 'Assemble' }
 ]);
 
-let props = defineProps({ rosterId: { type: String, default: null } })
+let props = defineProps({ rosterUuid: { type: String, default: null } })
 
 //Knowledge Mappings
 let settings = ref({ display: { showReference: false }, showPrompt: true, useLexicon: true, asPlainText: true })
@@ -638,8 +638,8 @@ onMounted(async () => {
 
 
   setDark(false)
-  if (props.rosterId) {
-    await getRosterFromUuid(props.rosterId);
+  if (props.rosterUuid) {
+    await getRosterFromUuid(props.rosterUuid);
   }
   window.addEventListener('scroll', handleScroll);
 
@@ -651,7 +651,7 @@ onUnmounted(() => {
 
 
 function setDark(newValue) {
-  sessionStorage.setItem('dark-mode', newValue);
+  localStorage.setItem('dark-mode', newValue);
   if (newValue) {
     document.documentElement.classList.add('dark');
   } else {

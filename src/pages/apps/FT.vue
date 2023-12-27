@@ -84,7 +84,7 @@ const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = use
 const { getRosterFromUuid } = useRosters()
 const { searchFacts, factSearchResults } = useFacts()
 
-let props = defineProps({ rosterId: { type: String, default: null } })
+let props = defineProps({ rosterUuid: { type: String, default: null } })
 let triggerGenerate = ref(false);
 let chatPrompt = ref("");
 let sessionId = ref(uuidv4())
@@ -93,9 +93,9 @@ const textarea = ref(null);
 
 onMounted(async () => {
   setDark(false)
-  if (props.rosterId) {
+  if (props.rosterUuid) {
     await getRosterFromUuid();
-    // selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.rosterId })
+    // selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.rosterUuid })
     // if (selectedPersona?.value?.basePrompt?.length) {
     //   messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
     // }
@@ -104,7 +104,7 @@ onMounted(async () => {
 
 
 function setDark(newValue) {
-  sessionStorage.setItem('dark-mode', newValue);
+  localStorage.setItem('dark-mode', newValue);
   if (newValue) {
     document.documentElement.classList.add('dark');
   } else {

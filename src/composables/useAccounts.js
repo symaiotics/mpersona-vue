@@ -26,8 +26,8 @@ export function useAccounts() {
 
     function clearToken() {
         tokenSet.value = false;
-        sessionStorage.removeItem('token')
-        sessionStorage.removeItem('tokenDecoded')
+        localStorage.removeItem('token')
+        localStorage.removeItem('tokenDecoded')
     }
 
 

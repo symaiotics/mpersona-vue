@@ -191,7 +191,7 @@ import { useAccounts } from '@/composables/useAccounts.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 const { personas, usedCategories, skills, getPersonas, getSkills, getUsedCategories } = usePersonas()
-const { categories, getCategories, createAdminCategories } = useCategories()
+const { categories, getCategories } = useCategories()
 const { mailingList } = useAccounts()
 
 let emailAddress = ref('')
@@ -200,11 +200,6 @@ onMounted(() => {
 
   //Personas
   getPersonas();
-  getSkills();
-
-  //Categories
-  getUsedCategories();
-  createAdminCategories();
 
 })
 

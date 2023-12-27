@@ -46,18 +46,7 @@ let selectedCategory = ref(null)
 
 // by convention, composable function names start with "use"
 export function useCategories() {
-    async function createAdminCategories() {
-        try {
-            var params = {
-                categories: adminCategories.value
-            }
-            var response = await axios.post(import.meta.env.VITE_API_URL + '/categories', params);
-            console.log("Added Admin Categories", response.data)
-        }
-        catch (error) {
-            console.log("Error", error)
-        }
-    }
+    
 
     async function getCategories() {
         try {
@@ -78,7 +67,6 @@ export function useCategories() {
         categories,
 
         selectedCategory,
-        createAdminCategories,
         getCategories,
 
     }

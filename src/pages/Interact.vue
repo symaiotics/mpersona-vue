@@ -175,7 +175,7 @@ import { usePrompts } from '@/composables/usePrompts.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useCategories } from '@/composables/useCategories.js'
 const { personas, selectedPersona, usedCategories, skills, getPersonas, getSkills, getUsedCategories, updatePersonas } = usePersonas()
-const { categories, selectedCategory, getCategories, createAdminCategories } = useCategories()
+const { categories, selectedCategory, getCategories } = useCategories()
 
 const { promptOpenAI, promptResponse, promptResponseCode } = usePrompts()
 const { adminModels, selectedModel } = useModels()

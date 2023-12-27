@@ -384,7 +384,7 @@ function mergeArrays(array1, array2) {
 
 function updateDarkMode() {
     // console.log("darkModeSession", darkModeSession)
-    const darkModeSession = sessionStorage.getItem('dark-mode');
+    const darkModeSession = localStorage.getItem('dark-mode');
     isDarkMode.value = darkModeSession === 'true';
     if (svg) svg.classed('dark', isDarkMode.value);
 }

@@ -15,7 +15,7 @@ const configuredAxios = axios.create(config);
 //Request
 configuredAxios.interceptors.request.use(
     config => {
-        let token = sessionStorage.getItem('token');
+        let token = localStorage.getItem('token');
 
         if (token) {
             config.headers = {
@@ -30,24 +30,35 @@ configuredAxios.interceptors.request.use(
 //Analyze Responses
 configuredAxios.interceptors.response.use(
     response => {
-        if (response?.headers?.['auth-token']) {
-            sessionStorage.setItem('token', response.headers['auth-token']);
-            sessionStorage.setItem('tokenDecoded', response.headers['auth-token-decoded']);
-            setTokens(response.headers['auth-token'], response.headers['auth-token-decoded'])
+        const authToken = response.headers['auth-token'];
+        const authTokenDecoded = response.headers['auth-token-decoded'];
+
+        if (authToken) {
+            localStorage.setItem('token', authToken);
+            if (authTokenDecoded) {
+                try {
+                    // Attempt to parse the auth-token-decoded header if it's not undefined
+                    const decoded = JSON.parse(authTokenDecoded);
+                    localStorage.setItem('tokenDecoded', authTokenDecoded);
+                    setTokens(authToken, decoded);
+                } catch (error) {
+                    console.error("Failed to parse auth-token-decoded from headers:", error);
+                    // Handle the error appropriately
+                }
+            } else {
+                console.error("auth-token-decoded header is missing or undefined");
+                // Handle the missing header appropriately
+            }
         }
-
         return Promise.resolve(response);
-
     },
     error => {
         if (error.response.status === 403 || error.response.status === 401) {
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('tokenDecoded');
-            unsetTokens()
+            unsetTokens();
+            // Consider redirecting to login or showing a message instead of reloading
             // window.location.reload(true);
         }
         return Promise.reject(error);
     }
 );
-
 export default configuredAxios;

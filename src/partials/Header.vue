@@ -232,7 +232,7 @@ const hamburger = ref(null);
 
 //Retreive the last setting from before F5
 onMounted(() => {
-  var dark = sessionStorage.getItem('dark-mode');
+  var dark = localStorage.getItem('dark-mode');
   if (dark === 'true' || dark === true) {
     darkMode.value = true;
     setDark(darkMode.value)
@@ -250,9 +250,9 @@ function toggleLights() {
   setDark(darkMode.value)
 }
 
-//Set the sessionStorage and classes
+//Set the localStorage and classes
 function setDark(newValue) {
-  sessionStorage.setItem('dark-mode', newValue);
+  localStorage.setItem('dark-mode', newValue);
   if (newValue) {
     document.documentElement.classList.add('dark');
   } else {

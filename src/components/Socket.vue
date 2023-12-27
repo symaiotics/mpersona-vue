@@ -253,6 +253,10 @@ watch(errorMessage, (newValue, oldValue) => {
     // console.log("Error message", newValue);
     if (!oldValue?.length && newValue?.length) {
         notify({ group: "failure", title: "Error", text: newValue }, 4000) // 4s
+
+        emit('messageError');
+
+
         sessions.value[sessionId.value].errorMessage = "";
         processing.value = false;
     }
