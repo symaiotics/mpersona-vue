@@ -612,8 +612,8 @@ function documentsPendingProcessCheckedFiles() {
       prompts.value.documents.set[promptIndex].referenceUuid = nextDoc.uuid;
 
       let categoryPrompt = "";
-      if (categories.length) categoryPrompt = `\n\nEvaluate this content against the following categories:\n\n  ${localCategories.value.map(category => JSON.stringify(category)).join(',\n')} \n\n`;
-
+      if (categories.value.length) categoryPrompt = `\n\nEvaluate this content against the following categories:\n\n  ${categories.value.map(category => JSON.stringify(category)).join(',\n')} \n\n`;
+      
       prompts.value.documents.set[promptIndex].adaptedPrompt = `Summarize the following file contents:\n\n For reference, the content comes from a file with this info: ${JSON.stringify(nextDoc.original)} ${categoryPrompt} \n\nHere are the contents to analyze:\n\n ${nextDoc.textContent}`;
 
       nextTick(() => {

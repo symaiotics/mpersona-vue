@@ -9,9 +9,7 @@ let selectedTag = ref(null) //the actively selected persona
 //This is a single tag
 //We save an array of these
 const defaultTag = {
-    name: { en: '', fr: '' },
-    description: { en: '', fr: '' },
-    context: { en: '', fr: '' }
+    name: { en: '', fr: '' }
 };
 
 const newTag = ref({ ...defaultTag });
