@@ -14,33 +14,48 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(doc, index) in props.documents" :key="'doc' + index"
-          class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-          <td class="py-1 px-6">
-            <input type="checkbox" v-model = "doc._checked"
-              class="w-6 h-6 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              :aria-label="`Select document ${doc?.original?.name}`" @change="emitChecked(index, $event.target.checked)">
-          </td>
-          <td  class = "min-w-48">
-            {{ doc._processingStatus }}&nbsp;<span v-if = "doc._processingStatusNumber">({{ doc._processingStatusNumber }})</span>
-          </td>
-          <!-- <td class="py-1 px-6">
+        <template v-for="(doc, index) in props.documents" :key="'doc' + index">
+
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td class="py-1 px-6">
+              <input type="checkbox" v-model="doc._checked"
+                class="w-6 h-6 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                :aria-label="`Select document ${doc?.original?.name}`"
+                @change="emitChecked(index, $event.target.checked)">
+            </td>
+            <td class="min-w-48">
+              {{ doc._processingStatus }}&nbsp;<span v-if="doc._processingStatusNumber">({{ doc._processingStatusNumber
+              }})</span>
+            </td>
+            <!-- <td class="py-1 px-6">
             <img v-if="doc.imgSrc" :src="doc.imgSrc" alt="Document Thumbnail" class="w-24 h-24 object-cover">
           </td> -->
-          <td class="py-1 px-6">{{ doc?.original?.name }}</td>
-          <td class="py-1 px-6">{{ doc?.name?.en }}  </td>
-          <td class="py-1 px-6"> {{doc?.name?.fr }}</td>
-          <!-- <td class="py-1 px-6">{{ doc.description.en  }} / {{  doc.description.fr }}</td> -->
-          <td class="py-1 px-6">{{ lenInKb(doc)}}</td>
+            <td class="py-1 px-6">{{ doc?.original?.name }}</td>
+            <td class="py-1 px-6">{{ doc?.name?.en }} </td>
+            <td class="py-1 px-6"> {{ doc?.name?.fr }}</td>
+            <!-- <td class="py-1 px-6">{{ doc.description.en  }} / {{  doc.description.fr }}</td> -->
+            <td class="py-1 px-6">{{ lenInKb(doc) }}</td>
 
-          <td class="py-1 px-6">
-            <button
-              class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
-              @click="emitEditEvent(index)">
-              {{ L_("Edit") }}
-            </button>
-          </td>
-        </tr>
+            <td class="py-1 px-6">
+              <button
+                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+                @click="emitEditEvent(index)">
+                {{ L_("Edit") }}
+              </button>
+            </td>
+          </tr>
+          <tr v-if = "props.showTags" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td colSpan="7" class = "p-2">
+              Tags: <span v-for="tag in doc.tagUuids"   class="inline-block bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200 mr-2 mb-2">
+                {{ tagLookup(tag).name?.en ? tagLookup(tag).name?.en : "" }} {{ tagLookup(tag)?.name?.fr ? " |" +
+                  tagLookup(tag).name.fr : "" }}
+                <!-- {{ tagLookup(tag).name.fr }} -->
+
+              </span>
+            </td>
+          </tr>
+        </template>
+
       </tbody>
     </table>
   </div>
@@ -50,10 +65,13 @@
 <script setup>
 import { ref } from 'vue';
 import { useLexicon } from '@/composables/useLexicon.js';
+import { useTags } from '@/composables/knowledgeMapping/useTags.js';
 const { L_ } = useLexicon();
+const { tagLookup } = useTags();
 
 const props = defineProps({
-  documents: Array
+  documents: Array,
+  showTags:{type:Boolean, default:false}
 });
 
 const selectedIndex = ref(null);
@@ -68,9 +86,8 @@ const emitEditEvent = (index) => {
 
 }
 
-function lenInKb(doc)
-{
+function lenInKb(doc) {
   let length = doc.htmlContent?.length || doc.textContent?.length;
-  if(length) return (length/1000).toFixed(1) + "KB"
+  if (length) return (length / 1000).toFixed(1) + "KB"
 }
 </script>

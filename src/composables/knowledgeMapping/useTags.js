@@ -87,6 +87,16 @@ export function useTags() {
         }
     }
 
+
+     function tagLookup(tagUuid) {
+        try {
+            return tags.value.find((tag)=>{return tag.uuid == tagUuid})
+        }
+        catch (error) {
+        }
+    }
+
+
     // expose managed state as return value
     return {
         defaultTag,
@@ -101,7 +111,8 @@ export function useTags() {
         getTags,
         createTags,
         updateTags,
-        deleteTags
+        deleteTags,
+        tagLookup,
 
     }
 }

@@ -234,7 +234,7 @@
 
                 <div class="flex flex-wrap">
                   <div v-if="documents?.length" :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
-                    <DocumentTable :documents="documentsFiltered" @edit="documentsSelectToEdit"
+                    <DocumentTable :documents="documentsFiltered" :showTags = "true" @edit="documentsSelectToEdit"
                       @checked="documentsCheck" />
                   </div>
 
@@ -506,7 +506,7 @@ onMounted(async () => {
 })
 
 const customLabelModel = (option) => option ? option.label : '';
-const customLabelTag = (option) => option ? option.name.en + option.name.fr : '';
+const customLabelTag = (option) => option ? option.name.en + " | " + option.name.fr : '';
 
 function checkAssignment(code) {
   let thisAssignment = wrappAssignments.value.find((wA) => { return wA.code == code })
