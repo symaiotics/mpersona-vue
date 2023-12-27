@@ -274,6 +274,65 @@
                   Interact
                 </h2>
                 <p>Interact to build comprehensive AI-enabled Artifacts.</p>
+
+
+                <Socket v-show="false" :sessionId="prompts.question.sessionId" :persona="prompts.question.persona"
+                  :userPrompt="prompts.question.adaptedPrompt" :model="selectedModel" :trigger="prompts.question.trigger"
+                  @messageComplete="payload => messagePromptComplete(payload, prompts.question)"
+                  @messagePartial="payload => messagePromptPartial(payload, prompts.question)"
+                  @messageError="payload => messagePromptError(payload, prompts.question)">
+                </Socket>
+
+                <button @click="promptWithDocuments"
+                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                  {{ L_('Prompt') }}
+                </button>
+
+                <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
+                  :asPlainText="true" />
+                <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="false" />
+
+                <p>Attach your Documents and Segments.</p>
+
+                <div v-if="documents?.length" class="flex space-x-2">
+                  <button @click="documentsToggleCheckAll"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Toggle Select') }}
+                  </button>
+
+                  <button @click="documentsAddTags"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Add Tags') }}
+                  </button>
+
+                  <button @click="documentsRemoveTags"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Remove Tags') }}
+                  </button>
+
+                  <div class="mt-2" v-if="tags?.length">
+                    <VueMultiselect v-model="filterTags" :options="tags" :searchable="true" :multiple="true"
+                      track-by="uuid" :close-on-select="false" :custom-label="customLabelTag" :show-labels="false"
+                      @remove="removeTag" placeholder="Select tags" />
+                  </div>
+
+                  <button v-if="!applyFilter" @click="applyFilter = true"
+                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Apply Filters') }}
+                  </button>
+                  <button v-if="applyFilter" @click="applyFilter = false"
+                    class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Clear Filters') }}
+                  </button>
+
+
+                </div>
+
+                <div v-if="documents?.length" :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
+                  <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
+                    @checked="documentsCheck" />
+                </div>
+
               </template>
               <template v-slot:tab-7>
                 <h2 class="font-lato font-bold text-2xl mt-1 mb-1 pb-1 border-b border-red-600 leading-tight">
@@ -763,6 +822,18 @@ function documentsAddTags() {
 function documentsRemoveTags() {
   let tagDocuments = documents.value.filter((doc) => { return doc._checked })
   addRemoveTags(selectedKnowledgeSet.value.uuid, 'remove', tagDocuments, filterTags.value)
+}
+
+function promptWithDocuments() {
+  prompts.value.question.persona = checkAssignment('writer').persona;
+  let checkedFiles = documentsFiltered.value.filter((doc)=>{return doc._checked});
+  let contentPrompt = "";
+  if(checkedFiles?.length)
+  {
+    contentPrompt += `Use the following information for your analysis:\n  ${checkedFiles.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+  prompts.value.question.adaptedPrompt = `Prepare a response for the following question: \n\n ${prompts.value.question.prompt} \n\n ${contentPrompt}`
+  prompts.value.question.trigger = !prompts.value.question.trigger;
 }
 
 </script>
