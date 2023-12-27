@@ -78,11 +78,16 @@
                   Artifacts.</p>
                 <p>Define and share Knowledge Sets for yourself and your team.</p>
 
-                <button @click="addNewKnowledgeSet"
-                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-2 rounded w-auto">
-                  {{ L_('New Knowledge Set') }}
-                </button>
-
+                <div class="space-x-2">
+                  <button @click="addNewKnowledgeSet"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-2 rounded w-auto">
+                    {{ L_('New Knowledge Set') }}
+                  </button>
+                  <button @click="refreshKnowledgeSets"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold  p-2 rounded w-auto">
+                    {{ L_('Reload') }}
+                  </button>
+                </div>
                 <KnowledgeSetCreateEdit :wrappUuid="wrappUuid" :rosterUuid="props.rosterUuid" />
                 <KnowledgeSetCards v-if="knowledgeSets" :data="knowledgeSets" @selected="knowledgeSetSelected" />
 
@@ -234,7 +239,7 @@
 
                 <div class="flex flex-wrap">
                   <div v-if="documents?.length" :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
-                    <DocumentTable :documents="documentsFiltered" :showTags = "true" @edit="documentsSelectToEdit"
+                    <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
                       @checked="documentsCheck" />
                   </div>
 
@@ -518,6 +523,15 @@ function updatePromptMax(val) {
   promptMax.value = val;
 }
 
+async function refreshKnowledgeSets() {
+  await getKnowledgeSets(props.rosterUuid);
+  if (selectedKnowledgeSet.value.uuid) {
+    getCategories(selectedKnowledgeSet.value.uuid);
+    getTags(selectedKnowledgeSet.value.uuid);
+    getDocuments(selectedKnowledgeSet.value.uuid);
+  }
+}
+
 //Knowledge Set
 function knowledgeSetSelected(item) {
   selectedKnowledgeSet.value = item;
@@ -613,7 +627,7 @@ function documentsPendingProcessCheckedFiles() {
 
       let categoryPrompt = "";
       if (categories.value.length) categoryPrompt = `\n\nEvaluate this content against the following categories:\n\n  ${categories.value.map(category => JSON.stringify(category)).join(',\n')} \n\n`;
-      
+
       prompts.value.documents.set[promptIndex].adaptedPrompt = `Summarize the following file contents:\n\n For reference, the content comes from a file with this info: ${JSON.stringify(nextDoc.original)} ${categoryPrompt} \n\nHere are the contents to analyze:\n\n ${nextDoc.textContent}`;
 
       nextTick(() => {
