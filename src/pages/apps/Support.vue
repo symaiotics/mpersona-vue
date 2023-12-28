@@ -383,7 +383,8 @@
                       @checked="segmentsCheck" />
                   </div>
 
-                  <div v-if="segments?.length && selectedSegment" :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
+                  <div v-if="segments?.length && selectedSegment" :class="selectedSegment ? 'w-1/3' : 'w-full'"
+                    class="  ">
                     <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" />
 
                   </div>
@@ -1058,8 +1059,8 @@ function segmentsRemoveTags() {
 
 function promptWithDocuments() {
   prompts.value.question.persona = checkAssignment('writer').persona;
-  let checkedDocuments = documentsFiltered.value.filter((doc) => { return doc._checked });
-  let checkedSegments = segments.value.filter((segment) => { return segment._checked });
+  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
+  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
   let contentDocumentsPrompt = "";
   let contentSegmentsPrompt = "";
   if (checkedDocuments?.length) {
