@@ -208,6 +208,11 @@
                     {{ L_('Toggle Select') }}
                   </button>
 
+                  <button @click="documentsSelectToSegment"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Segment Selected') }}
+                  </button>
+
                   <button @click="documentsAddTags"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
                     {{ L_('Add Tags') }}
@@ -238,14 +243,93 @@
 
 
                 <div class="flex flex-wrap">
-                  <div v-if="documents?.length" :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
+                  <div v-if="documents?.length && !documentsForSegments?.length"
+                    :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
                     <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
                       @checked="documentsCheck" />
                   </div>
 
-                  <div v-if="selectedDocument" class="w-full md:w-1/3 ">
+                  <div v-if="selectedDocument && !documentsForSegments?.length" class="w-full md:w-1/3 ">
                     <DocumentCreateEdit v-model="selectedDocument" @close="selectedDocument = null" />
                   </div>
+                </div>
+
+
+
+
+                <div v-for="(prompt, index) in prompts.segments.set" :key="'segmentPrompt' + prompt.sessionId">
+                  <!-- {{ prompt }} -->
+                  <Socket v-show="false" :sessionId="prompt.sessionId" :persona="prompt.persona"
+                    :userPrompt="prompt.adaptedPrompt" :model="selectedModel" :trigger="prompt.trigger"
+                    @messageComplete="payload => messagePromptComplete(payload, prompt)"
+                    @messagePartial="payload => messagePromptPartial(payload, prompt)"
+                    @messageError="payload => messagePromptError(payload, prompt)">
+                  </Socket>
+                </div>
+
+                <!-- Segment Selection-->
+
+
+                <div v-if="documentsForSegments?.length">
+                  <button @click="documentsForSegments = null"
+                    class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Clear Pending Segments') }}
+                  </button>
+                </div>
+
+
+                <!-- Segmemnts-->
+                <div v-for="(doc, index) in documentsForSegments" :key="'docToSegment' + index">
+                  <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                    {{ L_('Document') }} {{ index + 1 }}
+                  </h3>
+                  <DivInput v-if="doc._plainText" placeholder="Segment your document" v-model="doc.textContent"
+                    :asPlainText="true" :setMarker="true" @setMarkers="payload => segmentSetMarkers(payload, doc)">
+                    <label class="label-style whitespace-nowrap">
+                      <input type="checkbox" v-model="doc._plainText"
+                        class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                      {{ L_('Plain Text') }}
+                    </label>
+                  </DivInput>
+                  <DivInput v-else placeholder="Segment your document" v-model="doc.htmlContent" :asPlainText="false"
+                    :setMarker="true" @setMarkers="payload => segmentSetMarkers(payload, doc)">
+                    <label class="label-style whitespace-nowrap">
+                      <input type="checkbox" v-model="doc._plainText"
+                        class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                      {{ L_('Plain Text') }}
+                    </label>
+                  </DivInput>
+
+
+                  <div v-if="doc._segments.length" class="flex space-x-2">
+                    <button @click="segmentsPendingToggleCheckAll(doc)"
+                      class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Toggle Select') }}
+                    </button>
+
+                    <button @click="segmentsPendingProcessChecked(doc)"
+                      class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Process Checked Segments') }}
+                    </button>
+
+                    <button @click="segmentsPendingSaveChecked(doc)"
+                      class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Save Checked Segments to Knowledge Set') }}
+                    </button>
+
+                    <div class="w-96 whitespace-nowrap self-start ">
+                      <label>AI Instances</label>
+                      <VueSlider :modelValue="promptMax" @update:modelValue="value => updatePromptMax(value)" :min="1"
+                        :max="10" />
+                    </div>
+                  </div>
+
+                  <!-- {{ doc._segments }} -->
+                  <SegmentsPendingTable :data="doc._segments" :fullText="doc.textContent" :fullHtml="doc.htmlContent"
+                    @remove="index => removePendingSegment(index, doc)" />
+
+
+
                 </div>
 
 
@@ -261,6 +345,23 @@
                 </h2>
                 <p>Segments are extracts from documents which focus in on key reusable topics. They are further analyzed
                   by AI to determine their key concepts and content.</p>
+
+                <div class="flex flex-wrap">
+                  <div v-if="segments?.length" :class="selectedSegment ? 'w-2/3' : 'w-full'" class="  ">
+                    <SegmentsTable :data="segments" :showTags="true" @edit="segmentsSelectToEdit"
+                      @checked="segmentsCheck" />
+                  </div>
+
+                  <div v-if="segments?.length" :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
+                    <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" />
+                   
+                  </div>
+                </div>
+                <!-- {{ segments }} -->
+
+
+
+
               </template>
               <template v-slot:tab-5>
                 <h2 class="font-lato font-bold text-2xl mt-1 mb-1 pb-1 border-b border-red-600 leading-tight">
@@ -289,7 +390,7 @@
                 </button>
 
                 <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
-                  :asPlainText="true" />
+                  :asPlainText="false" />
                 <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="false" />
 
                 <p>Attach your Documents and Segments.</p>
@@ -328,11 +429,25 @@
 
                 </div>
 
-                <div v-if="documents?.length" :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
+                <h3 v-if="documents?.length"
+                  class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Documents
+                </h3>
+
+                <div v-if="documents?.length" class="w-full">
                   <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
                     @checked="documentsCheck" />
                 </div>
 
+                <h3 v-if="segments?.length"
+                  class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                  Segments
+                </h3>
+
+                <div v-if="segments?.length" class="w-full">
+                  <SegmentsTable :data="segments" :showTags="true" @edit="segmentsSelectToEdit"
+                    @checked="segmentsCheck" />
+                </div>
               </template>
               <template v-slot:tab-7>
                 <h2 class="font-lato font-bold text-2xl mt-1 mb-1 pb-1 border-b border-red-600 leading-tight">
@@ -396,7 +511,10 @@ import CategoryTable from '@/components/knowledgeMapping/CategoryTable.vue';
 import CategoryCreateEdit from '@/components/knowledgeMapping/CategoryCreateEdit.vue';
 import TagTable from '@/components/knowledgeMapping/TagTable.vue';
 import TagCreateEdit from '@/components/knowledgeMapping/TagCreateEdit.vue';
-
+import SegmentsPendingTable from '@/components/knowledgeMapping/SegmentsPendingTable.vue';
+import SegmentsTable from '@/components/knowledgeMapping/SegmentsTable.vue';
+import SegmentCreateEdit from '@/components/knowledgeMapping/SegmentCreateEdit.vue';
+// SegmentCreateEdit
 //Composables
 import { useLexicon } from '@/composables/useLexicon.js'
 import { useAssignments } from '@/composables/useAssignments.js'
@@ -410,6 +528,7 @@ import { useKnowledgeSets } from '@/composables/knowledgeMapping/useKnowledgeSet
 import { useCategories } from '@/composables/knowledgeMapping/useCategories.js';
 import { useTags } from '@/composables/knowledgeMapping/useTags.js';
 import { useDocuments } from '@/composables/knowledgeMapping/useDocuments.js';
+import { useSegments } from '@/composables/knowledgeMapping/useSegments.js';
 
 const { L_ } = useLexicon()
 const { assignments, getAssignments, createAssignments, deleteAssignments } = useAssignments()
@@ -481,7 +600,26 @@ const { defaultDocument,
   addRemoveTags,
   deleteDocuments } = useDocuments()
 
+const {
+  defaultSegment,
+  newSegment,
+  segments,
+  segmentsFiltered,
+  applyFilter: applySegmentFilter,
 
+  segmentsPending,
+  selectedSegment,
+  selectedSegmentPending,
+  addNewSegment,
+  resetSegment,
+
+
+  getSegments,
+  createSegments,
+  updateSegments,
+  addRemoveTags: addRemoveSegmentTags,
+  deleteSegments
+} = useSegments();
 
 
 
@@ -492,13 +630,14 @@ const tabs = computed(() => {
   let checkmarkKnowledgeSets = selectedKnowledgeSet?.value?.uuid ? ' ✓' : '';
   let checkMarkCategories = categories?.value?.length ? ' ✓' : '';
   let checkMarkDocuments = documents?.value?.length ? ' ✓' : '';
+  let checkMarkSegments = segments?.value?.length ? ' ✓' : '';
   if (selectedKnowledgeSet?.value?._id) {
     return [
       { label: L_('Assignments') + checkmarkWrappAssignments },
       { label: L_('Knowledge Sets') + checkmarkKnowledgeSets },
       { label: L_('Metadata') + checkMarkCategories },
       { label: L_('Documents') + checkMarkDocuments },
-      { label: L_('Segments') },
+      { label: L_('Segments') + checkMarkSegments },
       { label: L_('Mappings') },
       { label: L_('Interact') },
       { label: L_('Analytics') }
@@ -538,6 +677,7 @@ const localCategories = ref([
 
 let documentsPendingCheckAll = ref(false)
 let documentsCheckAll = ref(false)
+let documentsForSegments = ref(false)
 
 onMounted(async () => {
 
@@ -588,6 +728,7 @@ async function refreshKnowledgeSets() {
     getCategories(selectedKnowledgeSet.value.uuid);
     getTags(selectedKnowledgeSet.value.uuid);
     getDocuments(selectedKnowledgeSet.value.uuid);
+    getSegments(selectedKnowledgeSet.value.uuid);
   }
 }
 
@@ -597,6 +738,7 @@ function knowledgeSetSelected(item) {
   getCategories(item.uuid);
   getTags(item.uuid);
   getDocuments(selectedKnowledgeSet.value.uuid);
+  getSegments(selectedKnowledgeSet.value.uuid);
   // getSegments(item.uuid);
   // getMappings(item.uuid);
   // getArtifacts(item.uuid);
@@ -702,22 +844,17 @@ function documentsPendingProcessCheckedFiles() {
   catch (error) {
     console.log(error)
   }
-
-
 }
 
 function documentsPendingSaveCheckedFiles() {
-
   //See how many concurrent processors there are running
   let docsToSave = documentsPending.value.filter((doc) => { return doc._checked });
-
   createDocuments(selectedKnowledgeSet.value.uuid, docsToSave);
 
   //Remove the checked
   documentsPending.value = documentsPending.value.filter(
     (doc) => !doc._checked
   );
-
   //Save them to the work 
 }
 
@@ -732,30 +869,57 @@ function messagePromptComplete(payload, thisPrompt) {
       thisPrompt.json = thisSessionContent[0].extracts.json[0];
     };
 
-    let updateDoc = documentsPending.value.find((doc) => { return doc.uuid == thisPrompt.referenceUuid })
-    if (updateDoc) {
-      updateDoc._processingStatus = "completed";
-      updateDoc._processingStatusNumber = null;
-      if (thisPrompt?.json?.name) updateDoc.name = thisPrompt.json.name;
-      if (thisPrompt?.json?.description) updateDoc.description = thisPrompt.json.description;
-      if (thisPrompt?.json?.keywords) updateDoc.keywords = thisPrompt.json.keywords;
-      if (thisPrompt?.json?.categories) updateDoc.categories = thisPrompt.json.categories;
-    }
 
     //Do Cleanup by removing sockets
     if (thisPrompt.promptType == 'documents') {
+
+      let updateDoc = documentsPending.value.find((doc) => { return doc.uuid == thisPrompt.referenceUuid })
+      if (updateDoc) {
+        updateDoc._processingStatus = "completed";
+        updateDoc._processingStatusNumber = null;
+        if (thisPrompt?.json?.name) updateDoc.name = thisPrompt.json.name;
+        if (thisPrompt?.json?.description) updateDoc.description = thisPrompt.json.description;
+        if (thisPrompt?.json?.keywords) updateDoc.keywords = thisPrompt.json.keywords;
+        if (thisPrompt?.json?.categories) updateDoc.categories = thisPrompt.json.categories;
+      }
+
+
       prompts.value.documents.set = prompts.value.documents.set.filter(
         (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
       );
       documentsPendingProcessCheckedFiles();
-
     }
+
+
 
     if (thisPrompt.promptType == 'segments') {
-      prompts.value.segments.set = prompts.value.segments.set.filter(
-        (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
-      );
+      let updateDoc = documents.value.find((document) => { return document.uuid == thisPrompt.referenceDocUuid })
+      if (updateDoc) {
+        let updateSegment = updateDoc._segments.find((segment) => { return segment.uuid == thisPrompt.referenceUuid })
+
+        if (updateSegment) {
+          updateSegment._processingStatus = "completed";
+          updateSegment._processingStatusNumber = null;
+          if (thisPrompt?.json?.name) updateSegment.name = thisPrompt.json.name;
+          if (thisPrompt?.json?.description) updateSegment.description = thisPrompt.json.description;
+          if (thisPrompt?.json?.keywords) updateSegment.keywords = thisPrompt.json.keywords;
+          if (thisPrompt?.json?.categories) updateSegment.categories = thisPrompt.json.categories;
+
+          console.log('Segment complete', updateSegment)
+
+        }
+
+
+
+        prompts.value.segments.set = prompts.value.segments.set.filter(
+          (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
+        );
+
+        segmentsPendingProcessChecked(updateDoc)
+
+      }
     }
+
 
     //And so forth... Add more promptTypes as I go
 
@@ -773,6 +937,18 @@ function messagePromptPartial(payload, thisPrompt) {
       let updateDoc = documentsPending.value.find((doc) => { return doc.uuid == thisPrompt.referenceUuid })
       if (updateDoc) {
         updateDoc._processingStatusNumber = payload.message.length;
+      }
+    }
+
+    if (thisPrompt.promptType == 'segments') {
+      let updateDoc = documents.value.find((document) => { return document.uuid == thisPrompt.referenceDocUuid })
+      if (updateDoc) {
+        let updateSegment = updateDoc._segments.find((segment) => { return segment.uuid == thisPrompt.referenceUuid })
+        if (updateSegment) {
+
+          updateSegment._processingStatusNumber = payload.message.length;
+        }
+
       }
     }
 
@@ -814,6 +990,19 @@ function documentsSelectToEdit(index) {
   });
 }
 
+//Full segments
+function segmentsCheck(val) {
+  segments.value[val.index]._checked = val.isChecked;
+}
+
+function segmentsSelectToEdit(index) {
+  selectedSegment.value = segments.value[index];
+  nextTick(() => {
+    selectedSegment.value = { ...selectedSegment.value };
+  });
+}
+
+
 function documentsAddTags() {
   let tagDocuments = documents.value.filter((doc) => { return doc._checked })
   addRemoveTags(selectedKnowledgeSet.value.uuid, 'add', tagDocuments, filterTags.value)
@@ -826,14 +1015,123 @@ function documentsRemoveTags() {
 
 function promptWithDocuments() {
   prompts.value.question.persona = checkAssignment('writer').persona;
-  let checkedFiles = documentsFiltered.value.filter((doc)=>{return doc._checked});
-  let contentPrompt = "";
-  if(checkedFiles?.length)
-  {
-    contentPrompt += `Use the following information for your analysis:\n  ${checkedFiles.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  let checkedDocuments = documentsFiltered.value.filter((doc) => { return doc._checked });
+  let checkedSegments = segments.value.filter((segment) => { return segment._checked });
+  let contentDocumentsPrompt = "";
+  let contentSegmentsPrompt = "";
+  if (checkedDocuments?.length) {
+    contentDocumentsPrompt += `Use the following information for your analysis:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
   }
-  prompts.value.question.adaptedPrompt = `Prepare a response for the following question: \n\n ${prompts.value.question.prompt} \n\n ${contentPrompt}`
+  if (checkedSegments?.length) {
+    contentSegmentsPrompt += `Use the following information for your analysis:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+
+  prompts.value.question.adaptedPrompt = `Prepare a response for the following question: \n\n ${prompts.value.question.prompt} \n\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
   prompts.value.question.trigger = !prompts.value.question.trigger;
 }
 
+
+//Segments 
+function documentsSelectToSegment() {
+  documentsForSegments.value = documentsFiltered.value.filter((doc) => { return doc._checked });
+  for (const doc of documentsForSegments.value) {
+    doc._segments = [];
+  }
+}
+
+function segmentSetMarkers(segments, doc) {
+  doc._segments = segments;
+}
+
+function removePendingSegment(index, doc) {
+  const segmentToRemove = doc._segments[index];
+  if (segmentToRemove) {
+    // Use the UUID to find the marker element in the DOM
+    const markerEl = document.querySelector(`[data-marker-id="${segmentToRemove.markerId}"]`);
+    if (markerEl) {
+      markerEl.remove(); // Remove the marker element from the DOM
+    }
+    // Remove the segment from the array
+    doc._segments.splice(index, 1);
+  }
+}
+
+function segmentsPendingToggleCheckAll(doc) {
+  doc._checkAllSegments = !doc._checkAllSegments;
+
+  for (const segment of doc._segments) {
+    segment._checked = doc._checkAllSegments;
+  }
+}
+
+function segmentsPendingProcessChecked(doc) {
+  //Bulk process all the segments by AI using the file classifier
+
+  try {
+    //Reset the checkmark
+    if (doc._checkAllSegments) doc._checkAllSegments = false;
+
+    //Set all the checked docs all to pending 
+    for (const segment of doc._segments) {
+      if (segment._checked) {
+        segment.uuid = uuidv4();
+        segment._processingStatus = "pending";
+        segment._checked = false;
+      }
+    }
+
+    //Find the next pending doc in the list
+    let nextSegment = doc._segments.find((segment) => { return segment._processingStatus == 'pending' })
+
+    console.log('nextSegment', nextSegment)
+    //See how many concurrent processors there are running
+    let processingCount = prompts.value.segments.set.filter((prompt) => { return prompt.status == 'processing' }).length;
+    console.log('processingCount', processingCount)
+
+    //If both conditions meet
+    if (nextSegment && processingCount < promptMax.value) {
+
+      //Add a nwe prompt
+      prompts.value.segments.set.push(createPrompt({ promptType: "segments", status: "waiting", persona: checkAssignment('triage').persona, trigger: false }));
+      let promptIndex = prompts.value.segments.set.length - 1;
+
+      nextSegment._processingStatus = 'processing';
+      nextSegment._processingStatusNumber = 0;
+
+      nextSegment.documentName = doc.name;
+      nextSegment.documentDescription = doc.description;
+      nextSegment.docoumentUuid = doc.uuid;
+      nextSegment.cursorStart = nextSegment.cursorIndex;
+      nextSegment.cursorEnd = nextSegment.cursorIndex + nextSegment.textContent.length;
+
+      prompts.value.segments.set[promptIndex].status = "processing";
+      prompts.value.segments.set[promptIndex].referenceDocUuid = doc.uuid;
+      prompts.value.segments.set[promptIndex].referenceUuid = nextSegment.uuid;
+
+      let categoryPrompt = "";
+      if (categories.value.length) categoryPrompt = `\n\nEvaluate this content against the following categories:\n\n  ${categories.value.map(category => JSON.stringify(category)).join(',\n')} \n\n`;
+
+      prompts.value.segments.set[promptIndex].adaptedPrompt = `Summarize the following file contents:\n\n For reference, the content comes from a file with this info: ${JSON.stringify(doc.original)} ${categoryPrompt} \n\nHere are the contents to analyze:\n\n ${nextSegment.textContent}`;
+
+      nextTick(() => {
+        prompts.value.segments.set[promptIndex].trigger = !prompts.value.segments.set[promptIndex].trigger;
+      })
+
+      //Check for the next file
+      segmentsPendingProcessChecked(doc);
+
+    }
+
+  }
+  catch (error) {
+    console.log(error)
+  }
+
+
+}
+
+function segmentsPendingSaveChecked(doc) {
+  let checkedSegments = doc._segments.filter((segment) => { return segment._checked });
+  createSegments(selectedKnowledgeSet.value.uuid, checkedSegments);
+}
 </script>
