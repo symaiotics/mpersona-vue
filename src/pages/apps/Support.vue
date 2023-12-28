@@ -346,15 +346,46 @@
                 <p>Segments are extracts from documents which focus in on key reusable topics. They are further analyzed
                   by AI to determine their key concepts and content.</p>
 
+                <div class="space-x-2">
+
+                  <button @click="segmentsAddTags"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Add Tags') }}
+                  </button>
+
+                  <button @click="segmentsRemoveTags"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Remove Tags') }}
+                  </button>
+
+                  <button v-if="!applySegmentFilter" @click="applySegmentFilter = true"
+                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Apply Filters') }}
+                  </button>
+                  <button v-if="applySegmentFilter" @click="applySegmentFilter = false"
+                    class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    {{ L_('Clear Filters') }}
+                  </button>
+
+
+
+                </div>
+
+                <div class="mt-2" v-if="tags?.length">
+                  <VueMultiselect v-model="filterTags" :options="tags" :searchable="true" :multiple="true" track-by="uuid"
+                    :close-on-select="false" :custom-label="customLabelTag" :show-labels="false" @remove="removeTag"
+                    placeholder="Select tags" />
+                </div>
+
                 <div class="flex flex-wrap">
                   <div v-if="segments?.length" :class="selectedSegment ? 'w-2/3' : 'w-full'" class="  ">
-                    <SegmentsTable :data="segments" :showTags="true" @edit="segmentsSelectToEdit"
+                    <SegmentsTable :data="segmentsFiltered" :showTags="true" @edit="segmentsSelectToEdit"
                       @checked="segmentsCheck" />
                   </div>
 
-                  <div v-if="segments?.length" :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
+                  <div v-if="segments?.length && selectedSegment" :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
                     <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" />
-                   
+
                   </div>
                 </div>
                 <!-- {{ segments }} -->
@@ -401,7 +432,7 @@
                     {{ L_('Toggle Select') }}
                   </button>
 
-                  <button @click="documentsAddTags"
+                  <button @click="segmentsSelectToEdit"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
                     {{ L_('Add Tags') }}
                   </button>
@@ -1012,6 +1043,18 @@ function documentsRemoveTags() {
   let tagDocuments = documents.value.filter((doc) => { return doc._checked })
   addRemoveTags(selectedKnowledgeSet.value.uuid, 'remove', tagDocuments, filterTags.value)
 }
+
+function segmentsAddTags() {
+  let tagSegments = segments.value.filter((segment) => { return segment._checked })
+  addRemoveSegmentTags(selectedKnowledgeSet.value.uuid, 'add', tagSegments, filterTags.value)
+}
+
+function segmentsRemoveTags() {
+  let tagSegments = segments.value.filter((segment) => { return segment._checked })
+  addRemoveSegmentTags(selectedKnowledgeSet.value.uuid, 'remove', tagSegments, filterTags.value)
+}
+
+
 
 function promptWithDocuments() {
   prompts.value.question.persona = checkAssignment('writer').persona;

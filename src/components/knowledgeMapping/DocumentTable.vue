@@ -44,13 +44,14 @@
               </button>
             </td>
           </tr>
-          <tr v-if = "props.showTags" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colSpan="7" class = "p-2">
-              Tags: <span v-for="tag in doc.tagUuids"   class="inline-block bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200 mr-2 mb-2">
-                {{ tagLookup(tag).name?.en ? tagLookup(tag).name?.en : "" }} {{ tagLookup(tag)?.name?.fr ? " |" +
-                  tagLookup(tag).name.fr : "" }}
-                <!-- {{ tagLookup(tag).name.fr }} -->
-
+          <tr v-if="props.showTags" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td colSpan="7" class="p-2">
+              Tags: <span v-for="tag in doc.tagUuids"
+                class="inline-block bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200 mr-2 mb-2">
+                <div v-if="tagLookup(tag)?.name">
+                  {{ tagLookup(tag).name?.en ? tagLookup(tag).name?.en : "" }} {{ tagLookup(tag)?.name?.fr ? " |" +
+                    tagLookup(tag).name.fr : "" }}
+                </div>
               </span>
             </td>
           </tr>
@@ -71,7 +72,7 @@ const { tagLookup } = useTags();
 
 const props = defineProps({
   documents: Array,
-  showTags:{type:Boolean, default:false}
+  showTags: { type: Boolean, default: false }
 });
 
 const selectedIndex = ref(null);
