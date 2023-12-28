@@ -37,11 +37,20 @@
             <td class="py-1 px-6">{{ lenInKb(doc) }}</td>
 
             <td class="py-1 px-6">
+              <div class = "flex space-x-1">
+
               <button
                 class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
                 @click="emitEditEvent(index)">
                 {{ L_("Edit") }}
               </button>
+              <button
+                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+                @click="emitViewEvent(index)">
+                {{ L_("View") }}
+              </button>
+            </div>
+
             </td>
           </tr>
           <tr v-if="props.showTags" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
@@ -76,7 +85,7 @@ const props = defineProps({
 });
 
 const selectedIndex = ref(null);
-const emit = defineEmits(['checked', 'edit']);
+const emit = defineEmits(['checked', 'edit', 'view']);
 
 const emitChecked = (index, isChecked) => {
   emit('checked', { index, isChecked });
@@ -84,8 +93,12 @@ const emitChecked = (index, isChecked) => {
 
 const emitEditEvent = (index) => {
   emit('edit', index);
-
 }
+
+const emitViewEvent = (index) => {
+  emit('view', index);
+}
+
 
 function lenInKb(doc) {
   let length = doc.htmlContent?.length || doc.textContent?.length;

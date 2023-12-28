@@ -246,12 +246,30 @@
                   <div v-if="documents?.length && !documentsForSegments?.length"
                     :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
                     <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
-                      @checked="documentsCheck" />
+                      @checked="documentsCheck" @view = "documentsSelectToView" />
                   </div>
 
-                  <div v-if="selectedDocument && !documentsForSegments?.length" class="w-full md:w-1/3 ">
+                  <div v-if="selectedDocument && !documentsForSegments?.length && !documentViewContent"
+                    class="w-full md:w-1/3 ">
                     <DocumentCreateEdit v-model="selectedDocument" @close="selectedDocument = null" />
                   </div>
+
+
+
+
+                  <div v-if="documents?.length && selectedDocument && documentViewContent"
+                    :class="selectedDocument ? 'w-1/3' : 'w-full'" class="  ">
+                    <button @click="documentViewContent = false; selectedDocument = null"
+                      class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Close View') }}
+                    </button>
+
+
+                    <DivInput v-model="selectedDocument.htmlContent" :asPlainText="false" />
+                  </div>
+
+
+
                 </div>
 
 
@@ -380,14 +398,25 @@
                 <div class="flex flex-wrap">
                   <div v-if="segments?.length" :class="selectedSegment ? 'w-2/3' : 'w-full'" class="  ">
                     <SegmentsTable :data="segmentsFiltered" :showTags="true" @edit="segmentsSelectToEdit"
-                      @checked="segmentsCheck" />
+                      @view="segmentsSelectToView" @checked="segmentsCheck" />
                   </div>
 
-                  <div v-if="segments?.length && selectedSegment" :class="selectedSegment ? 'w-1/3' : 'w-full'"
-                    class="  ">
+                  <div v-if="segments?.length && selectedSegment && !segmentViewContent"
+                    :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
                     <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" />
-
                   </div>
+
+                  <div v-if="segments?.length && selectedSegment && segmentViewContent"
+                    :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
+                    <button @click="segmentViewContent = false; selectedSegment = null"
+                      class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Close View') }}
+                    </button>
+
+
+                    <DivInput v-model="selectedSegment.htmlContent" :asPlainText="false" />
+                  </div>
+
                 </div>
                 <!-- {{ segments }} -->
 
@@ -1029,6 +1058,42 @@ function segmentsCheck(val) {
 
 function segmentsSelectToEdit(index) {
   selectedSegment.value = segments.value[index];
+  nextTick(() => {
+    selectedSegment.value = { ...selectedSegment.value };
+  });
+}
+
+let documentViewContent = ref(false);
+let segmentViewContent = ref(false);
+
+function documentsSelectToView(index) {
+  selectedDocument.value = documents.value[index];
+  documentViewContent.value = true;
+  nextTick(() => {
+    selectedDocument.value = { ...selectedDocument.value };
+  });
+}
+
+function documentsCloseView(index) {
+  selectedDocument.value = documents.value[index];
+  documentViewContent.value = false;
+  nextTick(() => {
+    selectedDocument.value = { ...selectedDocument.value };
+  });
+}
+
+
+function segmentsSelectToView(index) {
+  selectedSegment.value = segments.value[index];
+  segmentViewContent.value = true;
+  nextTick(() => {
+    selectedSegment.value = { ...selectedSegment.value };
+  });
+}
+
+function segmentsCloseView(index) {
+  selectedSegment.value = segments.value[index];
+  segmentViewContent.value = false;
   nextTick(() => {
     selectedSegment.value = { ...selectedSegment.value };
   });
