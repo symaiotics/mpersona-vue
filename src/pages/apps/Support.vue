@@ -395,7 +395,7 @@
 
                   <div v-if="segments?.length && selectedSegment && !segmentViewContent"
                     :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
-                    <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" />
+                    <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" @update = "eventUpdateSegment" />
                   </div>
 
                   <div v-if="segments?.length && selectedSegment && segmentViewContent"
@@ -1648,5 +1648,9 @@ function selectSavedArtifact(index) {
 
 }
 
+function eventUpdateSegment(segment)
+{
+  updateSegments(selectedKnowledgeSet.value.uuid, [segment])
+}
 
 </script>
