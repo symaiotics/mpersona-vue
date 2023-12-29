@@ -33,7 +33,7 @@
             </Socket>
             <!-- <ChatWindow :messages="messageHistory"/> -->
 
-            <div class="max-w-2xl mx-auto md:px-4">
+            <div class=" mx-auto md:px-4">
 
               <div class="mt-6">
 
@@ -41,7 +41,7 @@
                   :custom-label="customLabelModel" :show-labels="false" placeholder="Pick a model" />
 
 
-                <form @submit.prevent="trigger" class="relative flex items-center " data-aos="fade-down"
+                <form @submit.prevent="trigger" class="relative flex items-center mb-2 " data-aos="fade-down"
                   data-aos-delay="300">
                   <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) trigger() }" v-model="chatPrompt"
                     @input="adjustHeight" class="form-input w-full pl-12" placeholder="Ask me about …"
@@ -53,6 +53,34 @@
                     </svg>
                   </button>
                 </form>
+
+                <DocumentDragAndDrop @documentsChanged="documentsPendingChanged" />
+
+                <div class="flex flex-wrap">
+
+                  <div v-if="documentsPending?.length" class="w-full">
+                    <p class="mt-2 font-lato"> Check any content to include it in your interactions. Uncheck items to
+                      remove them from subsequent interactions.</p>
+
+                    <DocumentTable :documents="documentsPending" @edit="documentsPendingSelectToEdit"
+                      @checked="documentsPendingCheck" @view="documentsPendingSelectToView" />
+                  </div>
+
+                  <div v-if="selectedDocumentPending && !documentViewContent" class="w-full ">
+                    <DocumentCreateEdit v-model="selectedDocumentPending" @close="selectedDocumentPending = null;" />
+                  </div>
+
+
+                  <button v-if="documentViewContent" @click="documentViewContent = false; selectedDocumentPending = null"
+                    class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                    Close View
+                  </button>
+                  <DivInput v-if="documentViewContent && selectedDocumentPending"
+                    v-model="selectedDocumentPending.htmlContent" :asPlainText="false" />
+
+                </div>
+
+
               </div>
 
             </div>
@@ -88,18 +116,46 @@ import ChatList from '@/partials/ChatList.vue'
 import RelatedLinks from '@/partials/RelatedLinks.vue'
 import Footer from '@/partials/Footer.vue'
 
+import DocumentTable from '@/components/knowledgeMapping/DocumentTable.vue';
+import DocumentCreateEdit from '@/components/knowledgeMapping/DocumentCreateEdit.vue';
+import DocumentDragAndDrop from '@/components/knowledgeMapping/DocumentDragAndDrop.vue'
+import DivInput from '@/components/DivInput.vue'
+
+
 import DisplayPersona from '@/components/DisplayPersona.vue'
 import ChatWindow from '@/components/ChatWindow.vue'
 import Socket from '@/components/Socket.vue'
 import VueMultiselect from 'vue-multiselect'
 
 //Composables
+import { useDocuments } from '@/composables/knowledgeMapping/useDocuments.js';
 import { useModels } from '@/composables/useModels.js'
 import { usePersonas } from '@/composables/usePersonas.js'
 import { useFacts } from '@/composables/useFacts.js'
 const { adminModels, selectedModel } = useModels()
 const { personas, selectedPersona, newPersona, getPersonas, resetPersona } = usePersonas()
 const { searchFacts, factSearchResults } = useFacts()
+
+const { defaultDocument,
+  newDocument,
+  documents,
+  documentsFiltered,
+  applyFilter,
+
+  documentsPending,
+  selectedDocument,
+  selectedDocumentPending,
+  addNewDocument,
+  resetDocument,
+
+  getDocuments,
+  createDocuments,
+  updateDocuments,
+  addRemoveTags,
+  deleteDocuments } = useDocuments()
+
+let documentViewContent = ref(false);
+
 
 let props = defineProps({ personaId: { type: String, default: null } })
 let triggerGenerate = ref(false);
@@ -115,14 +171,26 @@ onMounted(async () => {
   if (props.personaId) {
     await getPersonas();
     selectedPersona.value = personas.value.find((persona) => { return persona.uuid == props.personaId })
-    if (selectedPersona?.value?.basePrompt?.length) {
+    // if (selectedPersona?.value?.basePrompt?.length) {
       messageHistory.value.push({ role: "system", content: selectedPersona.value.basePrompt })
-    }
+    // }
   }
 })
 
 function trigger() {
   //Save the history
+
+  let checkedDocuments = documentsPending.value.filter((doc) => { return doc._checked });
+  console.log(checkedDocuments.length)
+  console.log(messageHistory?.value?.length)
+  console.log(messageHistory.value)
+  console.log(messageHistory?.value?.[0]?.role == 'system')
+  if (checkedDocuments.length && messageHistory.value.length && messageHistory.value[0].role == 'system') {
+    messageHistory.value[0].content = selectedPersona.value.basePrompt + `\n\n Prioritize the use of the following reference information in your response above all other information:\n\n${checkedDocuments.map(file => JSON.stringify(file.htmlContent)).join(',\n')}`
+  }
+  else {
+    messageHistory.value[0].content = selectedPersona.value.basePrompt;
+  }
   messageHistory.value.push({ role: "user", content: JSON.parse(JSON.stringify(chatPrompt.value)) })
 
   triggerGenerate.value = !triggerGenerate.value;
@@ -224,4 +292,42 @@ function promptQuestion(question) {
   trigger();
 
 }
+
+
+function documentsPendingChanged(files) {
+  for (const file of files) {
+    documentsPending.value.push(file)
+    console.log("file", file)
+  }
+}
+
+function documentsPendingCheck(val) {
+  documentsPending.value[val.index]._checked = val.isChecked;
+}
+
+function documentsPendingToggleCheckAll() {
+  documentsPendingCheckAll.value = !documentsPendingCheckAll.value;
+  for (const doc of documentsPending.value) {
+    doc._checked = documentsPendingCheckAll.value;
+  }
+}
+
+function documentsPendingSelectToEdit(index) {
+  documentViewContent.value = false;
+  selectedDocumentPending.value = documentsPending.value[index];
+  nextTick(() => {
+    selectedDocumentPending.value = { ...selectedDocumentPending.value };
+  });
+}
+
+function documentsPendingSelectToView(index) {
+  documentViewContent.value = true;
+
+  selectedDocumentPending.value = documentsPending.value[index];
+  nextTick(() => {
+    selectedDocumentPending.value = { ...selectedDocumentPending.value };
+  });
+}
+
+
 </script>
