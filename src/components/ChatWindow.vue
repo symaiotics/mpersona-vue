@@ -8,7 +8,9 @@
             <div v-if="index > 0 || message.role == 'user'" :class="[message.role == 'user'
                 ? ''
                 : 'w-full']">
-                <div class="py-2 px-4 rounded-lg " :class="[message.role == 'user'
+                <!-- {{ message.content }} -->
+
+                <div class="py-2 px-4 rounded-lg markdown-content " :class="[message.role == 'user'
                     ? 'bg-blue-500 text-white dark:bg-blue-700'
                     : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-white']"
                     v-html="renderMarkdown(message.content)">
@@ -36,9 +38,20 @@ const completedMessageMarkdown = computed(() => {
 });
 
 function renderMarkdown(text) {
-    return md.render(text);
-};
 
+    // Split the text by double newlines to get paragraphs
+
+    const paragraphs = text.split(/\n\n/);
+
+    // Join the paragraphs with double newlines
+
+    const doubleSpacedText = paragraphs.join('\n\n');
+
+    // Render the markdown text
+
+    return md.render(doubleSpacedText);
+
+};
 
 const props = defineProps({ messages: { type: Array, default: [] } })
 const messages = computed(() => { return props.messages });
@@ -65,5 +78,13 @@ onMounted(() => {
 </script>
   
 <style>
-/* Additional styles if needed */
+
+/* Add bottom margin to paragraphs within rendered Markdown content */
+
+.markdown-content p {
+
+  margin-bottom: 1em; /* Adjust the value as needed */
+
+}
+
 </style>

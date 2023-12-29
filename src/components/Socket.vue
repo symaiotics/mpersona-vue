@@ -166,7 +166,7 @@ const thisSessionsContent = computed(() => sessionsContent.value.filter((session
 const userPrompt = computed(() => props.userPrompt);
 const sessionId = computed(() => props.sessionId);
 
-const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket', 'messageComplete', 'messagePartial']
+const emit = defineEmits(['edit', 'close', 'like', 'addSocket', 'removeSocket', 'messageComplete', 'messagePartial', 'messageError']
 );
 
 let editPersona = ref(false)

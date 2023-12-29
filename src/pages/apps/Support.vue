@@ -112,8 +112,6 @@
                 <CategoryTable :data="categories" @check="checkCategories" @edit="editCategories" />
 
 
-                <!-- <KnowledgeCategory v-model:data="localCategories" @removeCategory="removeCategory"
-                  @removeKeyword="removeKeyword"></KnowledgeCategory> -->
 
                 <h2 class="font-lato font-bold text-2xl mt-1 mb-1 pb-1 border-b border-red-600 leading-tight">
                   Document Tags
@@ -128,12 +126,6 @@
 
                 <TagCreateEdit :knowledgeSetUuid="selectedKnowledgeSet.uuid" />
                 <TagTable :data="tags" @check="checkTags" @edit="editTags" />
-
-                <!-- 
-                <KnowledgeCategory v-model:data="localCategories" @removeCategory="removeCategory"
-                  @removeKeyword="removeKeyword"></KnowledgeCategory>
- -->
-
 
               </template>
 
@@ -246,7 +238,7 @@
                   <div v-if="documents?.length && !documentsForSegments?.length"
                     :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
                     <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
-                      @checked="documentsCheck" @view = "documentsSelectToView" />
+                      @checked="documentsCheck" @view="documentsSelectToView" />
                   </div>
 
                   <div v-if="selectedDocument && !documentsForSegments?.length && !documentViewContent"
@@ -436,6 +428,11 @@
                   Interact
                 </h2>
                 <p>Interact to build comprehensive AI-enabled Artifacts.</p>
+                <p>You can interact in Q&A Mode, with an automatic Audit function, or you can use Chat Mode and speak to
+                  the persona directly.</p>
+
+                <!-- <ToggleSwitch v-model = "isChatMode"/> -->
+
 
 
                 <Socket v-show="false" :sessionId="prompts.question.sessionId" :persona="prompts.question.persona"
@@ -445,49 +442,201 @@
                   @messageError="payload => messagePromptError(payload, prompts.question)">
                 </Socket>
 
-                <button @click="promptWithDocuments"
-                  class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                  {{ L_('Prompt') }}
-                </button>
 
-                <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
-                  :asPlainText="false" />
-                <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="false" />
 
-                <p>Attach your Documents and Segments.</p>
+                <Socket v-show="false" :sessionId="prompts.audit.sessionId" :persona="prompts.audit.persona"
+                  :userPrompt="prompts.audit.adaptedPrompt" :model="selectedModel" :trigger="prompts.audit.trigger"
+                  @messageComplete="payload => messagePromptComplete(payload, prompts.audit)"
+                  @messagePartial="payload => messagePromptPartial(payload, prompts.audit)"
+                  @messageError="payload => messagePromptError(payload, prompts.audit)">
+                </Socket>
 
-                <div v-if="documents?.length" class="flex space-x-2">
-                  <button @click="documentsToggleCheckAll"
+                <div class="flex space-x-2">
+
+                  <!-- <button @click="questionWithDocuments"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                    {{ L_('Toggle Select') }}
+                    {{ L_('Prompt') }}
+                  </button> -->
+
+
+                  <button @click="questionWithDocuments" v-if="!isChatMode"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                    :disabled="questionInProgress">
+                    {{ L_('Prompt') }}
                   </button>
 
-                  <button @click="segmentsSelectToEdit"
-                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                    {{ L_('Add Tags') }}
+
+                  <button @click="auditWithDocuments" v-if="!isChatMode"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                    :disabled="auditInProgress">
+                    {{ L_('Audit') }}
                   </button>
 
-                  <button @click="documentsRemoveTags"
-                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                    {{ L_('Remove Tags') }}
-                  </button>
 
-                  <div class="mt-2" v-if="tags?.length">
-                    <VueMultiselect v-model="filterTags" :options="tags" :searchable="true" :multiple="true"
-                      track-by="uuid" :close-on-select="false" :custom-label="customLabelTag" :show-labels="false"
-                      @remove="removeTag" placeholder="Select tags" />
+                  <div class="m-2">
+
+                    <input type="checkbox" v-model="isChatMode" @change="chatModeToggle"
+                      class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                    {{ L_('Chat Mode') }}
                   </div>
 
-                  <button v-if="!applyFilter" @click="applyFilter = true"
-                    class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                    {{ L_('Apply Filters') }}
-                  </button>
-                  <button v-if="applyFilter" @click="applyFilter = false"
-                    class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                    {{ L_('Clear Filters') }}
-                  </button>
+                </div>
+
+                <div v-show="isChatMode">
+
+                  <Socket :sessionId="prompts.chat.sessionId" :persona="prompts.chat.persona"
+                    :messageHistory="prompts.chat.messageHistory" :userPrompt="prompts.chat.adaptedPrompt"
+                    :model="selectedModel" :trigger="prompts.chat.trigger"
+                    @messageComplete="payload => messageComplete(payload, prompts.chat)"
+                    @messagePartial="payload => messagePartial(payload, prompts.chat)"
+                    @messageError="payload => messageError(payload, prompts.chat)">
+
+                    <ChatWindow :messages="prompts.chat.messageHistory" />
+
+                  </Socket>
 
 
+
+                  <form @submit.prevent="chatModeTrigger()" class="relative flex items-center mb-2 ">
+                    <textarea ref="textarea" @keyup.enter="event => { if (!event.shiftKey) chatModeTrigger() }"
+                      v-model="chatPrompt" @input="adjustHeight" class="form-input w-full pl-12"
+                      placeholder="Ask me about …" aria-label="Search anything" />
+                    <button type="submit" class="absolute inset-0 right-auto" aria-label="Search">
+                      <svg class="w-4 h-4 shrink-0 ml-4 mr-3" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path class="fill-current text-gray-400"
+                          d="M7 14c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7zM7 2C4.243 2 2 4.243 2 7s2.243 5 5 5 5-2.243 5-5-2.243-5-5-5zm8.707 12.293a.999.999 0 11-1.414 1.414L11.9 13.314a8.019 8.019 0 001.414-1.414l2.393 2.393z" />
+                      </svg>
+                    </button>
+                  </form>
+
+
+                  <div class="space-x-2">
+
+                    <button @click="chatCopy"
+                      class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Copy Answer to Q&A Mode') }}
+                    </button>
+
+                    <button @click="chatClear"
+                      class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Clear Chat') }}
+                    </button>
+
+
+
+                  </div>
+
+
+
+                </div>
+
+                <div v-show="!isChatMode">
+                  <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                    Your Input
+                  </h3>
+
+                  <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
+                    :asPlainText="false" />
+
+                  <div class="flex">
+
+                    <div class="w-full">
+                      <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                        Generated Answer (Human editable)
+                      </h3>
+                      <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="false" />
+
+<!-- 
+
+                      <button @click="saveArtifacts"
+                        class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                        :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                        :disabled="questionInProgress || auditInProgress">
+                        {{ L_('Save as Artifact') }}
+                      </button>
+
+                      <div class="w-96 whitespace-nowrap self-start ">
+                        <label>Completeness</label>
+                        <VueSlider :modelValue="interactionScore.completeness" @update:modelValue="value => updateScore('completeness', value)" :min="1"
+                          :max="10" />
+                      </div>
+
+                      <div class="w-96 whitespace-nowrap self-start ">
+                        <label>Accuracy</label>
+                        <VueSlider :modelValue="interactionScore.accuracy" @update:modelValue="value => updateScore('accuracy', value)" :min="1"
+                          :max="10" />
+                      </div>
+
+                      
+                      <div class="w-96 whitespace-nowrap self-start ">
+                        <label>Tone</label>
+                        <VueSlider :modelValue="interactionScore.tone" @update:modelValue="value => updateScore('tone', value)" :min="1"
+                          :max="10" />
+                      </div>
+
+                      <div class="w-96 whitespace-nowrap self-start ">
+                        <label>Overall</label>
+                        <VueSlider :modelValue="interactionScore.overall" @update:modelValue="value => updateScore('overall', value)" :min="1"
+                          :max="10" />
+                      </div>
+
+                      <DivInput placeholder="Comments" v-model="interactionScore.comments" :asPlainText="true" />
+ -->
+
+                    </div>
+
+                    <div v-if="prompts.audit.message || prompts.audit.json" class="w-full">
+
+                      <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                        Audit Analysis
+                      </h3>
+
+                      <DivInput v-if="!prompts.audit.json" placeholder="View the audit" v-model="prompts.audit.message"
+                        :asPlainText="false" />
+
+                      <AuditTable v-if="prompts.audit.json" :data="prompts.audit.json" />
+
+                    </div>
+                  </div>
+
+
+                  <p>Attach your Documents and Segments.</p>
+
+                  <div v-if="documents?.length" class="flex space-x-2">
+                    <button @click="documentsToggleCheckAll"
+                      class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Toggle Select') }}
+                    </button>
+
+                    <button @click="segmentsSelectToEdit"
+                      class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Add Tags') }}
+                    </button>
+
+                    <button @click="documentsRemoveTags"
+                      class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Remove Tags') }}
+                    </button>
+
+                    <div class="mt-2" v-if="tags?.length">
+                      <VueMultiselect v-model="filterTags" :options="tags" :searchable="true" :multiple="true"
+                        track-by="uuid" :close-on-select="false" :custom-label="customLabelTag" :show-labels="false"
+                        @remove="removeTag" placeholder="Select tags" />
+                    </div>
+
+                    <button v-if="!applyFilter" @click="applyFilter = true"
+                      class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Apply Filters') }}
+                    </button>
+                    <button v-if="applyFilter" @click="applyFilter = false"
+                      class="whitespace-nowrap self-start bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                      {{ L_('Clear Filters') }}
+                    </button>
+
+
+                  </div>
                 </div>
 
                 <h3 v-if="documents?.length"
@@ -575,6 +724,10 @@ import TagCreateEdit from '@/components/knowledgeMapping/TagCreateEdit.vue';
 import SegmentsPendingTable from '@/components/knowledgeMapping/SegmentsPendingTable.vue';
 import SegmentsTable from '@/components/knowledgeMapping/SegmentsTable.vue';
 import SegmentCreateEdit from '@/components/knowledgeMapping/SegmentCreateEdit.vue';
+import AuditTable from '@/components/knowledgeMapping/AuditTable.vue';
+import ToggleSwitch from '@/components/ToggleSwitch.vue';
+import ChatWindow from '@/components/ChatWindow.vue';
+
 // SegmentCreateEdit
 //Composables
 import { useLexicon } from '@/composables/useLexicon.js'
@@ -590,6 +743,7 @@ import { useCategories } from '@/composables/knowledgeMapping/useCategories.js';
 import { useTags } from '@/composables/knowledgeMapping/useTags.js';
 import { useDocuments } from '@/composables/knowledgeMapping/useDocuments.js';
 import { useSegments } from '@/composables/knowledgeMapping/useSegments.js';
+import { useArtifacts } from '@/composables/knowledgeMapping/useArtifacts.js';
 
 const { L_ } = useLexicon()
 const { assignments, getAssignments, createAssignments, deleteAssignments } = useAssignments()
@@ -684,6 +838,29 @@ const {
 
 
 
+const {
+  defaultArtifact,
+  newArtifact,
+  artifacts,
+  artifactsFiltered,
+  applyFilter: applyArtifactFilter,
+
+  artifactsPending,
+  selectedArtifact,
+  selectedArtifactPending,
+  addNewArtifact,
+  resetArtifact,
+
+
+  getArtifacts,
+  createArtifacts,
+  updateArtifacts,
+  addRemoveTags: addRemoveArtifactTags,
+  deleteArtifacts
+} = useArtifacts();
+
+
+
 let props = defineProps({ rosterUuid: { type: String, default: null } })
 
 const tabs = computed(() => {
@@ -723,23 +900,39 @@ const prompts = ref({
   answer: createPrompt(),
   audit: createPrompt(),
   translation: createPrompt(),
+  chat: createPrompt({ promptType: "chat", messageHistory: [] }),
+
 });
 let promptMax = ref(5);
 
 
 //Starter categories which can be overwritten
-const localCategories = ref([
-  { alpha: "policy", code: 0, context: "Reporting Entities (REs) need clear guidance on interpreting legislation, including examples and risk assessment frameworks. They require detailed reporting instructions, compliance program development support, and best practices for record-keeping and client identification. Updates on financial crime trends, legislative changes, and technology use are crucial. REs also benefit from educational outreach such as workshops and webinars, feedback on compliance reviews, and dedicated support channels for prompt assistance with compliance-related questions. This support helps REs fulfill their legal obligations and combat money laundering and terrorist financing effectively.", name: { en: "Policy and Guidance", fr: "" }, description: { en: "Reporting entities require guidance on how to interpret the PCMLTFA, Schedules, Regulations, Forms, Validation Rules, and Reporting Requirements.", fr: "" }, keywords: ["policy", "interpretation", "guidance", "requirements", "compliance", "supervision"] },
-  { alpha: "policy", code: 1, context: "FINTRAC (Financial Transactions and Reports Analysis Centre of Canada) validation rules are designed to ensure the accuracy and completeness of financial transaction reports submitted by reporting entities. These rules check for logical consistency, mandatory field completion, correct formatting, and adherence to regulatory requirements. If a report fails validation, the submitting institution is notified to correct and resubmit the data. This process helps prevent money laundering and terrorist financing by ensuring high-quality data is available for analysis by FINTRAC.", name: { en: "Validation Rules", fr: "" }, description: { en: "Reportting Entities require support in submitting reports, which are evaluated against a complex set of validation rules. Each report type has its own set of validation rules.", fr: "" }, keywords: ["validation", "rules", "mandatory", "schedules", "submission", "error", "reject"] },
-  { alpha: "policy", code: 2, context: "Reporting entities often face challenges with data quality issues such as incomplete or inaccurate information, incorrect formatting, and failure to adhere to the precise data standards set by FINTRAC. They also struggle with understanding the complex and evolving legal requirements for reporting certain types of transactions. Keeping up with changes in reporting thresholds, identifying suspicious activities accurately, and managing the high volume of transactions that must be monitored and reported can be resource-intensive. Additionally, entities must ensure the confidentiality and security of the data they submit, which adds a layer of complexity to the reporting process.", name: { en: "Data Integrity & Reporting Requirements", fr: "" }, description: { en: "Support for understanding data reporting requirements and specific reporting requirements per regulated sector.", fr: "" }, keywords: ["reporting", "requirements", "data", "quality", "legislation"] },
-  { alpha: "policy", code: 3, context: "Providing technical support to FINTRAC reporting entities to onboard with FINTRAC's API Ingest infrastructure", name: { en: "Technical API Support", fr: "" }, description: { en: "Reportting Entities require technical support to gain access to FINTRAC's API infrastructure.", fr: "" }, keywords: ["api", "batch", "rest", "authentication", "system to system"] },
-]);
+// const localCategories = ref([
+//   { alpha: "policy", code: 0, context: "Reporting Entities (REs) need clear guidance on interpreting legislation, including examples and risk assessment frameworks. They require detailed reporting instructions, compliance program development support, and best practices for record-keeping and client identification. Updates on financial crime trends, legislative changes, and technology use are crucial. REs also benefit from educational outreach such as workshops and webinars, feedback on compliance reviews, and dedicated support channels for prompt assistance with compliance-related questions. This support helps REs fulfill their legal obligations and combat money laundering and terrorist financing effectively.", name: { en: "Policy and Guidance", fr: "" }, description: { en: "Reporting entities require guidance on how to interpret the PCMLTFA, Schedules, Regulations, Forms, Validation Rules, and Reporting Requirements.", fr: "" }, keywords: ["policy", "interpretation", "guidance", "requirements", "compliance", "supervision"] },
+//   { alpha: "policy", code: 1, context: "FINTRAC (Financial Transactions and Reports Analysis Centre of Canada) validation rules are designed to ensure the accuracy and completeness of financial transaction reports submitted by reporting entities. These rules check for logical consistency, mandatory field completion, correct formatting, and adherence to regulatory requirements. If a report fails validation, the submitting institution is notified to correct and resubmit the data. This process helps prevent money laundering and terrorist financing by ensuring high-quality data is available for analysis by FINTRAC.", name: { en: "Validation Rules", fr: "" }, description: { en: "Reportting Entities require support in submitting reports, which are evaluated against a complex set of validation rules. Each report type has its own set of validation rules.", fr: "" }, keywords: ["validation", "rules", "mandatory", "schedules", "submission", "error", "reject"] },
+//   { alpha: "policy", code: 2, context: "Reporting entities often face challenges with data quality issues such as incomplete or inaccurate information, incorrect formatting, and failure to adhere to the precise data standards set by FINTRAC. They also struggle with understanding the complex and evolving legal requirements for reporting certain types of transactions. Keeping up with changes in reporting thresholds, identifying suspicious activities accurately, and managing the high volume of transactions that must be monitored and reported can be resource-intensive. Additionally, entities must ensure the confidentiality and security of the data they submit, which adds a layer of complexity to the reporting process.", name: { en: "Data Integrity & Reporting Requirements", fr: "" }, description: { en: "Support for understanding data reporting requirements and specific reporting requirements per regulated sector.", fr: "" }, keywords: ["reporting", "requirements", "data", "quality", "legislation"] },
+//   { alpha: "policy", code: 3, context: "Providing technical support to FINTRAC reporting entities to onboard with FINTRAC's API Ingest infrastructure", name: { en: "Technical API Support", fr: "" }, description: { en: "Reportting Entities require technical support to gain access to FINTRAC's API infrastructure.", fr: "" }, keywords: ["api", "batch", "rest", "authentication", "system to system"] },
+// ]);
 
 
 let documentsPendingCheckAll = ref(false)
 let documentsCheckAll = ref(false)
 let documentsForSegments = ref(false)
 
+
+let questionInProgress = ref(false);
+let auditInProgress = ref(false);
+
+const isChatMode = ref(false);
+const chatPrompt = ref(null)
+
+const interactionScore = ref({
+  completeness:null,
+  accuracy:null,
+  tone:null,
+  overall:null,
+  comments:null
+})
 onMounted(async () => {
 
   if (props?.rosterUuid) {
@@ -930,7 +1123,6 @@ function messagePromptComplete(payload, thisPrompt) {
       thisPrompt.json = thisSessionContent[0].extracts.json[0];
     };
 
-
     //Do Cleanup by removing sockets
     if (thisPrompt.promptType == 'documents') {
 
@@ -944,14 +1136,11 @@ function messagePromptComplete(payload, thisPrompt) {
         if (thisPrompt?.json?.categories) updateDoc.categories = thisPrompt.json.categories;
       }
 
-
       prompts.value.documents.set = prompts.value.documents.set.filter(
         (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
       );
       documentsPendingProcessCheckedFiles();
     }
-
-
 
     if (thisPrompt.promptType == 'segments') {
       let updateDoc = documents.value.find((document) => { return document.uuid == thisPrompt.referenceDocUuid })
@@ -966,12 +1155,7 @@ function messagePromptComplete(payload, thisPrompt) {
           if (thisPrompt?.json?.keywords) updateSegment.keywords = thisPrompt.json.keywords;
           if (thisPrompt?.json?.categories) updateSegment.categories = thisPrompt.json.categories;
 
-          console.log('Segment complete', updateSegment)
-
         }
-
-
-
         prompts.value.segments.set = prompts.value.segments.set.filter(
           (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
         );
@@ -979,6 +1163,17 @@ function messagePromptComplete(payload, thisPrompt) {
         segmentsPendingProcessChecked(updateDoc)
 
       }
+    }
+
+    //Trigger the audit to happen automatically
+    if (thisPrompt.promptType == 'question') {
+      questionInProgress.value = false;
+      auditWithDocuments();
+    }
+
+    //Flag it is in progress
+    if (thisPrompt.promptType == 'audit') {
+      auditInProgress.value = false;
     }
 
 
@@ -1013,6 +1208,8 @@ function messagePromptPartial(payload, thisPrompt) {
       }
     }
 
+
+
   }
 }
 
@@ -1027,6 +1224,29 @@ function messagePromptError(payload, thisPrompt) {
     prompts.value.documents.set = prompts.value.documents.set.filter(
       (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
     );
+  }
+
+  if (thisPrompt.promptType == 'segments') {
+
+    let updateDoc = documents.value.find((document) => { return document.uuid == thisPrompt.referenceDocUuid })
+    if (updateDoc) {
+      let updateSegment = updateDoc._segments.find((segment) => { return segment.uuid == thisPrompt.referenceUuid })
+      if (updateSegment) {
+        updateSegment._processingStatus = 'error';
+      }
+      prompts.value.documents.set = prompts.value.segments.set.filter(
+        (prompt) => prompt.referenceUuid !== thisPrompt.referenceUuid
+      );
+    }
+
+  }
+
+  if (thisPrompt.promptType == 'question') {
+    questionInProgress.value = false;
+  }
+
+  if (thisPrompt.promptType == 'audit') {
+    auditInProgress.value = false;
   }
 
 }
@@ -1122,24 +1342,6 @@ function segmentsRemoveTags() {
 
 
 
-function promptWithDocuments() {
-  prompts.value.question.persona = checkAssignment('writer').persona;
-  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
-  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
-  let contentDocumentsPrompt = "";
-  let contentSegmentsPrompt = "";
-  if (checkedDocuments?.length) {
-    contentDocumentsPrompt += `Use the following information for your analysis:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
-  if (checkedSegments?.length) {
-    contentSegmentsPrompt += `Use the following information for your analysis:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
-
-  prompts.value.question.adaptedPrompt = `Prepare a response for the following question: \n\n ${prompts.value.question.prompt} \n\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
-  prompts.value.question.trigger = !prompts.value.question.trigger;
-}
-
-
 //Segments 
 function documentsSelectToSegment() {
   documentsForSegments.value = documentsFiltered.value.filter((doc) => { return doc._checked });
@@ -1192,10 +1394,10 @@ function segmentsPendingProcessChecked(doc) {
     //Find the next pending doc in the list
     let nextSegment = doc._segments.find((segment) => { return segment._processingStatus == 'pending' })
 
-    console.log('nextSegment', nextSegment)
+    // console.log('nextSegment', nextSegment)
     //See how many concurrent processors there are running
     let processingCount = prompts.value.segments.set.filter((prompt) => { return prompt.status == 'processing' }).length;
-    console.log('processingCount', processingCount)
+    // console.log('processingCount', processingCount)
 
     //If both conditions meet
     if (nextSegment && processingCount < promptMax.value) {
@@ -1243,4 +1445,140 @@ function segmentsPendingSaveChecked(doc) {
   let checkedSegments = doc._segments.filter((segment) => { return segment._checked });
   createSegments(selectedKnowledgeSet.value.uuid, checkedSegments);
 }
+
+//Interact
+
+
+
+function questionWithDocuments() {
+  questionInProgress.value = true;
+  prompts.value.question.promptType = 'question';
+  prompts.value.question.persona = checkAssignment('writer').persona;
+
+  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
+  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
+  let contentDocumentsPrompt = "";
+  let contentSegmentsPrompt = "";
+  if (checkedDocuments?.length) {
+    contentDocumentsPrompt += `Use the following information for your analysis:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+  if (checkedSegments?.length) {
+    contentSegmentsPrompt += `Use the following information for your analysis:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+
+  prompts.value.question.adaptedPrompt = `Prepare a response for the following question: \n\n ${prompts.value.question.prompt} \n\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
+  nextTick(() => {
+    prompts.value.question.trigger = !prompts.value.question.trigger;
+  });
+  console.log("Attempting to trigger question", prompts.value.question)
+}
+
+
+function auditWithDocuments() {
+  auditInProgress.value = true;
+  prompts.value.audit.json = null;
+  prompts.value.audit.promptType = 'audit';
+  prompts.value.audit.persona = checkAssignment('auditor').persona;
+  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
+  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
+  let contentDocumentsPrompt = "";
+  let contentSegmentsPrompt = "";
+  if (checkedDocuments?.length) {
+    contentDocumentsPrompt += `Source documents:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+  if (checkedSegments?.length) {
+    contentSegmentsPrompt += `Source textual segments:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+
+  prompts.value.audit.adaptedPrompt = `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis: ${prompts.value.question.message} \n\n Here are the source materials that were used in the analysis:\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
+  nextTick(() => {
+    prompts.value.audit.trigger = !prompts.value.audit.trigger;
+  })
+
+  console.log("Attempting to trigger audit", prompts.value.audit)
+}
+
+
+function chatModeToggle() {
+  if (isChatMode.value) {
+    //Set the Persona, if not set
+    if (!prompts?.value?.chat?.persona) prompts.value.chat.persona = checkAssignment('writer').persona;
+
+    //Reset the prompt
+    if (prompts?.value?.chat?.messageHistory?.length == 0) prompts.value.chat.messageHistory = [{ role: "system", content: prompts.value.chat.persona.basePrompt }];
+  }
+
+}
+
+
+function chatModeTrigger() {
+  //Save the history
+
+  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
+  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
+  let contentDocumentsPrompt = "";
+  let contentSegmentsPrompt = "";
+  let docsPrompt = "Prioritize these textual segments in any answer you provide over general knowledge or other reference data:";
+  if (checkedDocuments?.length) {
+    contentDocumentsPrompt += `${docsPrompt}:\n ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+  if (checkedSegments?.length) {
+    contentSegmentsPrompt += `${docsPrompt}:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  }
+
+  prompts.value.chat.messageHistory[0] = { role: "system", content: prompts.value.chat.persona.basePrompt + contentDocumentsPrompt + contentSegmentsPrompt };
+  prompts.value.chat.messageHistory.push({ role: "user", content: JSON.parse(JSON.stringify(chatPrompt.value)) })
+  console.log("messageHistory", prompts.value.chat.messageHistory)
+
+  prompts.value.chat.trigger = !prompts.value.chat.trigger;
+  console.log("So triggered!")
+  nextTick(() => {
+    chatPrompt.value = "";
+  })
+
+
+}
+
+
+
+function messagePartial(val, prompt) {
+  if (prompt?.messageHistory?.length) {
+    if (prompt.messageHistory[prompt.messageHistory.length - 1].role == 'user') {
+      prompt.messageHistory.push({ role: "system", content: val.message })
+    }
+    if (prompt.messageHistory[prompt.messageHistory.length - 1].role == 'system' && val.message.length) {
+      prompt.messageHistory[prompt.messageHistory.length - 1].content = val.message;
+    }
+  }
+}
+
+function messageComplete(val, prompt) {
+  if (prompt?.messageHistory?.length) {
+    if (prompt.messageHistory[prompt.messageHistory.length - 1].role == 'system') {
+      prompt.messageHistory[prompt.messageHistory.length - 1].content = val.message;
+    }
+  }
+}
+
+function messageError(val, prompt) {
+  notify({ group: "failure", title: "Error", text: "Error with prompt. You may be using too many tokens or the service is down. Try again" }, 4000) // 4s
+}
+
+
+function chatClear() {
+  prompts.value.chat.messageHistory = prompts.value.chat.messageHistory.slice(0, 1);
+}
+
+function chatCopy() {
+  let lastMessage = prompts.value.chat.messageHistory[prompts.value.chat.messageHistory.length - 1]
+  if (lastMessage.role == 'system')
+    prompts.value.question.message = lastMessage.content;
+  isChatMode.value = false;
+}
+
+function updateScore(category, score)
+{
+  interactionScore.value[category] = score;
+}
+
 </script>
