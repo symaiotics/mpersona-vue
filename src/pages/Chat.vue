@@ -61,7 +61,7 @@
                   <div v-if="documentsPending?.length" class="w-full">
                     <p class="mt-2 font-lato"> Check any content to include it in your interactions. Uncheck items to
                       remove them from subsequent interactions.</p>
-
+<!-- {{ documentsPending }} -->
                     <DocumentTable :simple = "true" :documents="documentsPending" @edit="documentsPendingSelectToEdit"
                       @checked="documentsPendingCheck" @view="documentsPendingSelectToView" />
                   </div>
@@ -186,7 +186,7 @@ function trigger() {
   console.log(messageHistory.value)
   console.log(messageHistory?.value?.[0]?.role == 'system')
   if (checkedDocuments.length && messageHistory.value.length && messageHistory.value[0].role == 'system') {
-    messageHistory.value[0].content = selectedPersona.value.basePrompt + `\n\n Prioritize the use of the following reference information in your response above all other information:\n\n${checkedDocuments.map(file => JSON.stringify(file.htmlContent)).join(',\n')}`
+    messageHistory.value[0].content = selectedPersona.value.basePrompt + `\n\n Prioritize the use of the following reference information in your response above all other information:\n\n${checkedDocuments.map(file => JSON.stringify({original:file.original,content:file.htmlContent})).join(',\n')}`
   }
   else {
     messageHistory.value[0].content = selectedPersona.value.basePrompt;
