@@ -4,9 +4,10 @@
             @drop.prevent="dropHandler"
             :class="isDraggingOver ? 'bg-gray-300 dark:bg-gray-700' : 'bg-gray-100 dark:bg-gray-800'"
             class="border p-6 rounded-md transition-colors duration-300 cursor-pointer dark:hover:bg-slate-700 hover:bg-gray-200">
-            <input type="file" ref="fileInput" @change="handleFilesChange" multiple hidden accept=".docx,.json,.txt,.yaml">
+            <input type="file" ref="fileInput" @change="handleFilesChange" multiple hidden
+                accept=".docx,.xlsx,.json,.txt,.yaml">
             <p class="text-center text-gray-500 dark:text-gray-200">
-                {{ L_("Drag and drop or click to select your .docx, .json, or .txt files here.") }}
+                {{ L_("Drag and drop or click to select your .docx, .xlsx, .json, .yaml, or .txt files here.") }}
             </p>
         </div>
     </div>
@@ -14,8 +15,11 @@
   
 <script setup>
 import { ref, defineEmits } from 'vue';
-import mammoth from 'mammoth';
-import html2canvas from 'html2canvas';
+
+import * as ExcelJS from 'exceljs'; //Process Excel
+import mammoth from 'mammoth'; // Process Word
+import html2canvas from 'html2canvas'; //Convert HTML to Canvas
+
 import { useLexicon } from '@/composables/useLexicon.js';
 const { L_ } = useLexicon();
 
@@ -50,13 +54,39 @@ const handleFilesChange = async (event) => {
     for (const file of documentFiles) {
         let html = null;
         let text = null;
+        const arrayBuffer = await file.arrayBuffer();
 
+        //Word
         if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            const arrayBuffer = await file.arrayBuffer();
             const result = await mammoth.convertToHtml({ arrayBuffer });
             html = result.value;
             text = stripHtml(html);
-        } else {
+        }
+
+        //Excel
+        else if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+            const workbookData = {};
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            workbook.eachSheet((worksheet) => {
+                const sheetData = [];
+                worksheet.eachRow({ includeEmpty: false }, (row) => {
+                    const rowData = {};
+                    row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+                        rowData[worksheet.getRow(1).getCell(colNumber).value] = cell.value;
+                    });
+                    sheetData.push(rowData);
+                });
+                workbookData[worksheet.name] = sheetData;
+            });
+
+            html = JSON.stringify(workbookData);
+            text = JSON.stringify(workbookData);
+        }
+
+        //Text
+        else {
             text = await file.text();
         }
 

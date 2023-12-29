@@ -4,10 +4,10 @@
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
           <th scope="col" class="py-3 px-6">{{ L_("Select") }}</th>
-          <th scope="col" class="py-3 px-6">{{ L_("Status") }}</th>
+          <th v-if="!simple" scope="col" class="py-3 px-6">{{ L_("Status") }}</th>
           <th scope="col" class="py-3 px-6">{{ L_("File Name") }}</th>
-          <th scope="col" class="py-3 px-6">{{ L_("Name (EN)") }}</th>
-          <th scope="col" class="py-3 px-6">{{ L_("Name (FR)") }}</th>
+          <th v-if="!simple" scope="col" class="py-3 px-6">{{ L_("Name (EN)") }}</th>
+          <th v-if="!simple" scope="col" class="py-3 px-6">{{ L_("Name (FR)") }}</th>
           <!-- <th scope="col" class="py-3 px-6">{{ L_("Description") }}</th> -->
           <th scope="col" class="py-3 px-6">{{ L_("Size") }}</th>
           <th scope="col" class="py-3 px-6">{{ L_("Edit") }}</th>
@@ -23,7 +23,7 @@
                 :aria-label="`Select document ${doc?.original?.name}`"
                 @change="emitChecked(index, $event.target.checked)">
             </td>
-            <td class="min-w-48">
+            <td v-if="!simple" class="min-w-48">
               {{ doc._processingStatus }}&nbsp;<span v-if="doc._processingStatusNumber">({{ doc._processingStatusNumber
               }})</span>
             </td>
@@ -31,25 +31,25 @@
             <img v-if="doc.imgSrc" :src="doc.imgSrc" alt="Document Thumbnail" class="w-24 h-24 object-cover">
           </td> -->
             <td class="py-1 px-6">{{ doc?.original?.name }}</td>
-            <td class="py-1 px-6">{{ doc?.name?.en }} </td>
-            <td class="py-1 px-6"> {{ doc?.name?.fr }}</td>
+            <td v-if="!simple" class="py-1 px-6">{{ doc?.name?.en }} </td>
+            <td v-if="!simple" class="py-1 px-6"> {{ doc?.name?.fr }}</td>
             <!-- <td class="py-1 px-6">{{ doc.description.en  }} / {{  doc.description.fr }}</td> -->
             <td class="py-1 px-6">{{ lenInKb(doc) }}</td>
 
             <td class="py-1 px-6">
-              <div class = "flex space-x-1">
+              <div class="flex space-x-1">
 
-              <button
-                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
-                @click="emitEditEvent(index)">
-                {{ L_("Edit") }}
-              </button>
-              <button
-                class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
-                @click="emitViewEvent(index)">
-                {{ L_("View") }}
-              </button>
-            </div>
+                <button
+                  class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+                  @click="emitEditEvent(index)">
+                  {{ L_("Edit") }}
+                </button>
+                <button
+                  class="text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800"
+                  @click="emitViewEvent(index)">
+                  {{ L_("View") }}
+                </button>
+              </div>
 
             </td>
           </tr>
@@ -81,7 +81,8 @@ const { tagLookup } = useTags();
 
 const props = defineProps({
   documents: Array,
-  showTags: { type: Boolean, default: false }
+  showTags: { type: Boolean, default: false },
+  simple: { type: Boolean, default: false }
 });
 
 const selectedIndex = ref(null);

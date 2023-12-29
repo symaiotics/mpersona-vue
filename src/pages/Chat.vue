@@ -62,7 +62,7 @@
                     <p class="mt-2 font-lato"> Check any content to include it in your interactions. Uncheck items to
                       remove them from subsequent interactions.</p>
 
-                    <DocumentTable :documents="documentsPending" @edit="documentsPendingSelectToEdit"
+                    <DocumentTable :simple = "true" :documents="documentsPending" @edit="documentsPendingSelectToEdit"
                       @checked="documentsPendingCheck" @view="documentsPendingSelectToView" />
                   </div>
 
