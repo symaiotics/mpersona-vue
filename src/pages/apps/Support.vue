@@ -548,42 +548,45 @@
                       </h3>
                       <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="false" />
 
-<!-- 
+                      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden p-4">
 
-                      <button @click="saveArtifacts"
-                        class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
-                        :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
-                        :disabled="questionInProgress || auditInProgress">
-                        {{ L_('Save as Artifact') }}
-                      </button>
 
-                      <div class="w-96 whitespace-nowrap self-start ">
-                        <label>Completeness</label>
-                        <VueSlider :modelValue="interactionScore.completeness" @update:modelValue="value => updateScore('completeness', value)" :min="1"
-                          :max="10" />
+                        <div class="w-96 whitespace-nowrap self-start ">
+                          <label>Completeness</label>
+                          <VueSlider :modelValue="interactionScore.completeness"
+                            @update:modelValue="value => updateScore('completeness', value)" :min="0" :max="10" />
+                        </div>
+
+                        <div class="w-96 whitespace-nowrap self-start ">
+                          <label>Accuracy</label>
+                          <VueSlider :modelValue="interactionScore.accuracy"
+                            @update:modelValue="value => updateScore('accuracy', value)" :min="0" :max="10" />
+                        </div>
+
+
+                        <div class="w-96 whitespace-nowrap self-start ">
+                          <label>Tone</label>
+                          <VueSlider :modelValue="interactionScore.tone"
+                            @update:modelValue="value => updateScore('tone', value)" :min="0" :max="10" />
+                        </div>
+
+                        <div class="w-96 whitespace-nowrap self-start ">
+                          <label>Overall</label>
+                          <VueSlider :modelValue="interactionScore.overall"
+                            @update:modelValue="value => updateScore('overall', value)" :min="0" :max="10" />
+                        </div>
+
+                        <DivInput placeholder="Comments" v-model="interactionScore.comments" :asPlainText="true" />
+
+
+                        <button @click="saveArtifacts"
+                          class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                          :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                          :disabled="questionInProgress || auditInProgress">
+                          {{ L_('Save as Artifact') }}
+                        </button>
+
                       </div>
-
-                      <div class="w-96 whitespace-nowrap self-start ">
-                        <label>Accuracy</label>
-                        <VueSlider :modelValue="interactionScore.accuracy" @update:modelValue="value => updateScore('accuracy', value)" :min="1"
-                          :max="10" />
-                      </div>
-
-                      
-                      <div class="w-96 whitespace-nowrap self-start ">
-                        <label>Tone</label>
-                        <VueSlider :modelValue="interactionScore.tone" @update:modelValue="value => updateScore('tone', value)" :min="1"
-                          :max="10" />
-                      </div>
-
-                      <div class="w-96 whitespace-nowrap self-start ">
-                        <label>Overall</label>
-                        <VueSlider :modelValue="interactionScore.overall" @update:modelValue="value => updateScore('overall', value)" :min="1"
-                          :max="10" />
-                      </div>
-
-                      <DivInput placeholder="Comments" v-model="interactionScore.comments" :asPlainText="true" />
- -->
 
                     </div>
 
@@ -661,9 +664,13 @@
               </template>
               <template v-slot:tab-7>
                 <h2 class="font-lato font-bold text-2xl mt-1 mb-1 pb-1 border-b border-red-600 leading-tight">
-                  Analytics
+                  Artifacts
                 </h2>
-                <p>Analyze the trends in your Artifacts, find common patterns and insights in your data.</p>
+                <p>View the previously saved artifacts</p>
+                <div v-for = "artifact in artifacts">
+                  <!-- {{ artifact }} -->
+                  <ArtifactCard :data = "artifact"/>
+                </div>
               </template>
 
             </Tabs>
@@ -727,6 +734,7 @@ import SegmentCreateEdit from '@/components/knowledgeMapping/SegmentCreateEdit.v
 import AuditTable from '@/components/knowledgeMapping/AuditTable.vue';
 import ToggleSwitch from '@/components/ToggleSwitch.vue';
 import ChatWindow from '@/components/ChatWindow.vue';
+import ArtifactCard from '@/components/knowledgeMapping/ArtifactCard.vue';
 
 // SegmentCreateEdit
 //Composables
@@ -869,6 +877,7 @@ const tabs = computed(() => {
   let checkMarkCategories = categories?.value?.length ? ' ✓' : '';
   let checkMarkDocuments = documents?.value?.length ? ' ✓' : '';
   let checkMarkSegments = segments?.value?.length ? ' ✓' : '';
+  let checkMarkArtifacts = artifacts?.value?.length ? ' ✓' : '';
   if (selectedKnowledgeSet?.value?._id) {
     return [
       { label: L_('Assignments') + checkmarkWrappAssignments },
@@ -878,7 +887,7 @@ const tabs = computed(() => {
       { label: L_('Segments') + checkMarkSegments },
       { label: L_('Mappings') },
       { label: L_('Interact') },
-      { label: L_('Analytics') }
+      { label: L_('Analytics') + checkMarkArtifacts}
     ]
   }
   else {
@@ -927,11 +936,11 @@ const isChatMode = ref(false);
 const chatPrompt = ref(null)
 
 const interactionScore = ref({
-  completeness:null,
-  accuracy:null,
-  tone:null,
-  overall:null,
-  comments:null
+  completeness: 5,
+  accuracy: 5,
+  tone: 5,
+  overall: 5,
+  comments: null
 })
 onMounted(async () => {
 
@@ -983,6 +992,7 @@ async function refreshKnowledgeSets() {
     getTags(selectedKnowledgeSet.value.uuid);
     getDocuments(selectedKnowledgeSet.value.uuid);
     getSegments(selectedKnowledgeSet.value.uuid);
+    getArtifacts(selectedKnowledgeSet.value.uuid);
   }
 }
 
@@ -993,6 +1003,7 @@ function knowledgeSetSelected(item) {
   getTags(item.uuid);
   getDocuments(selectedKnowledgeSet.value.uuid);
   getSegments(selectedKnowledgeSet.value.uuid);
+  getArtifacts(selectedKnowledgeSet.value.uuid);
   // getSegments(item.uuid);
   // getMappings(item.uuid);
   // getArtifacts(item.uuid);
@@ -1576,9 +1587,45 @@ function chatCopy() {
   isChatMode.value = false;
 }
 
-function updateScore(category, score)
-{
+function updateScore(category, score) {
   interactionScore.value[category] = score;
 }
+
+function saveArtifacts() {
+  let draftArtifact = JSON.parse(JSON.stringify(newArtifact.value));
+
+  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
+  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
+
+  draftArtifact.uuid = uuidv4();
+  draftArtifact.name.en = "New Artifact: " + new Date();
+  draftArtifact.name.fr = "New Artifact: " + new Date();
+  draftArtifact.description.fr = "New Description: " + new Date();
+  draftArtifact.description.fr = "New Description: " + new Date();
+
+  draftArtifact.prompt = prompts.value.question.prompt;
+  draftArtifact.message = prompts.value.question.message;
+  draftArtifact.auditText = prompts.value.audit.message;
+  draftArtifact.auditJson = prompts.value.audit.json;
+  draftArtifact.messageHistory = prompts.value.chat.messageHistory;
+
+  draftArtifact.completeness = interactionScore.value.completeness;
+  draftArtifact.accuracy = interactionScore.value.accuracy;
+  draftArtifact.tone = interactionScore.value.tone;
+  draftArtifact.overall = interactionScore.value.overall;
+  draftArtifact.comments = interactionScore.value.comments;
+
+  draftArtifact.finalText.en = prompts.value.question.message;
+  draftArtifact.comments = interactionScore.value.comments;
+
+  draftArtifact.personaUuids = wrappAssignments.value.map((wA) => { return wA.persona.uuid })
+  draftArtifact.documentUuids = checkedDocuments.map((doc) => { return doc.uuid })
+  draftArtifact.segmentUuids = checkedSegments.map((segment) => { return segment.uuid })
+
+  createArtifacts(selectedKnowledgeSet.value.uuid, [draftArtifact]);
+}
+
+
+
 
 </script>
