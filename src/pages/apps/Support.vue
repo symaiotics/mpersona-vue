@@ -667,9 +667,9 @@
                   Artifacts
                 </h2>
                 <p>View the previously saved artifacts</p>
-                <div v-for = "artifact in artifacts">
+                <div v-for="(artifact, index) in artifacts">
                   <!-- {{ artifact }} -->
-                  <ArtifactCard :data = "artifact"/>
+                  <ArtifactCard :data="artifact" @select="selectSavedArtifact(index)" />
                 </div>
               </template>
 
@@ -887,7 +887,7 @@ const tabs = computed(() => {
       { label: L_('Segments') + checkMarkSegments },
       { label: L_('Mappings') },
       { label: L_('Interact') },
-      { label: L_('Analytics') + checkMarkArtifacts}
+      { label: L_('Analytics') + checkMarkArtifacts }
     ]
   }
   else {
@@ -1625,7 +1625,28 @@ function saveArtifacts() {
   createArtifacts(selectedKnowledgeSet.value.uuid, [draftArtifact]);
 }
 
+function selectSavedArtifact(index) {
+  let draftArtifact = artifacts.value[index];
+  // console.log(index)
+  if (draftArtifact) {
+    console.log("prompts.value", prompts.value)
+    prompts.value.question.prompt = draftArtifact.prompt;
+    prompts.value.question.message = draftArtifact.message;
+    prompts.value.audit.message = draftArtifact.auditText;
+    prompts.value.audit.json = draftArtifact.auditJson;
+    prompts.value.chat.messageHistory = draftArtifact.messageHistory;
 
+    interactionScore.value.completeness = draftArtifact.completeness;
+    interactionScore.value.accuracy = draftArtifact.accuracy;
+    interactionScore.value.tone = draftArtifact.tone;
+    interactionScore.value.overall = draftArtifact.overall;
+    interactionScore.value.comments = draftArtifact.comments;
+
+    interactionScore.value.comments = draftArtifact.comments;
+    activeTab.value = 6;
+  }
+
+}
 
 
 </script>
