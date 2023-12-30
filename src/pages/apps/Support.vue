@@ -395,7 +395,8 @@
 
                   <div v-if="segments?.length && selectedSegment && !segmentViewContent"
                     :class="selectedSegment ? 'w-1/3' : 'w-full'" class="  ">
-                    <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null" @update = "eventUpdateSegment" />
+                    <SegmentCreateEdit v-model="selectedSegment" @close="selectedSegment = null"
+                      @update="eventUpdateSegment" />
                   </div>
 
                   <div v-if="segments?.length && selectedSegment && segmentViewContent"
@@ -1643,13 +1644,22 @@ function selectSavedArtifact(index) {
     interactionScore.value.comments = draftArtifact.comments;
 
     interactionScore.value.comments = draftArtifact.comments;
+
+    //Recheck the artifacts
+    documents.value.forEach((doc) => {
+      doc._checked = draftArtifact.documentUuids.includes(doc.uuid);
+    });
+
+    segments.value.forEach((segment) => {
+      segment._checked = draftArtifact.segmentUuids.includes(segment.uuid);
+    });
+
     activeTab.value = 6;
   }
 
 }
 
-function eventUpdateSegment(segment)
-{
+function eventUpdateSegment(segment) {
   updateSegments(selectedKnowledgeSet.value.uuid, [segment])
 }
 
