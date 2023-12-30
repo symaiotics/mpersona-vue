@@ -437,7 +437,8 @@
 
 
                 <Socket v-show="false" :sessionId="prompts.question.sessionId" :persona="prompts.question.persona"
-                  :userPrompt="prompts.question.adaptedPrompt" :model="selectedModel" :trigger="prompts.question.trigger"
+                  :userPrompt="prompts.question.adaptedPrompt" :messageHistory="prompts.question.messageHistory"
+                  :model="selectedModel" :trigger="prompts.question.trigger"
                   @messageComplete="payload => messagePromptComplete(payload, prompts.question)"
                   @messagePartial="payload => messagePromptPartial(payload, prompts.question)"
                   @messageError="payload => messagePromptError(payload, prompts.question)">
@@ -446,7 +447,8 @@
 
 
                 <Socket v-show="false" :sessionId="prompts.audit.sessionId" :persona="prompts.audit.persona"
-                  :userPrompt="prompts.audit.adaptedPrompt" :model="selectedModel" :trigger="prompts.audit.trigger"
+                  :userPrompt="prompts.audit.adaptedPrompt" :messageHistory="prompts.audit.messageHistory"
+                  :model="selectedModel" :trigger="prompts.audit.trigger"
                   @messageComplete="payload => messagePromptComplete(payload, prompts.audit)"
                   @messagePartial="payload => messagePromptPartial(payload, prompts.audit)"
                   @messageError="payload => messagePromptError(payload, prompts.audit)">
@@ -1466,56 +1468,73 @@ function segmentsPendingSaveChecked(doc) {
 }
 
 //Interact
-
-
-
 function questionWithDocuments() {
   questionInProgress.value = true;
   prompts.value.question.promptType = 'question';
   prompts.value.question.persona = checkAssignment('writer').persona;
 
-  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
-  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
-  let contentDocumentsPrompt = "";
-  let contentSegmentsPrompt = "";
-  if (checkedDocuments?.length) {
-    contentDocumentsPrompt += `Use the following information for your analysis:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
-  if (checkedSegments?.length) {
-    contentSegmentsPrompt += `Use the following information for your analysis:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
+  //Build a short message history to contain the information
+  //The system/user prompt likely out performs attaching the docs to the user prompt alone
+  prompts.value.question.messageHistory = [{ role: "system", content: prompts.value.question.persona.basePrompt }];
+  let docsPrompt = "Prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
+  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, true);
+  if (referencePrompt.count) prompts.value.question.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+  prompts.value.question.messageHistory.push({ role: "user", content: `Prepare a response for the following question: \n\n ${prompts.value.question.prompt}` })
 
-  prompts.value.question.adaptedPrompt = `Prepare a response for the following question: \n\n ${prompts.value.question.prompt} \n\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
+  //Trigger the questio after the persona has been set using nextTick
   nextTick(() => {
     prompts.value.question.trigger = !prompts.value.question.trigger;
   });
-  console.log("Attempting to trigger question", prompts.value.question)
 }
 
 
 function auditWithDocuments() {
   auditInProgress.value = true;
-  prompts.value.audit.json = null;
   prompts.value.audit.promptType = 'audit';
   prompts.value.audit.persona = checkAssignment('auditor').persona;
-  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
-  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
-  let contentDocumentsPrompt = "";
-  let contentSegmentsPrompt = "";
-  if (checkedDocuments?.length) {
-    contentDocumentsPrompt += `Source documents:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
-  if (checkedSegments?.length) {
-    contentSegmentsPrompt += `Source textual segments:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
+  // prompts.value.audit.message = null;
+  prompts.value.audit.json = null;
 
-  prompts.value.audit.adaptedPrompt = `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis: ${prompts.value.question.message} \n\n Here are the source materials that were used in the analysis:\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
+  //Build a short message history to contain the information
+  //The system/user prompt likely out performs attaching the docs to the user prompt alone
+  prompts.value.audit.messageHistory = [{ role: "system", content: prompts.value.audit.persona.basePrompt }];
+
+  let docsPrompt = "Here are the source materials that were used in the audit analysis:\n ";
+  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, true);
+  if (referencePrompt.count) prompts.value.audit.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+
+  prompts.value.audit.messageHistory.push({ role: "user", content: `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis that you are to audit against the source materials: \n\n ${prompts.value.question.message}` })
+
+  //Trigger the questio after the persona has been set using nextTick
   nextTick(() => {
     prompts.value.audit.trigger = !prompts.value.audit.trigger;
-  })
-
-  console.log("Attempting to trigger audit", prompts.value.audit)
+  });
 }
+
+
+// function auditWithDocuments() {
+//   auditInProgress.value = true;
+//   prompts.value.audit.json = null;
+//   prompts.value.audit.promptType = 'audit';
+//   prompts.value.audit.persona = checkAssignment('auditor').persona;
+//   let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
+//   let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
+//   let contentDocumentsPrompt = "";
+//   let contentSegmentsPrompt = "";
+//   if (checkedDocuments?.length) {
+//     contentDocumentsPrompt += `Source documents:\n  ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+//   }
+//   if (checkedSegments?.length) {
+//     contentSegmentsPrompt += `Source textual segments:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+//   }
+
+//   prompts.value.audit.adaptedPrompt = `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis: ${prompts.value.question.message} \n\n Here are the source materials that were used in the analysis:\n ${contentDocumentsPrompt}  \n\n ${contentSegmentsPrompt}`
+//   nextTick(() => {
+//     prompts.value.audit.trigger = !prompts.value.audit.trigger;
+//   })
+
+//   console.log("Attempting to trigger audit", prompts.value.audit)
+// }
 
 
 function chatModeToggle() {
@@ -1523,40 +1542,90 @@ function chatModeToggle() {
     //Set the Persona, if not set
     if (!prompts?.value?.chat?.persona) prompts.value.chat.persona = checkAssignment('writer').persona;
 
-    //Reset the prompt
-    if (prompts?.value?.chat?.messageHistory?.length == 0) prompts.value.chat.messageHistory = [{ role: "system", content: prompts.value.chat.persona.basePrompt }];
+    //Reset / setup the chat messageHistory
+    if (prompts?.value?.chat?.messageHistory?.length == 0) {
+      prompts.value.chat.messageHistory = [{ role: "system", content: prompts.value.chat.persona.basePrompt }];
+    }
+
   }
 
 }
-
 
 function chatModeTrigger() {
-  //Save the history
+  // Generate the reference prompt
+  let referencePrompt = generateDocumentsAndSegmentsPrompt(true);
+  let messageHistory = prompts?.value?.chat?.messageHistory;
 
-  let checkedDocuments = documentsFiltered.value ? documentsFiltered.value.filter((doc) => { return doc._checked }) : [];
-  let checkedSegments = segmentsFiltered.value ? segmentsFiltered.value.filter((segment) => { return segment._checked }) : [];
-  let contentDocumentsPrompt = "";
-  let contentSegmentsPrompt = "";
-  let docsPrompt = "Prioritize these textual segments in any answer you provide over general knowledge or other reference data:";
-  if (checkedDocuments?.length) {
-    contentDocumentsPrompt += `${docsPrompt}:\n ${checkedDocuments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
+  // Update the message history based on the reference prompt count
+  if (referencePrompt.count) {
+    if (messageHistory && messageHistory.length > 0) {
+      // Insert or update at position 1
+      if (messageHistory.length === 1 || messageHistory[1]?.role !== 'system') {
+        // If there's only one message or the second is not a system message, insert the system message at position 1
+        messageHistory.splice(1, 0, { role: "system", content: referencePrompt.prompt });
+      } else {
+        // Update the second message if it's already a system message
+        messageHistory[1].content = referencePrompt.prompt;
+      }
+    }
+  } else {
+    // If referencePrompt.count is zero and the second message is a system message, remove it
+    if (messageHistory?.length > 1 && messageHistory[1]?.role === 'system') {
+      messageHistory.splice(1, 1);
+    }
   }
-  if (checkedSegments?.length) {
-    contentSegmentsPrompt += `${docsPrompt}:\n  ${checkedSegments.map(file => JSON.stringify(file.textContent)).join(',\n')}`
-  }
 
-  prompts.value.chat.messageHistory[0] = { role: "system", content: prompts.value.chat.persona.basePrompt + contentDocumentsPrompt + contentSegmentsPrompt };
-  prompts.value.chat.messageHistory.push({ role: "user", content: JSON.parse(JSON.stringify(chatPrompt.value)) })
-  console.log("messageHistory", prompts.value.chat.messageHistory)
+  // Update the message history with base prompt and user input
+  prompts.value.chat.messageHistory.push({
+    role: "user",
+    content: chatPrompt.value
+  });
 
+  // Trigger a chat update and clear the chat prompt
   prompts.value.chat.trigger = !prompts.value.chat.trigger;
-  console.log("So triggered!")
   nextTick(() => {
     chatPrompt.value = "";
-  })
-
-
+  });
 }
+
+function generateDocumentsAndSegmentsPrompt(docsPrompt, useHtml = false) {
+  const checkedDocuments = documentsFiltered.value
+    ? documentsFiltered.value
+      .filter(doc => doc._checked)
+      .map(doc => ({
+        name: doc.name,
+        description: doc.description,
+        citationFileInformation: doc.original,
+        contents: useHtml ? doc.htmlContent : doc.textContent
+      }))
+    : [];
+
+  const checkedSegments = segmentsFiltered.value
+    ? segmentsFiltered.value
+      .filter(seg => seg._checked)
+      .map(seg => ({
+        name: seg.name,
+        description: seg.description,
+        contents: useHtml ? seg.htmlContent : seg.textContent
+      }))
+    : [];
+
+  let contentDocumentsPrompt = "";
+  let contentSegmentsPrompt = "";
+
+  // Attach the docs prompts
+  if (checkedDocuments.length) {
+    contentDocumentsPrompt += `${docsPrompt}:\n${checkedDocuments.map(doc => JSON.stringify(doc)).join(',\n')}`;
+  }
+  if (checkedSegments.length) {
+    contentSegmentsPrompt += `${docsPrompt}:\n${checkedSegments.map(seg => JSON.stringify(seg)).join(',\n')}`;
+  }
+
+  return {
+    count: checkedDocuments.length + checkedSegments.length, prompt: contentDocumentsPrompt + "\n\n" + contentSegmentsPrompt
+  };
+}
+
 
 
 
@@ -1599,9 +1668,8 @@ function updateScore(category, score) {
   interactionScore.value[category] = score;
 }
 
-function triageWithDocuments()
-{
-  
+function triageWithDocuments() {
+
 }
 
 function saveArtifacts() {
