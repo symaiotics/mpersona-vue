@@ -459,6 +459,13 @@
                     {{ L_('Prompt') }}
                   </button> -->
 
+                  <button @click="triageWithDocuments" v-if="!isChatMode"
+                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': triageInProgress }"
+                    :disabled="triageInProgress">
+                    {{ L_('Triage') }}
+                  </button>
+
 
                   <button @click="questionWithDocuments" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
@@ -929,7 +936,7 @@ let documentsPendingCheckAll = ref(false)
 let documentsCheckAll = ref(false)
 let documentsForSegments = ref(false)
 
-
+let triageInProgress = ref(false);
 let questionInProgress = ref(false);
 let auditInProgress = ref(false);
 
@@ -1590,6 +1597,11 @@ function chatCopy() {
 
 function updateScore(category, score) {
   interactionScore.value[category] = score;
+}
+
+function triageWithDocuments()
+{
+  
 }
 
 function saveArtifacts() {

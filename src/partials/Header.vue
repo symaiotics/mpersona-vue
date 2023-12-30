@@ -27,21 +27,21 @@
               <router-link to="/create"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Create</router-link>
             </li> -->
-            <li>
-              <router-link to="/interact"
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Interact</router-link>
-            </li>
-
             <li v-if="token">
               <router-link to="/personas"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Personas</router-link>
             </li>
+            <li  v-if="token">
+              <router-link to="/interact"
+                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Work Streams</router-link>
+            </li>
 
+            <!-- 
             <li v-if="token">
               <router-link to="/knowledgeProfiles"
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Knowledge
                 Profiles</router-link>
-            </li>
+            </li> -->
 
             <!-- <li>
               <router-link to="/testimonials" class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 px-5 py-2 flex items-center transition duration-150 ease-in-out">Testimonials</router-link>
@@ -166,19 +166,20 @@
                     <router-link to="/create"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Create</router-link>
                   </li> -->
-                  <li>
-                    <router-link to="/interact"
-                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Interact</router-link>
-                  </li>
                   <li v-if="token">
                     <router-link to="/personas"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Personas</router-link>
                   </li>
-                  <li v-if="token">
+                  <li>
+                    <router-link to="/interact"
+                      class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Work
+                      Streams</router-link>
+                  </li>
+                  <!-- <li v-if="token">
                     <router-link to="/knowledgeProfiles"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Knowledge
                       Profiles</router-link>
-                  </li>
+                  </li> -->
                   <li v-if="!token">
                     <router-link to="/login"
                       class="flex text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 py-2">Login</router-link>
