@@ -616,6 +616,11 @@
                       <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
                         Generated Answer (Human editable)
                       </h3>
+
+                      <Spinner v-if="questionInProgress" :inProgress="questionInProgress"
+                      :message="'Generating answer'" :subtext="`Content loading ${prompts.question.message.length}`" />
+
+
                       <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="true" />
 
                       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden p-4">
@@ -665,6 +670,10 @@
                       <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
                         Audit Analysis
                       </h3>
+
+                      <Spinner v-if="auditInProgress" :inProgress="auditInProgress"
+                      :message="'Generating audit'" :subtext="`Content loading ${prompts.audit.message.length}`" />
+
 
                       <DivInput v-if="!prompts.audit.json" placeholder="View the audit" v-model="prompts.audit.message"
                         :asPlainText="false" />
