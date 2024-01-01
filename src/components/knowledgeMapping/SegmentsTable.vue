@@ -8,23 +8,25 @@
           <th scope="col" class="py-3 px-6">{{ L_("Source Name") }}(FR)</th>
           <th scope="col" class="py-3 px-6">{{ L_("Name") }}(EN)</th>
           <th scope="col" class="py-3 px-6">{{ L_("Name") }}(FR)</th>
+          <th scope="col" class="py-3 px-6">{{ L_("Size") }}</th>
           <th scope="col" class="py-3 px-6">{{ L_("Edit") }}</th>
         </tr>
       </thead>
       <tbody>
-        <template v-for="(item, index) in props.data" :key="'segment' + index">
+        <template v-for="(item, index) in props.data" :key="'segment' + item.uuid">
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
             <td class="py-1 px-6">
-              <input type="checkbox" v-model="item._checked"
+              <input type="checkbox" :checked="item._checked"
                 class="w-6 h-6 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                 :aria-label="`Select segment ${item?.original?.name}`"
-                @change="emitChecked(index, $event.target.checked)">
+                @change="emitChecked(item.uuid, $event.target.checked)">
             </td>
 
             <td class="py-1 px-6">{{ item?.documentName?.en }}</td>
             <td class="py-1 px-6">{{ item?.documentName?.fr }}</td>
             <td class="py-1 px-6">{{ item?.name?.en }}</td>
             <td class="py-1 px-6">{{ item?.name?.fr }}</td>
+            <td class="py-1 px-6">{{ lenInKb(item) }}</td>
             <td class="py-1 px-6">
               <div class="flex space-x-1">
 
@@ -80,8 +82,8 @@ const props = defineProps({
 const selectedIndex = ref(null);
 const emit = defineEmits(['checked', 'edit', 'remove', 'view']);
 
-const emitChecked = (index, isChecked) => {
-  emit('checked', { index, isChecked });
+const emitChecked = (uuid, isChecked) => {
+  emit('checked', { uuid, isChecked });
 };
 
 const emitEditEvent = (index) => {
@@ -95,5 +97,12 @@ const emitViewEvent = (index) => {
 const emitRemoveEvent = (index) => {
   emit('remove', index);
 }
+
+
+function lenInKb(doc) {
+  let length = doc.htmlContent?.length || doc.textContent?.length;
+  if (length) return (length / 1000).toFixed(1) + "KB"
+}
+
 
 </script>

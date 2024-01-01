@@ -21,11 +21,30 @@ const documentsFiltered = computed(() => {
 
         // Filtering documents that have at least one tag UUID from filterTags
         return documents.value.filter(doc =>
-            doc.tagUuids.some(tagUuid => filterTagUuids.includes(tagUuid))
-        );
+            doc.tagUuids.some(tagUuid => filterTagUuids.includes(tagUuid)));
     }
     // If no filterTags, return all documents
+
+
     return documents.value;
+});
+
+
+
+// Computed property to filter segments based on filterTags
+const documentsChecked = computed(() => {
+
+    // const sortWithChecked = (a, b) => {
+    //     // Convert undefined to false and ensure a boolean value
+    //     const aChecked = !!a._checked;
+    //     const bChecked = !!b._checked;
+    //     // Sort by _checked status, true values first
+    //     return bChecked - aChecked;
+    // };
+
+    // If no filterTags, return all segments
+    if(documents.value) return documents.value.filter(document => document._checked)
+    return [];
 });
 
 
@@ -145,15 +164,16 @@ export function useDocuments() {
         newDocument,
         documents,
         documentsFiltered,
+        documentsChecked,
         applyFilter,
-        
+
         documentsPending,
         selectedDocument,
         selectedDocumentPending,
         addNewDocument,
         resetDocument,
 
-        
+
         getDocuments,
         createDocuments,
         updateDocuments,

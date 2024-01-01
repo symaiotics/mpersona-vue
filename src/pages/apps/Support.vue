@@ -180,7 +180,7 @@
                 <div class="flex flex-wrap">
                   <div v-if="documentsPending?.length" :class="selectedDocumentPending ? 'w-2/3' : 'w-full'" class="  ">
                     <DocumentTable :documents="documentsPending" @edit="documentsPendingSelectToEdit"
-                      @checked="documentsPendingCheck" />
+                      @checked="payload => documentsCheck(documentsPending, payload)" />
                   </div>
 
                   <div v-if="selectedDocumentPending" class="w-full md:w-1/3 ">
@@ -238,7 +238,7 @@
                   <div v-if="documents?.length && !documentsForSegments?.length"
                     :class="selectedDocument ? 'w-2/3' : 'w-full'" class="  ">
                     <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
-                      @checked="documentsCheck" @view="documentsSelectToView" />
+                      @checked="payload => documentsCheck(documentsFiltered, payload)" @view="documentsSelectToView" />
                   </div>
 
                   <div v-if="selectedDocument && !documentsForSegments?.length && !documentViewContent"
@@ -390,7 +390,7 @@
                 <div class="flex flex-wrap">
                   <div v-if="segments?.length" :class="selectedSegment ? 'w-2/3' : 'w-full'" class="  ">
                     <SegmentsTable :data="segmentsFiltered" :showTags="true" @edit="segmentsSelectToEdit"
-                      @view="segmentsSelectToView" @checked="segmentsCheck" />
+                      @view="segmentsSelectToView" @checked="payload => segmentsCheck(segmentsFiltered, payload)" />
                   </div>
 
                   <div v-if="segments?.length && selectedSegment && !segmentViewContent"
@@ -434,7 +434,27 @@
 
                 <!-- <ToggleSwitch v-model = "isChatMode"/> -->
 
+                <div v-show="false">
+                  <Socket :sessionId="prompts.triage.sessionId" :persona="prompts.triage.persona"
+                    :userPrompt="prompts.triage.adaptedPrompt" :messageHistory="prompts.triage.messageHistory"
+                    :model="selectedModel" :trigger="prompts.triage.trigger"
+                    @messageComplete="payload => messagePromptComplete(payload, prompts.triage)"
+                    @messagePartial="payload => messagePromptPartial(payload, prompts.triage)"
+                    @messageError="payload => messagePromptError(payload, prompts.triage)" />
 
+
+                  <DivInput placeholder="Triage results" v-model="prompts.triage.message" :asPlainText="true" />
+
+                  <Socket :sessionId="prompts.reference.sessionId" :persona="prompts.reference.persona"
+                    :userPrompt="prompts.reference.adaptedPrompt" :messageHistory="prompts.reference.messageHistory"
+                    :model="selectedModel" :trigger="prompts.reference.trigger"
+                    @messageComplete="payload => messagePromptComplete(payload, prompts.reference)"
+                    @messagePartial="payload => messagePromptPartial(payload, prompts.reference)"
+                    @messageError="payload => messagePromptError(payload, prompts.reference)" />
+
+                  <DivInput placeholder="Reference results" v-model="prompts.reference.message" :asPlainText="true" />
+
+                </div>
 
                 <Socket v-show="false" :sessionId="prompts.question.sessionId" :persona="prompts.question.persona"
                   :userPrompt="prompts.question.adaptedPrompt" :messageHistory="prompts.question.messageHistory"
@@ -443,8 +463,6 @@
                   @messagePartial="payload => messagePromptPartial(payload, prompts.question)"
                   @messageError="payload => messagePromptError(payload, prompts.question)">
                 </Socket>
-
-
 
                 <Socket v-show="false" :sessionId="prompts.audit.sessionId" :persona="prompts.audit.persona"
                   :userPrompt="prompts.audit.adaptedPrompt" :messageHistory="prompts.audit.messageHistory"
@@ -456,12 +474,12 @@
 
                 <div class="flex space-x-2">
 
-                  <!-- <button @click="questionWithDocuments"
+                  <!-- <button @click="questionWithReferences"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
                     {{ L_('Prompt') }}
                   </button> -->
 
-                  <button @click="triageWithDocuments" v-if="!isChatMode"
+                  <button @click="triageWithReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
                     :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': triageInProgress }"
                     :disabled="triageInProgress">
@@ -469,7 +487,7 @@
                   </button>
 
 
-                  <button @click="questionWithDocuments" v-if="!isChatMode"
+                  <button @click="questionWithReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
                     :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
                     :disabled="questionInProgress">
@@ -477,7 +495,7 @@
                   </button>
 
 
-                  <button @click="auditWithDocuments" v-if="!isChatMode"
+                  <button @click="auditWithReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
                     :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
                     :disabled="auditInProgress">
@@ -547,8 +565,50 @@
                     Your Input
                   </h3>
 
+
                   <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
-                    :asPlainText="false" />
+                    :asPlainText="true" />
+
+                  <h3 v-if="prompts.triage.json || prompts.reference.json"
+                    class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight"> Triage
+                    Results </h3>
+                  <div class="flex space-x-2">
+
+
+                    <Spinner v-if="triageInProgress && prompts?.triage?.message?.length" :inProgress="triageInProgress"
+                      :message="'Triaging question'" :subtext="`Content loading ${prompts.triage.message.length}`" />
+                    <Spinner v-if="referenceInProgress && prompts?.reference?.message?.length"
+                      :inProgress="referenceInProgress" :message="'Loading References'"
+                      :subtext="`Content loading ${prompts.reference.message.length}`" />
+
+                    <!-- Show triage complete-->
+                    <div v-if="!triageInProgress && prompts.triage.json" class="w-full">
+                      <p>Triage determines how your prompt aligns to your Categories. This assists in matching the right
+                        reference materials.</p>
+                      <EssentialInformation v-model="prompts.triage.json" />
+                    </div>
+
+                    <!-- Show recommended references-->
+                    <div v-if="!referenceInProgress && prompts.reference.json" class="w-full">
+                      <p>References are recommended by AI from your Documents and Segments.</p>
+                      <p>Uncheck items to remove them, or check items from the full list below to add.</p>
+                      <div v-if="documentsChecked.length">
+                        <span class="font-bold">Documents</span>
+                        <DocumentTable :documents="documentsChecked"
+                          @checked="payload => documentsCheck(documentsChecked, payload)" />
+                      </div>
+
+                      <div v-if="segmentsChecked.length">
+
+                        <span class="font-bold">Segments</span>
+                        <SegmentsTable :data="segmentsChecked"
+                          @checked="payload => segmentsCheck(segmentsChecked, payload)" />
+                        
+                      </div>
+
+                    </div>
+
+                  </div>
 
                   <div class="flex">
 
@@ -556,7 +616,7 @@
                       <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
                         Generated Answer (Human editable)
                       </h3>
-                      <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="false" />
+                      <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="true" />
 
                       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden p-4">
 
@@ -659,7 +719,7 @@
 
                 <div v-if="documents?.length" class="w-full">
                   <DocumentTable :documents="documentsFiltered" :showTags="true" @edit="documentsSelectToEdit"
-                    @checked="documentsCheck" />
+                    @checked="payload => documentsCheck(documentsFiltered, payload)" />
                 </div>
 
                 <h3 v-if="segments?.length"
@@ -668,8 +728,8 @@
                 </h3>
 
                 <div v-if="segments?.length" class="w-full">
-                  <SegmentsTable :data="segments" :showTags="true" @edit="segmentsSelectToEdit"
-                    @checked="segmentsCheck" />
+                  <SegmentsTable :data="segmentsFiltered" :showTags="true" @edit="segmentsSelectToEdit"
+                    @checked="payload => segmentsCheck(segmentsFiltered, payload)" />
                 </div>
               </template>
               <template v-slot:tab-7>
@@ -702,10 +762,11 @@ import { v4 as uuidv4 } from 'uuid';
 const wrappUuid = "ft-support-with-knowledge-mapping-v1";
 const wrappAssignments = ref([
   { code: 'triage', personaUuid: null, persona: null, name: { en: "Triage", fr: "Triageur/Triageuse" } },
+  { code: 'reference', personaUuid: null, persona: null, name: { en: "Reference Analyst", fr: "Analyste de référence" } },
   { code: 'writer', personaUuid: null, persona: null, name: { en: "Writer", fr: "Auteur(e)" } },
   { code: 'auditor', personaUuid: null, persona: null, name: { en: "Auditor", fr: "Auditeur/Auditrice" } },
   { code: 'translator', personaUuid: null, persona: null, name: { en: "Translator", fr: "Traducteur/Traductrice" } },
-  { code: 'dataAnalyst', personaUuid: null, persona: null, name: { en: "Data Analyst", fr: "Analyste de données" } },
+  { code: 'artifactAnalyst', personaUuid: null, persona: null, name: { en: "Artifact Analyst", fr: "Analyste d'artefacts" } },
 ])
 
 // Misc 
@@ -745,6 +806,8 @@ import AuditTable from '@/components/knowledgeMapping/AuditTable.vue';
 import ToggleSwitch from '@/components/ToggleSwitch.vue';
 import ChatWindow from '@/components/ChatWindow.vue';
 import ArtifactCard from '@/components/knowledgeMapping/ArtifactCard.vue';
+import Spinner from '@/components/knowledgeMapping/Spinner.vue';
+import EssentialInformation from '@/components/knowledgeMapping/EssentialInformation.vue';
 
 // SegmentCreateEdit
 //Composables
@@ -819,6 +882,7 @@ const { defaultDocument,
   newDocument,
   documents,
   documentsFiltered,
+  documentsChecked,
   applyFilter,
 
   documentsPending,
@@ -838,6 +902,7 @@ const {
   newSegment,
   segments,
   segmentsFiltered,
+  segmentsChecked,
   applyFilter: applySegmentFilter,
 
   segmentsPending,
@@ -915,6 +980,8 @@ const createPrompt = (overrides = {}) => ({ ...defaultPrompt, ...overrides, sess
 const prompts = ref({
   documents: { set: [] },
   segments: { set: [] },
+  triage: createPrompt(),
+  reference: createPrompt(),
   question: createPrompt(),
   answer: createPrompt(),
   audit: createPrompt(),
@@ -939,8 +1006,10 @@ let documentsCheckAll = ref(false)
 let documentsForSegments = ref(false)
 
 let triageInProgress = ref(false);
+let referenceInProgress = ref(false);
 let questionInProgress = ref(false);
 let auditInProgress = ref(false);
+
 
 const isChatMode = ref(false);
 const chatPrompt = ref(null)
@@ -973,7 +1042,7 @@ onMounted(async () => {
 
     //Step 3 get the Knowledge Sets
     await getKnowledgeSets(props.rosterUuid);
-
+    refreshKnowledgeSets();
     //Step 4, load the other information once Knowledge Sets selected
   }
   else
@@ -996,8 +1065,7 @@ function updatePromptMax(val) {
 }
 
 async function refreshKnowledgeSets() {
-  await getKnowledgeSets(props.rosterUuid);
-  if (selectedKnowledgeSet.value.uuid) {
+  if (selectedKnowledgeSet?.value?.uuid) {
     getCategories(selectedKnowledgeSet.value.uuid);
     getTags(selectedKnowledgeSet.value.uuid);
     getDocuments(selectedKnowledgeSet.value.uuid);
@@ -1055,6 +1123,7 @@ function documentsPendingCheck(val) {
 }
 
 function documentsPendingToggleCheckAll() {
+
   documentsPendingCheckAll.value = !documentsPendingCheckAll.value;
   for (const doc of documentsPending.value) {
     doc._checked = documentsPendingCheckAll.value;
@@ -1141,7 +1210,7 @@ function messagePromptComplete(payload, thisPrompt) {
     //Extract the JSON
     let thisSessionContent = sessionsContent.value.filter((session) => { return session.sessionId == thisPrompt.sessionId })
     if (thisSessionContent?.[0]?.extracts?.json?.length) {
-      thisPrompt.json = thisSessionContent[0].extracts.json[0];
+      thisPrompt.json = JSON.parse(JSON.stringify(thisSessionContent[0].extracts.json[0]));
     };
 
     //Do Cleanup by removing sockets
@@ -1186,16 +1255,52 @@ function messagePromptComplete(payload, thisPrompt) {
       }
     }
 
+    if (thisPrompt.promptType == 'triage') {
+      triageInProgress.value = false;
+
+    }
+
+    if (thisPrompt.promptType === 'reference') {
+      referenceInProgress.value = false;
+      documents.value.forEach(doc => doc._checked = false);
+      segments.value.forEach(doc => doc._checked = false);
+
+      if (thisPrompt?.json?.length) {
+        documents.value.forEach(doc => {
+          const found = thisPrompt.json.some(promptItem => promptItem.uuid === doc.uuid.slice(0, 8));
+          if (found) {
+            doc._checked = true;
+          }
+        });
+        segments.value.forEach(doc => {
+          const found = thisPrompt.json.some(promptItem => promptItem.uuid === doc.uuid.slice(0, 8));
+          if (found) {
+            doc._checked = true;
+          }
+        });
+
+        //Let checked segments override their source documents, making these the preferred sources
+        segments.value.forEach(segment => {
+          let parentDoc = documents.value.find(doc => { return doc.uuid == segment.documentUuid })
+          if (parentDoc) parentDoc._checked = false;
+        })
+
+      }
+    }
+
     //Trigger the audit to happen automatically
     if (thisPrompt.promptType == 'question') {
       questionInProgress.value = false;
-      auditWithDocuments();
+      auditWithReferences();
     }
 
     //Flag it is in progress
     if (thisPrompt.promptType == 'audit') {
       auditInProgress.value = false;
     }
+
+
+
 
 
     //And so forth... Add more promptTypes as I go
@@ -1270,12 +1375,24 @@ function messagePromptError(payload, thisPrompt) {
     auditInProgress.value = false;
   }
 
+  if (thisPrompt.promptType == 'reference') {
+    referenceInProgress.value = false;
+  }
+
+  if (thisPrompt.promptType == 'triage') {
+    triageInProgress.value = false;
+  }
+
+
 }
 
 
 //Full documents
-function documentsCheck(val) {
-  documents.value[val.index]._checked = val.isChecked;
+function documentsCheck(documentArray, payload) {
+  const document = documentArray.find(s => s.uuid === payload.uuid);
+  if (document) {
+    document._checked = payload.isChecked;
+  }
 }
 
 function documentsToggleCheckAll() {
@@ -1293,8 +1410,13 @@ function documentsSelectToEdit(index) {
 }
 
 //Full segments
-function segmentsCheck(val) {
-  segments.value[val.index]._checked = val.isChecked;
+function segmentsCheck(segmentArray, payload) {
+  // Assuming payload contains a unique identifier, such as `uuid`
+  const segment = segments.value.find(s => s.uuid === payload.uuid);
+  if (segment) {
+    segment._checked = payload.isChecked;
+  }
+
 }
 
 function segmentsSelectToEdit(index) {
@@ -1467,8 +1589,77 @@ function segmentsPendingSaveChecked(doc) {
   createSegments(selectedKnowledgeSet.value.uuid, checkedSegments);
 }
 
+
+
 //Interact
-function questionWithDocuments() {
+
+
+function triageWithReferences() {
+  //Perform both evaluations simultaneously
+  //Step 1 Triage
+  triageInProgress.value = true;
+  prompts.value.triage.promptType = 'triage';
+  prompts.value.triage.persona = checkAssignment('triage').persona;
+  prompts.value.triage.messageHistory = [{ role: "system", content: prompts.value.triage.persona.basePrompt }];
+
+  //Triage requires categories to perform is work
+  categories.value.forEach((category, index) => {
+    prompts.value.triage.messageHistory.push({
+      role: "system", content: `Here is Category ${index + 1} which you will use in your analysis:\n\n${JSON.stringify(category)}`
+    })
+  })
+
+  prompts.value.triage.messageHistory.push({ role: "user", content: `Evaluate the following content to generate name, description, keywords, and categories in the prescribed format:\n${prompts.value.question.prompt}` })
+
+  //Step 2 References
+  referenceInProgress.value = true;
+  prompts.value.reference.promptType = 'reference';
+  prompts.value.reference.persona = checkAssignment('reference').persona;
+  prompts.value.reference.messageHistory = [{ role: "system", content: prompts.value.reference.persona.basePrompt }];
+
+  //Reference attaches just the names, descriptions, keywords, categories of all documents, segments, and mappings as references to evaluate against
+  //There also needs to be a cutoff here, if someone has a significant number of files. If its TMI, then perhaps drop descriptions?
+  const getNestedValue = (obj, path) => {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  };
+
+  const createMapper = (props) => (item) => props.reduce((acc, prop) => {
+    let value = prop.includes('.') ? getNestedValue(item, prop) : item[prop];
+    if (prop === 'uuid' && typeof value === 'string') {
+      value = value.slice(0, 8);
+    }
+    return { ...acc, [prop]: value };
+  }, {});
+
+  let documentMapper = createMapper(['uuid', 'name.en', 'description.en', 'original', 'keywords']);
+  let triageMapper = createMapper(['uuid', 'name.en', 'description.en', 'keywords']);
+
+  let documentReferences = documents.value.map(documentMapper);
+  let segmentReferences = segments.value.map(triageMapper);
+  // let mappingReferences = mappings.value.map(triageMapper);
+
+  // documentReferences.forEach(doc => {
+  //   prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a document you will consider in your analysis:\n\n${JSON.stringify(doc)}` });
+  // });
+
+  // segmentReferences.forEach(segment => {
+  //   prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a segment of a document you will consider in your analysis:\n\n${JSON.stringify(segment)}` });
+  // });
+
+  prompts.value.reference.messageHistory.push({ role: "user", content: `Evaluate the following prompt against this reference material and provide an ordered list of scores and uuids :\n\n${prompts.value.question.prompt}\n\n Here is the reference documents ${JSON.stringify(documentReferences)}\n\nAnd here are reference segments:\n\n${JSON.stringify(segmentReferences)}` });
+
+  nextTick(() => {
+    prompts.value.triage.trigger = !prompts.value.triage.trigger;
+    prompts.value.reference.trigger = !prompts.value.reference.trigger;
+  });
+
+
+  //triage
+  //reference  
+}
+
+
+function questionWithReferences() {
   questionInProgress.value = true;
   prompts.value.question.promptType = 'question';
   prompts.value.question.persona = checkAssignment('writer').persona;
@@ -1476,9 +1667,15 @@ function questionWithDocuments() {
   //Build a short message history to contain the information
   //The system/user prompt likely out performs attaching the docs to the user prompt alone
   prompts.value.question.messageHistory = [{ role: "system", content: prompts.value.question.persona.basePrompt }];
-  let docsPrompt = "Prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
+  let docsPrompt = "In your analysis, utilize and prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
   let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, true);
-  if (referencePrompt.count) prompts.value.question.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+  if (referencePrompt.count) {
+    //Single system prompt with all files included    
+    // prompts.value.question.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+
+    //Separate system prompts with each file a separate system prompt
+    for (const prompt of referencePrompt.prompts) { prompts.value.question.messageHistory.push({ role: "system", content: JSON.stringify(prompt) }); }
+  }
   prompts.value.question.messageHistory.push({ role: "user", content: `Prepare a response for the following question: \n\n ${prompts.value.question.prompt}` })
 
   //Trigger the questio after the persona has been set using nextTick
@@ -1488,7 +1685,7 @@ function questionWithDocuments() {
 }
 
 
-function auditWithDocuments() {
+function auditWithReferences() {
   auditInProgress.value = true;
   prompts.value.audit.promptType = 'audit';
   prompts.value.audit.persona = checkAssignment('auditor').persona;
@@ -1501,7 +1698,15 @@ function auditWithDocuments() {
 
   let docsPrompt = "Here are the source materials that were used in the audit analysis:\n ";
   let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, true);
-  if (referencePrompt.count) prompts.value.audit.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+
+  if (referencePrompt.count) {
+    //Single system prompt with all files included    
+    // prompts.value.audit.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+
+    //Separate system prompts with each file a separate system prompt
+    for (const prompt of referencePrompt.prompts) { prompts.value.audit.messageHistory.push({ role: "system", content: JSON.stringify(prompt) }); }
+  }
+
 
   prompts.value.audit.messageHistory.push({ role: "user", content: `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis that you are to audit against the source materials: \n\n ${prompts.value.question.message}` })
 
@@ -1512,7 +1717,7 @@ function auditWithDocuments() {
 }
 
 
-// function auditWithDocuments() {
+// function auditWithReferences() {
 //   auditInProgress.value = true;
 //   prompts.value.audit.json = null;
 //   prompts.value.audit.promptType = 'audit';
@@ -1622,7 +1827,8 @@ function generateDocumentsAndSegmentsPrompt(docsPrompt, useHtml = false) {
   }
 
   return {
-    count: checkedDocuments.length + checkedSegments.length, prompt: contentDocumentsPrompt + "\n\n" + contentSegmentsPrompt
+    count: checkedDocuments.length + checkedSegments.length, prompt: contentDocumentsPrompt + "\n\n" + contentSegmentsPrompt,
+    prompts: checkedDocuments.concat(checkedSegments)
   };
 }
 
@@ -1646,6 +1852,7 @@ function messageComplete(val, prompt) {
       prompt.messageHistory[prompt.messageHistory.length - 1].content = val.message;
     }
   }
+
 }
 
 function messageError(val, prompt) {
@@ -1666,10 +1873,6 @@ function chatCopy() {
 
 function updateScore(category, score) {
   interactionScore.value[category] = score;
-}
-
-function triageWithDocuments() {
-
 }
 
 function saveArtifacts() {
@@ -1742,5 +1945,8 @@ function selectSavedArtifact(index) {
 function eventUpdateSegment(segment) {
   updateSegments(selectedKnowledgeSet.value.uuid, [segment])
 }
+
+
+
 
 </script>

@@ -15,19 +15,46 @@ let applyFilter = ref(false);
 
 // Computed property to filter segments based on filterTags
 const segmentsFiltered = computed(() => {
+
+    const sortWithChecked = (a, b) => {
+        // Convert undefined to false and ensure a boolean value
+        const aChecked = !!a._checked;
+        const bChecked = !!b._checked;
+        // Sort by _checked status, true values first
+        return bChecked - aChecked;
+    };
+
     if (filterTags.value.length > 0 && applyFilter.value) {
         // Extracting the UUIDs from filterTags
         const filterTagUuids = filterTags.value.map(tag => tag.uuid);
 
         // Filtering segments that have at least one tag UUID from filterTags
-        return segments.value.filter(doc =>
-            doc.tagUuids.some(tagUuid => filterTagUuids.includes(tagUuid))
-        );
+        return segments.value.filter(segment =>
+            segment.tagUuids.some(tagUuid => filterTagUuids.includes(tagUuid)));
     }
     // If no filterTags, return all segments
     return segments.value;
 });
 
+
+
+// Computed property to filter segments based on filterTags
+const segmentsChecked = computed(() => {
+
+    // const sortWithChecked = (a, b) => {
+    //     // Convert undefined to false and ensure a boolean value
+    //     const aChecked = !!a._checked;
+    //     const bChecked = !!b._checked;
+    //     // Sort by _checked status, true values first
+    //     return bChecked - aChecked;
+    // };
+
+    // If no filterTags, return all segments
+    // return segments.value.sort(sortWithChecked);
+    if(segments.value) return segments.value.filter(segment => segment._checked)
+    return [];
+
+});
 
 //This is a single segment
 //We save an array of these
@@ -148,6 +175,7 @@ export function useSegments() {
         newSegment,
         segments,
         segmentsFiltered,
+        segmentsChecked,
         applyFilter,
 
         segmentsPending,

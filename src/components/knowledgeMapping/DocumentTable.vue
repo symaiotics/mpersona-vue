@@ -14,14 +14,14 @@
         </tr>
       </thead>
       <tbody>
-        <template v-for="(doc, index) in props.documents" :key="'doc' + index">
+        <template v-for="(doc, index) in props.documents" :key="'doc' + doc.uuid">
 
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
             <td class="py-1 px-6">
-              <input type="checkbox" v-model="doc._checked"
+              <input type="checkbox" :checked="doc._checked"
                 class="w-6 h-6 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                 :aria-label="`Select document ${doc?.original?.name}`"
-                @change="emitChecked(index, $event.target.checked)">
+                @change="emitChecked(doc.uuid, $event.target.checked)">
             </td>
             <td v-if="!simple" class="min-w-48">
               {{ doc._processingStatus }}&nbsp;<span v-if="doc._processingStatusNumber">({{ doc._processingStatusNumber
@@ -88,8 +88,8 @@ const props = defineProps({
 const selectedIndex = ref(null);
 const emit = defineEmits(['checked', 'edit', 'view']);
 
-const emitChecked = (index, isChecked) => {
-  emit('checked', { index, isChecked });
+const emitChecked = (uuid, isChecked) => {
+  emit('checked', { uuid, isChecked });
 };
 
 const emitEditEvent = (index) => {
