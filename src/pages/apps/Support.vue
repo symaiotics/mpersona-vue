@@ -589,7 +589,7 @@
                     </div>
 
                     <!-- Show recommended references-->
-                    <div v-if="!referenceInProgress && prompts.reference.json" class="w-full">
+                    <div v-if="!referenceInProgress && prompts.reference.json && (documentsChecked.length || segmentsChecked.length )" class="w-full">
                       <p>References are recommended by AI from your Documents and Segments.</p>
                       <p>Uncheck items to remove them, or check items from the full list below to add.</p>
                       <div v-if="documentsChecked.length">
@@ -618,7 +618,7 @@
                       </h3>
 
                       <Spinner v-if="questionInProgress" :inProgress="questionInProgress"
-                      :message="'Generating answer'" :subtext="`Content loading ${prompts.question.message.length}`" />
+                      :message="'Generating answer'" :subtext="`Content loading ${prompts?.question?.message?.length}`" />
 
 
                       <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="true" />
@@ -672,7 +672,7 @@
                       </h3>
 
                       <Spinner v-if="auditInProgress" :inProgress="auditInProgress"
-                      :message="'Generating audit'" :subtext="`Content loading ${prompts.audit.message.length}`" />
+                      :message="'Generating audit'" :subtext="`Content loading ${prompts?.audit?.message?.length}`" />
 
 
                       <DivInput v-if="!prompts.audit.json" placeholder="View the audit" v-model="prompts.audit.message"
@@ -1677,7 +1677,7 @@ function questionWithReferences() {
   //The system/user prompt likely out performs attaching the docs to the user prompt alone
   prompts.value.question.messageHistory = [{ role: "system", content: prompts.value.question.persona.basePrompt }];
   let docsPrompt = "In your analysis, utilize and prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
-  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, true);
+  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, false);
   if (referencePrompt.count) {
     //Single system prompt with all files included    
     // prompts.value.question.messageHistory.push({ role: "system", content: referencePrompt.prompt });
@@ -1706,7 +1706,7 @@ function auditWithReferences() {
   prompts.value.audit.messageHistory = [{ role: "system", content: prompts.value.audit.persona.basePrompt }];
 
   let docsPrompt = "Here are the source materials that were used in the audit analysis:\n ";
-  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, true);
+  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, false);
 
   if (referencePrompt.count) {
     //Single system prompt with all files included    
@@ -1767,7 +1767,7 @@ function chatModeToggle() {
 
 function chatModeTrigger() {
   // Generate the reference prompt
-  let referencePrompt = generateDocumentsAndSegmentsPrompt(true);
+  let referencePrompt = generateDocumentsAndSegmentsPrompt('Here are references to consider in your answers', false);
   let messageHistory = prompts?.value?.chat?.messageHistory;
 
   // Update the message history based on the reference prompt count
