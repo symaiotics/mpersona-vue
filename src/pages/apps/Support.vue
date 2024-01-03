@@ -66,6 +66,14 @@
                     placeholder="Pick a model" />
 
 
+                  <div class="w-96 whitespace-nowrap self-start ">
+                    <label>Temperature</label>
+                    <VueSlider :modelValue="settings.temperature"
+                      @update:modelValue="value => updateSettings('temperature', value)" :min="0" :max="2"
+                      :interval="0.1" />
+                  </div>
+
+
                 </div>
               </template>
 
@@ -141,8 +149,8 @@
                 <div v-for="(prompt, index) in prompts.documents.set" :key="'documentPrompt' + prompt.sessionId">
                   <!-- {{ prompt }} -->
                   <Socket v-show="false" :sessionId="prompt.sessionId" :persona="prompt.persona"
-                    :userPrompt="prompt.adaptedPrompt" :model="selectedModel" :trigger="prompt.trigger"
-                    @messageComplete="payload => messagePromptComplete(payload, prompt)"
+                    :temperature="settings.temperature" :userPrompt="prompt.adaptedPrompt" :model="selectedModel"
+                    :trigger="prompt.trigger" @messageComplete="payload => messagePromptComplete(payload, prompt)"
                     @messagePartial="payload => messagePromptPartial(payload, prompt)"
                     @messageError="payload => messagePromptError(payload, prompt)">
                   </Socket>
@@ -270,8 +278,8 @@
                 <div v-for="(prompt, index) in prompts.segments.set" :key="'segmentPrompt' + prompt.sessionId">
                   <!-- {{ prompt }} -->
                   <Socket v-show="false" :sessionId="prompt.sessionId" :persona="prompt.persona"
-                    :userPrompt="prompt.adaptedPrompt" :model="selectedModel" :trigger="prompt.trigger"
-                    @messageComplete="payload => messagePromptComplete(payload, prompt)"
+                    :temperature="settings.temperature" :userPrompt="prompt.adaptedPrompt" :model="selectedModel"
+                    :trigger="prompt.trigger" @messageComplete="payload => messagePromptComplete(payload, prompt)"
                     @messagePartial="payload => messagePromptPartial(payload, prompt)"
                     @messageError="payload => messagePromptError(payload, prompt)">
                   </Socket>
@@ -436,8 +444,9 @@
 
                 <div v-show="false">
                   <Socket :sessionId="prompts.triage.sessionId" :persona="prompts.triage.persona"
-                    :userPrompt="prompts.triage.adaptedPrompt" :messageHistory="prompts.triage.messageHistory"
-                    :model="selectedModel" :trigger="prompts.triage.trigger"
+                    :temperature="settings.temperature" :userPrompt="prompts.triage.adaptedPrompt"
+                    :messageHistory="prompts.triage.messageHistory" :model="selectedModel"
+                    :trigger="prompts.triage.trigger"
                     @messageComplete="payload => messagePromptComplete(payload, prompts.triage)"
                     @messagePartial="payload => messagePromptPartial(payload, prompts.triage)"
                     @messageError="payload => messagePromptError(payload, prompts.triage)" />
@@ -446,8 +455,9 @@
                   <DivInput placeholder="Triage results" v-model="prompts.triage.message" :asPlainText="true" />
 
                   <Socket :sessionId="prompts.reference.sessionId" :persona="prompts.reference.persona"
-                    :userPrompt="prompts.reference.adaptedPrompt" :messageHistory="prompts.reference.messageHistory"
-                    :model="selectedModel" :trigger="prompts.reference.trigger"
+                    :temperature="settings.temperature" :userPrompt="prompts.reference.adaptedPrompt"
+                    :messageHistory="prompts.reference.messageHistory" :model="selectedModel"
+                    :trigger="prompts.reference.trigger"
                     @messageComplete="payload => messagePromptComplete(payload, prompts.reference)"
                     @messagePartial="payload => messagePromptPartial(payload, prompts.reference)"
                     @messageError="payload => messagePromptError(payload, prompts.reference)" />
@@ -457,16 +467,17 @@
                 </div>
 
                 <Socket v-show="false" :sessionId="prompts.question.sessionId" :persona="prompts.question.persona"
-                  :userPrompt="prompts.question.adaptedPrompt" :messageHistory="prompts.question.messageHistory"
-                  :model="selectedModel" :trigger="prompts.question.trigger"
+                  :temperature="settings.temperature" :userPrompt="prompts.question.adaptedPrompt"
+                  :messageHistory="prompts.question.messageHistory" :model="selectedModel"
+                  :trigger="prompts.question.trigger"
                   @messageComplete="payload => messagePromptComplete(payload, prompts.question)"
                   @messagePartial="payload => messagePromptPartial(payload, prompts.question)"
                   @messageError="payload => messagePromptError(payload, prompts.question)">
                 </Socket>
 
                 <Socket v-show="false" :sessionId="prompts.audit.sessionId" :persona="prompts.audit.persona"
-                  :userPrompt="prompts.audit.adaptedPrompt" :messageHistory="prompts.audit.messageHistory"
-                  :model="selectedModel" :trigger="prompts.audit.trigger"
+                  :temperature="settings.temperature" :userPrompt="prompts.audit.adaptedPrompt"
+                  :messageHistory="prompts.audit.messageHistory" :model="selectedModel" :trigger="prompts.audit.trigger"
                   @messageComplete="payload => messagePromptComplete(payload, prompts.audit)"
                   @messagePartial="payload => messagePromptPartial(payload, prompts.audit)"
                   @messageError="payload => messagePromptError(payload, prompts.audit)">
@@ -489,7 +500,7 @@
 
                   <button @click="questionWithReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
-                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress }"
                     :disabled="questionInProgress">
                     {{ L_('Prompt') }}
                   </button>
@@ -497,7 +508,7 @@
 
                   <button @click="auditWithReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
-                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': auditInProgress }"
                     :disabled="auditInProgress">
                     {{ L_('Audit') }}
                   </button>
@@ -515,8 +526,8 @@
                 <div v-show="isChatMode">
 
                   <Socket :sessionId="prompts.chat.sessionId" :persona="prompts.chat.persona"
-                    :messageHistory="prompts.chat.messageHistory" :userPrompt="prompts.chat.adaptedPrompt"
-                    :model="selectedModel" :trigger="prompts.chat.trigger"
+                    :temperature="settings.temperature" :messageHistory="prompts.chat.messageHistory"
+                    :userPrompt="prompts.chat.adaptedPrompt" :model="selectedModel" :trigger="prompts.chat.trigger"
                     @messageComplete="payload => messageComplete(payload, prompts.chat)"
                     @messagePartial="payload => messagePartial(payload, prompts.chat)"
                     @messageError="payload => messageError(payload, prompts.chat)">
@@ -568,6 +579,17 @@
 
                   <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
                     :asPlainText="true" />
+                  Size of checked Documents and Segments: {{ calculateSizeOfChecked.formattedLength }} ({{
+                    calculateSizeOfChecked.formattedPercentage }})<br />
+                  <span class="font-bold" v-if="calculateSizeOfChecked.totalLength > 400000">This will likely cause an
+                    error. Too much context.</span>
+<!-- 
+                    <div class="w-96 whitespace-nowrap self-start ">
+                    <label>Answers to Generate</label>
+                    <VueSlider :modelValue="settings.questions"
+                      @update:modelValue="value => updateSettings('questions', value)" :min="1" :max="10" />
+                  </div> -->
+
 
                   <h3 v-if="prompts.triage.json || prompts.reference.json"
                     class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight"> Triage
@@ -589,7 +611,9 @@
                     </div>
 
                     <!-- Show recommended references-->
-                    <div v-if="!referenceInProgress && prompts.reference.json && (documentsChecked.length || segmentsChecked.length )" class="w-full">
+                    <div
+                      v-if="!referenceInProgress && prompts.reference.json && (documentsChecked.length || segmentsChecked.length)"
+                      class="w-full">
                       <p>References are recommended by AI from your Documents and Segments.</p>
                       <p>Uncheck items to remove them, or check items from the full list below to add.</p>
                       <div v-if="documentsChecked.length">
@@ -603,7 +627,7 @@
                         <span class="font-bold">Segments</span>
                         <SegmentsTable :data="segmentsChecked"
                           @checked="payload => segmentsCheck(segmentsChecked, payload)" />
-                        
+
                       </div>
 
                     </div>
@@ -617,8 +641,8 @@
                         Generated Answer (Human editable)
                       </h3>
 
-                      <Spinner v-if="questionInProgress" :inProgress="questionInProgress"
-                      :message="'Generating answer'" :subtext="`Content loading ${prompts?.question?.message?.length}`" />
+                      <Spinner v-if="questionInProgress" :inProgress="questionInProgress" :message="'Generating answer'"
+                        :subtext="`Content loading ${prompts?.question?.message?.length}`" />
 
 
                       <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="true" />
@@ -671,8 +695,8 @@
                         Audit Analysis
                       </h3>
 
-                      <Spinner v-if="auditInProgress" :inProgress="auditInProgress"
-                      :message="'Generating audit'" :subtext="`Content loading ${prompts?.audit?.message?.length}`" />
+                      <Spinner v-if="auditInProgress" :inProgress="auditInProgress" :message="'Generating audit'"
+                        :subtext="`Content loading ${prompts?.audit?.message?.length}`" />
 
 
                       <DivInput v-if="!prompts.audit.json" placeholder="View the audit" v-model="prompts.audit.message"
@@ -992,6 +1016,7 @@ const prompts = ref({
   triage: createPrompt(),
   reference: createPrompt(),
   question: createPrompt(),
+  questions: { set: [] }, //Generates many instances 
   answer: createPrompt(),
   audit: createPrompt(),
   translation: createPrompt(),
@@ -1030,6 +1055,16 @@ const interactionScore = ref({
   overall: 5,
   comments: null
 })
+
+const settings = ref({
+  temperature: 0.2,
+  questions:2,
+  useHtml: false,
+})
+
+
+
+
 onMounted(async () => {
 
   if (props?.rosterUuid) {
@@ -1066,6 +1101,10 @@ const customLabelTag = (option) => option ? option.name.en + " | " + option.name
 function checkAssignment(code) {
   let thisAssignment = wrappAssignments.value.find((wA) => { return wA.code == code })
   return thisAssignment;
+}
+
+function updateSettings(category, newSetting) {
+  settings.value[category] = newSetting;
 }
 
 
@@ -1300,7 +1339,7 @@ function messagePromptComplete(payload, thisPrompt) {
     //Trigger the audit to happen automatically
     if (thisPrompt.promptType == 'question') {
       questionInProgress.value = false;
-      auditWithReferences();
+      // auditWithReferences();
     }
 
     //Flag it is in progress
@@ -1884,6 +1923,7 @@ function updateScore(category, score) {
   interactionScore.value[category] = score;
 }
 
+
 function saveArtifacts() {
   let draftArtifact = JSON.parse(JSON.stringify(newArtifact.value));
 
@@ -1954,8 +1994,18 @@ function selectSavedArtifact(index) {
 function eventUpdateSegment(segment) {
   updateSegments(selectedKnowledgeSet.value.uuid, [segment])
 }
+const calculateSizeOfChecked = computed(() => {
+  let docsContentLength = documentsChecked.value.reduce((acc, item) => acc + item.textContent.length, 0);
+  let segsCheckedLength = segmentsChecked.value.reduce((acc, item) => acc + item.textContent.length, 0);
 
+  let totalLength = docsContentLength + segsCheckedLength;
+  let formattedLength = totalLength.toLocaleString();
 
+  let percentage = (totalLength / 400000) * 100;
+  let formattedPercentage = percentage.toFixed(2) + '%';
+
+  return { totalLength, formattedLength, formattedPercentage };
+});
 
 
 </script>
