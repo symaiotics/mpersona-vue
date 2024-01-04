@@ -466,6 +466,17 @@
 
                 </div>
 
+                <!-- if Multiple questions -->
+                <div v-for="(prompt, index) in prompts.questions.set" :key="'questions' + prompt.sessionId">
+                  <Socket v-show="false" :sessionId="prompt.sessionId" :persona="prompt.persona"
+                    :temperature="settings.temperature" :messageHistory="prompt.messageHistory" :model="selectedModel"
+                    :trigger="prompt.trigger" @messageComplete="payload => messagePromptComplete(payload, prompt)"
+                    @messagePartial="payload => messagePromptPartial(payload, prompt)"
+                    @messageError="payload => messagePromptError(payload, prompt)">
+                  </Socket>
+                </div>
+
+                <!-- Previous, if single questions -->
                 <Socket v-show="false" :sessionId="prompts.question.sessionId" :persona="prompts.question.persona"
                   :temperature="settings.temperature" :userPrompt="prompts.question.adaptedPrompt"
                   :messageHistory="prompts.question.messageHistory" :model="selectedModel"
@@ -475,6 +486,15 @@
                   @messageError="payload => messagePromptError(payload, prompts.question)">
                 </Socket>
 
+                <Socket v-show="false" :sessionId="prompts.answer.sessionId" :persona="prompts.answer.persona"
+                  :temperature="settings.temperature" :messageHistory="prompts.answer.messageHistory"
+                  :model="selectedModel" :trigger="prompts.answer.trigger"
+                  @messageComplete="payload => messagePromptComplete(payload, prompts.answer)"
+                  @messagePartial="payload => messagePromptPartial(payload, prompts.answer)"
+                  @messageError="payload => messagePromptError(payload, prompts.answer)">
+                </Socket>
+
+
                 <Socket v-show="false" :sessionId="prompts.audit.sessionId" :persona="prompts.audit.persona"
                   :temperature="settings.temperature" :userPrompt="prompts.audit.adaptedPrompt"
                   :messageHistory="prompts.audit.messageHistory" :model="selectedModel" :trigger="prompts.audit.trigger"
@@ -482,6 +502,23 @@
                   @messagePartial="payload => messagePromptPartial(payload, prompts.audit)"
                   @messageError="payload => messagePromptError(payload, prompts.audit)">
                 </Socket>
+
+
+                <div v-if="!isChatMode">
+                  <h3 class="font-lato font-bold text-2xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                    Step 1: Define Your Input
+                  </h3>
+
+
+
+                  <DivInput placeholder="Enter your complex question" v-model="prompts.questions.prompt"
+                    :asPlainText="true" />
+                  Size of checked Documents and Segments: {{ calculateSizeOfChecked.formattedLength }} ({{
+                    calculateSizeOfChecked.formattedPercentage }})<br />
+                  <span class="font-bold" v-if="calculateSizeOfChecked.totalLength > 400000">This will likely cause an
+                    error. Too much context.</span>
+                </div>
+
 
                 <div class="flex space-x-2">
 
@@ -498,30 +535,31 @@
                   </button>
 
 
-                  <button @click="questionWithReferences" v-if="!isChatMode"
+                  <button @click="questionsWithReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
                     :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress }"
                     :disabled="questionInProgress">
-                    {{ L_('Prompt') }}
+                    {{ L_('Generate') }}
                   </button>
 
 
-                  <button @click="auditWithReferences" v-if="!isChatMode"
-                    class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
-                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': auditInProgress }"
-                    :disabled="auditInProgress">
-                    {{ L_('Audit') }}
-                  </button>
-
-
-                  <div class="m-2">
-
-                    <input type="checkbox" v-model="isChatMode" @change="chatModeToggle"
-                      class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                    {{ L_('Chat Mode') }}
+                  <div v-if="!isChatMode" class="w-96 whitespace-nowrap self-start ">
+                    <label>Answers to Generate</label>
+                    <VueSlider :modelValue="settings.questions"
+                      @update:modelValue="value => updateSettings('questions', value)" :min="1" :max="10" />
                   </div>
 
+
+
                 </div>
+
+                <div class="">
+                  <input type="checkbox" v-model="isChatMode" @change="chatModeToggle"
+                    class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                  {{ L_('Chat Mode') }}
+                </div>
+
+
 
                 <div v-show="isChatMode">
 
@@ -572,23 +610,6 @@
                 </div>
 
                 <div v-show="!isChatMode">
-                  <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
-                    Your Input
-                  </h3>
-
-
-                  <DivInput placeholder="Enter your complex question" v-model="prompts.question.prompt"
-                    :asPlainText="true" />
-                  Size of checked Documents and Segments: {{ calculateSizeOfChecked.formattedLength }} ({{
-                    calculateSizeOfChecked.formattedPercentage }})<br />
-                  <span class="font-bold" v-if="calculateSizeOfChecked.totalLength > 400000">This will likely cause an
-                    error. Too much context.</span>
-<!-- 
-                    <div class="w-96 whitespace-nowrap self-start ">
-                    <label>Answers to Generate</label>
-                    <VueSlider :modelValue="settings.questions"
-                      @update:modelValue="value => updateSettings('questions', value)" :min="1" :max="10" />
-                  </div> -->
 
 
                   <h3 v-if="prompts.triage.json || prompts.reference.json"
@@ -599,6 +620,7 @@
 
                     <Spinner v-if="triageInProgress && prompts?.triage?.message?.length" :inProgress="triageInProgress"
                       :message="'Triaging question'" :subtext="`Content loading ${prompts.triage.message.length}`" />
+
                     <Spinner v-if="referenceInProgress && prompts?.reference?.message?.length"
                       :inProgress="referenceInProgress" :message="'Loading References'"
                       :subtext="`Content loading ${prompts.reference.message.length}`" />
@@ -637,74 +659,141 @@
                   <div class="flex">
 
                     <div class="w-full">
-                      <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
-                        Generated Answer (Human editable)
+                      <h3 class="font-lato font-bold text-2xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                        Step 2: View or Edit Generated Answer(s)
                       </h3>
 
-                      <Spinner v-if="questionInProgress" :inProgress="questionInProgress" :message="'Generating answer'"
-                        :subtext="`Content loading ${prompts?.question?.message?.length}`" />
+
+                      <div class="flex flex-wrap -m-2 mb-2">
+                        <div v-for="(prompt, index) in prompts.questions.set" :key="index" :class="{
+                          'w-full md:w-1/2 lg:w-1/3': prompts.questions.set.length > 2,
+                          'w-1/2': prompts.questions.set.length === 2,
+                          'w-full': prompts.questions.set.length === 1
+                        }" class="p-2 flex flex-col">
+                          <div class="bg-white dark:bg-gray-800 rounded shadow p-4 flex-grow">
+                            <DivInput placeholder="View your answer" v-model="prompt.message" :asPlainText="true" />
+
+                            <label class="label-style whitespace-nowrap">
+                              <input type="checkbox" v-model="prompt._checked"
+                                class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                              {{ L_('Select answer') }}
+                            </label>
+
+                          </div>
 
 
-                      <DivInput placeholder="View your answer" v-model="prompts.question.message" :asPlainText="true" />
 
-                      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden p-4">
-
-
-                        <div class="w-96 whitespace-nowrap self-start ">
-                          <label>Completeness</label>
-                          <VueSlider :modelValue="interactionScore.completeness"
-                            @update:modelValue="value => updateScore('completeness', value)" :min="0" :max="10" />
                         </div>
 
-                        <div class="w-96 whitespace-nowrap self-start ">
-                          <label>Accuracy</label>
-                          <VueSlider :modelValue="interactionScore.accuracy"
-                            @update:modelValue="value => updateScore('accuracy', value)" :min="0" :max="10" />
-                        </div>
+                        <button @click="selectAllAnswers"
+                          class="ml-2 whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                          {{ L_('Select All') }}
+                        </button>
 
 
-                        <div class="w-96 whitespace-nowrap self-start ">
-                          <label>Tone</label>
-                          <VueSlider :modelValue="interactionScore.tone"
-                            @update:modelValue="value => updateScore('tone', value)" :min="0" :max="10" />
-                        </div>
-
-                        <div class="w-96 whitespace-nowrap self-start ">
-                          <label>Overall</label>
-                          <VueSlider :modelValue="interactionScore.overall"
-                            @update:modelValue="value => updateScore('overall', value)" :min="0" :max="10" />
-                        </div>
-
-                        <DivInput placeholder="Comments" v-model="interactionScore.comments" :asPlainText="true" />
-
-
-                        <button @click="saveArtifacts"
-                          class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                        <button @click="mergeSelectedAnswers"
+                          class="ml-2 whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
                           :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
                           :disabled="questionInProgress || auditInProgress">
-                          {{ L_('Save as Artifact') }}
+                          {{ L_('Merge Selected') }}
                         </button>
+
+                      </div>
+
+                      <h3 class="font-lato font-bold text-2xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                        Step 3: Review and Edit Final Answer
+                      </h3>
+                      <DivInput placeholder="Meged answer" v-model="prompts.answer.message" :asPlainText="true" />
+
+
+                      <h3 class="font-lato font-bold text-2xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                        Step 4: Perform Audit and Quality Assurange
+                      </h3>
+
+
+                      <button @click="auditWithReferences" v-if="!isChatMode"
+                        class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                        :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': auditInProgress }"
+                        :disabled="auditInProgress">
+                        {{ L_('Audit') }}
+                      </button>
+
+
+                      <div class="flex">
+                        <div class=" rounded-lg shadow-md overflow-hidden w-full">
+
+
+                          <h3 class="font-lato font-bold text-1xl mt-2 mb-2 pb-1 border-b border-red-600 leading-tight">
+                            Quality Analysis
+                          </h3>
+
+
+                          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden p-4 w-full">
+
+                            <div class="w-96 whitespace-nowrap self-start ">
+                              <label>Completeness</label>
+                              <VueSlider :modelValue="interactionScore.completeness"
+                                @update:modelValue="value => updateScore('completeness', value)" :min="0" :max="10" />
+                            </div>
+
+                            <div class="w-96 whitespace-nowrap self-start ">
+                              <label>Accuracy</label>
+                              <VueSlider :modelValue="interactionScore.accuracy"
+                                @update:modelValue="value => updateScore('accuracy', value)" :min="0" :max="10" />
+                            </div>
+
+
+                            <div class="w-96 whitespace-nowrap self-start ">
+                              <label>Tone</label>
+                              <VueSlider :modelValue="interactionScore.tone"
+                                @update:modelValue="value => updateScore('tone', value)" :min="0" :max="10" />
+                            </div>
+
+                            <div class="w-96 whitespace-nowrap self-start ">
+                              <label>Overall</label>
+                              <VueSlider :modelValue="interactionScore.overall"
+                                @update:modelValue="value => updateScore('overall', value)" :min="0" :max="10" />
+                            </div>
+
+                            <DivInput placeholder="Comments" v-model="interactionScore.comments" :asPlainText="true" />
+
+
+                            <button @click="saveArtifacts"
+                              class="whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                              :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                              :disabled="questionInProgress || auditInProgress">
+                              {{ L_('Save as Artifact') }}
+                            </button>
+
+                          </div>
+                        </div>
+
+
+
+                        <div v-if="prompts.audit.message || prompts.audit.json" class="w-full">
+
+                          <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
+                            Audit Analysis
+                          </h3>
+
+                          <Spinner v-if="auditInProgress" :inProgress="auditInProgress" :message="'Generating audit'"
+                            :subtext="`Content loading ${prompts?.audit?.message?.length}`" />
+
+
+                          <DivInput v-if="!prompts.audit.json" placeholder="View the audit"
+                            v-model="prompts.audit.message" :asPlainText="false" />
+
+                          <AuditTable v-if="prompts.audit.json" :data="prompts.audit.json" />
+
+                        </div>
+
+
 
                       </div>
 
                     </div>
 
-                    <div v-if="prompts.audit.message || prompts.audit.json" class="w-full">
 
-                      <h3 class="font-lato font-bold text-1xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
-                        Audit Analysis
-                      </h3>
-
-                      <Spinner v-if="auditInProgress" :inProgress="auditInProgress" :message="'Generating audit'"
-                        :subtext="`Content loading ${prompts?.audit?.message?.length}`" />
-
-
-                      <DivInput v-if="!prompts.audit.json" placeholder="View the audit" v-model="prompts.audit.message"
-                        :asPlainText="false" />
-
-                      <AuditTable v-if="prompts.audit.json" :data="prompts.audit.json" />
-
-                    </div>
                   </div>
 
 
@@ -1016,7 +1105,7 @@ const prompts = ref({
   triage: createPrompt(),
   reference: createPrompt(),
   question: createPrompt(),
-  questions: { set: [] }, //Generates many instances 
+  questions: { prompt: null, set: [] }, //Generates many instances 
   answer: createPrompt(),
   audit: createPrompt(),
   translation: createPrompt(),
@@ -1042,6 +1131,8 @@ let documentsForSegments = ref(false)
 let triageInProgress = ref(false);
 let referenceInProgress = ref(false);
 let questionInProgress = ref(false);
+let questionsInProgress = ref(false);
+let answerInProgress = ref(false);
 let auditInProgress = ref(false);
 
 
@@ -1058,7 +1149,7 @@ const interactionScore = ref({
 
 const settings = ref({
   temperature: 0.2,
-  questions:2,
+  questions: 2,
   useHtml: false,
 })
 
@@ -1210,8 +1301,8 @@ function documentsPendingProcessCheckedFiles() {
     if (nextDoc && processingCount < promptMax.value) {
 
       //Add a nwe prompt
-      prompts.value.documents.set.push(createPrompt({ promptType: "documents", status: "waiting", persona: checkAssignment('triage').persona, trigger: false }));
       let promptIndex = prompts.value.documents.set.length - 1;
+      prompts.value.documents.set.push(createPrompt({ promptType: "documents", status: "waiting", persona: checkAssignment('triage').persona, trigger: false }));
 
       nextDoc._processingStatus = 'processing';
       nextDoc._processingStatusNumber = 0;
@@ -1337,9 +1428,19 @@ function messagePromptComplete(payload, thisPrompt) {
     }
 
     //Trigger the audit to happen automatically
+    if (thisPrompt.promptType == 'questions') {
+      questionsInProgress.value = false;
+    }
+
+
+    //Trigger the audit to happen automatically
     if (thisPrompt.promptType == 'question') {
       questionInProgress.value = false;
-      // auditWithReferences();
+    }
+
+    //Trigger the audit to happen automatically
+    if (thisPrompt.promptType == 'answer') {
+      answerInProgress.value = false;
     }
 
     //Flag it is in progress
@@ -1348,10 +1449,7 @@ function messagePromptComplete(payload, thisPrompt) {
     }
 
 
-
-
-
-    //And so forth... Add more promptTypes as I go
+    //And so forth... Add more promptTypes as required
 
   }
 
@@ -1417,6 +1515,14 @@ function messagePromptError(payload, thisPrompt) {
 
   if (thisPrompt.promptType == 'question') {
     questionInProgress.value = false;
+  }
+
+  if (thisPrompt.promptType == 'questions') {
+    questionsInProgress.value = false;
+  }
+
+  if (thisPrompt.promptType == 'answer') {
+    answerInProgress.value = false;
   }
 
   if (thisPrompt.promptType == 'audit') {
@@ -1657,13 +1763,13 @@ function triageWithReferences() {
     })
   })
 
-  prompts.value.triage.messageHistory.push({ role: "user", content: `Evaluate the following content to generate name, description, keywords, and categories in the prescribed format:\n${prompts.value.question.prompt}` })
+  prompts.value.triage.messageHistory.push({ role: "user", content: `Evaluate the following content to generate name, description, keywords, and categories in the prescribed format:\n${prompts.value.questions.prompt}` })
 
   //Step 2 References
   referenceInProgress.value = true;
   prompts.value.reference.promptType = 'reference';
   prompts.value.reference.persona = checkAssignment('reference').persona;
-  prompts.value.reference.messageHistory = [{ role: "system", content: prompts.value.reference.persona.basePrompt }];
+  prompts.value.reference.messageHistory = [];
 
   //Reference attaches just the names, descriptions, keywords, categories of all documents, segments, and mappings as references to evaluate against
   //There also needs to be a cutoff here, if someone has a significant number of files. If its TMI, then perhaps drop descriptions?
@@ -1686,15 +1792,18 @@ function triageWithReferences() {
   let segmentReferences = segments.value.map(triageMapper);
   // let mappingReferences = mappings.value.map(triageMapper);
 
-  // documentReferences.forEach(doc => {
-  //   prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a document you will consider in your analysis:\n\n${JSON.stringify(doc)}` });
-  // });
+  documentReferences.forEach(doc => {
+    prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a document you will consider in your analysis:\n\n${JSON.stringify(doc)}` });
+  });
 
-  // segmentReferences.forEach(segment => {
-  //   prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a segment of a document you will consider in your analysis:\n\n${JSON.stringify(segment)}` });
-  // });
+  segmentReferences.forEach(segment => {
+    prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a segment of a document you will consider in your analysis:\n\n${JSON.stringify(segment)}` });
+  });
 
-  prompts.value.reference.messageHistory.push({ role: "user", content: `Evaluate the following prompt against this reference material and provide an ordered list of scores and uuids :\n\n${prompts.value.question.prompt}\n\n Here is the reference documents ${JSON.stringify(documentReferences)}\n\nAnd here are reference segments:\n\n${JSON.stringify(segmentReferences)}` });
+  //Make the base prompt the last system prompt in the chain, as it seems to get ignored at the beginning.
+  prompts.value.reference.messageHistory.push({ role: "system", content: prompts.value.reference.persona.basePrompt });
+
+  prompts.value.reference.messageHistory.push({ role: "user", content: `Evaluate the following prompt against this reference material and provide an ordered list of scores and uuids :\n\n${prompts.value.questions.prompt}\n\n Here is the reference documents ${JSON.stringify(documentReferences)}\n\nAnd here are reference segments:\n\n${JSON.stringify(segmentReferences)}` });
 
   nextTick(() => {
     prompts.value.triage.trigger = !prompts.value.triage.trigger;
@@ -1707,29 +1816,84 @@ function triageWithReferences() {
 }
 
 
-function questionWithReferences() {
-  questionInProgress.value = true;
-  prompts.value.question.promptType = 'question';
-  prompts.value.question.persona = checkAssignment('writer').persona;
+// function questionWithReferences() {
+//   questionInProgress.value = true;
+//   prompts.value.question.promptType = 'question';
+//   prompts.value.question.persona = checkAssignment('writer').persona;
 
-  //Build a short message history to contain the information
-  //The system/user prompt likely out performs attaching the docs to the user prompt alone
-  prompts.value.question.messageHistory = [{ role: "system", content: prompts.value.question.persona.basePrompt }];
-  let docsPrompt = "In your analysis, utilize and prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
-  let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, false);
-  if (referencePrompt.count) {
-    //Single system prompt with all files included    
-    // prompts.value.question.messageHistory.push({ role: "system", content: referencePrompt.prompt });
+//   //Build a short message history to contain the information
+//   //The system/user prompt likely out performs attaching the docs to the user prompt alone
+//   prompts.value.question.messageHistory = [{ role: "system", content: prompts.value.question.persona.basePrompt }];
+//   let docsPrompt = "In your analysis, utilize and prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
+//   let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, false);
+//   if (referencePrompt.count) {
+//     //Single system prompt with all files included    
+//     // prompts.value.question.messageHistory.push({ role: "system", content: referencePrompt.prompt });
 
-    //Separate system prompts with each file a separate system prompt
-    for (const prompt of referencePrompt.prompts) { prompts.value.question.messageHistory.push({ role: "system", content: JSON.stringify(prompt) }); }
+//     //Separate system prompts with each file a separate system prompt
+//     for (const prompt of referencePrompt.prompts) { prompts.value.question.messageHistory.push({ role: "system", content: JSON.stringify(prompt) }); }
+//   }
+//   prompts.value.question.messageHistory.push({ role: "user", content: `Prepare a response for the following question: \n\n ${prompts.value.question.prompt}` })
+
+//   //Trigger the questio after the persona has been set using nextTick
+//   nextTick(() => {
+//     prompts.value.question.trigger = !prompts.value.question.trigger;
+//   });
+// }
+
+function questionsWithReferences() {
+  questionsInProgress.value = true;
+  prompts.value.questions.set = [];
+
+  for (var a = 0; a < settings.value.questions; a++) {
+    prompts.value.questions.set.push(createPrompt({ sessionId: uuidv4(), promptType: "questions", persona: checkAssignment('writer').persona, messageHistory: [], message: null, trigger: false }));
+    prompts.value.questions.set[a].messageHistory = [{ role: "system", content: prompts.value.questions.set[a].persona.basePrompt }];
+    let docsPrompt = "In your analysis, utilize and prioritize these textual files and segments in any answer you provide over general knowledge or other reference data:\n ";
+    let referencePrompt = generateDocumentsAndSegmentsPrompt(docsPrompt, false);
+    if (referencePrompt.count) {
+      for (const prompt of referencePrompt.prompts) { prompts.value.questions.set[a].messageHistory.push({ role: "system", content: JSON.stringify(prompt) }); }
+    }
+    prompts.value.questions.set[a].messageHistory.push({ role: "user", content: `Prepare a response for the following question: \n\n ${prompts.value.questions.prompt}` })
   }
-  prompts.value.question.messageHistory.push({ role: "user", content: `Prepare a response for the following question: \n\n ${prompts.value.question.prompt}` })
 
-  //Trigger the questio after the persona has been set using nextTick
   nextTick(() => {
-    prompts.value.question.trigger = !prompts.value.question.trigger;
+    for (var a = 0; a < settings.value.questions; a++) {
+      prompts.value.questions.set[a].trigger = !prompts.value.questions.set[a].trigger;
+    }
   });
+
+
+}
+
+function selectAllAnswers() {
+  for (const q of prompts.value.questions.set) {
+    q._checked = true;
+  }
+}
+
+function mergeSelectedAnswers() {
+  answerInProgress.value = true;
+
+  if (prompts.value.questions.set.length == 1) {
+    //Don't regenerate, just keep
+    prompts.value.answer.message = prompts.value.questions.set[0].message
+  }
+  else {
+    prompts.value.answer.promptType == 'answer';
+    prompts.value.answer.persona = checkAssignment('writer').persona;
+    let combinedAnswerPrompt = "Combine and edit together the following draft answers, carefully preserving all the factual details of each answer but integrating it together into one comprehensive, and long form answer as required. Be as complete as possible:\n\n";
+    for (var a = 0; a < prompts.value.questions.set.length; a++) {
+      combinedAnswerPrompt += prompts.value.questions.set[a].message;
+    }
+    prompts.value.answer.messageHistory = [{ role: "system", content: prompts.value.answer.persona.basePrompt }];
+    prompts.value.answer.messageHistory.push({ role: "user", content: combinedAnswerPrompt });
+  }
+
+  nextTick(() => {
+    prompts.value.answer.trigger = !prompts.value.answer.trigger;
+  });
+
+
 }
 
 
@@ -1756,7 +1920,7 @@ function auditWithReferences() {
   }
 
 
-  prompts.value.audit.messageHistory.push({ role: "user", content: `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis that you are to audit against the source materials: \n\n ${prompts.value.question.message}` })
+  prompts.value.audit.messageHistory.push({ role: "user", content: `Evaluate the following analysis against the source material and prepare an analysis on your findings: \n\n Here is the analysis that you are to audit against the source materials: \n\n ${prompts.value.answer.message}` })
 
   //Trigger the questio after the persona has been set using nextTick
   nextTick(() => {
@@ -1915,7 +2079,7 @@ function chatClear() {
 function chatCopy() {
   let lastMessage = prompts.value.chat.messageHistory[prompts.value.chat.messageHistory.length - 1]
   if (lastMessage.role == 'system')
-    prompts.value.question.message = lastMessage.content;
+    prompts.value.answer.message = lastMessage.content;
   isChatMode.value = false;
 }
 
@@ -1936,21 +2100,32 @@ function saveArtifacts() {
   draftArtifact.description.fr = "New Description: " + new Date();
   draftArtifact.description.fr = "New Description: " + new Date();
 
-  draftArtifact.prompt = prompts.value.question.prompt;
-  draftArtifact.message = prompts.value.question.message;
+  //If chat mode
+  draftArtifact.chatMessageHistory = prompts.value.chat.messageHistory;
+
+  //Capture the triage information
+  draftArtifact.triageText = prompts.value.triage.message;
+  draftArtifact.triageJson = prompts.value.triage.json;
+  draftArtifact.referenceText = prompts.value.reference.message;
+  draftArtifact.referenceJson = prompts.value.reference.json;
+
+  //Capture the prompt and the generated messages
+  draftArtifact.prompt = prompts.value.questions.prompt;
+  draftArtifact.messages = prompts.value.questions.set.map((set) => { return set.message });
+  draftArtifact.finalText.en = prompts.value.answer.message;
+
+  //Capture the Audit
   draftArtifact.auditText = prompts.value.audit.message;
   draftArtifact.auditJson = prompts.value.audit.json;
-  draftArtifact.messageHistory = prompts.value.chat.messageHistory;
 
+  //Capture the user feedback
   draftArtifact.completeness = interactionScore.value.completeness;
   draftArtifact.accuracy = interactionScore.value.accuracy;
   draftArtifact.tone = interactionScore.value.tone;
   draftArtifact.overall = interactionScore.value.overall;
   draftArtifact.comments = interactionScore.value.comments;
 
-  draftArtifact.finalText.en = prompts.value.question.message;
-  draftArtifact.comments = interactionScore.value.comments;
-
+  //Capture the personas used and the documents checked
   draftArtifact.personaUuids = wrappAssignments.value.map((wA) => { return wA.persona.uuid })
   draftArtifact.documentUuids = checkedDocuments.map((doc) => { return doc.uuid })
   draftArtifact.segmentUuids = checkedSegments.map((segment) => { return segment.uuid })
@@ -1962,19 +2137,32 @@ function selectSavedArtifact(index) {
   let draftArtifact = artifacts.value[index];
   // console.log(index)
   if (draftArtifact) {
-    console.log("prompts.value", prompts.value)
-    prompts.value.question.prompt = draftArtifact.prompt;
-    prompts.value.question.message = draftArtifact.message;
+
+    prompts.value.chat.messageHistory = draftArtifact.chatMessageHistory;
+    if(draftArtifact.messageHistory?.length) prompts.value.chat.messageHistory = draftArtifact.MessageHistory; //old version of schema
+
+    prompts.value.triage.message = draftArtifact.triageText;
+    prompts.value.triage.json = draftArtifact.triageJson;
+    prompts.value.reference.message = draftArtifact.referenceText;
+    prompts.value.reference.json = draftArtifact.referenceJson;
+
+    prompts.value.questions.prompt = draftArtifact.prompt;
+
+    if (draftArtifact?.messages?.length) {
+      prompts.value.questions.set = [];
+      for (const message of draftArtifact.messages) {
+        prompts.value.questions.set.push({ message: message })
+      }
+    }
+    prompts.value.answer.message = draftArtifact.finalText.en + "\n\n" + draftArtifact.finalText.fr;
+
     prompts.value.audit.message = draftArtifact.auditText;
     prompts.value.audit.json = draftArtifact.auditJson;
-    prompts.value.chat.messageHistory = draftArtifact.messageHistory;
 
     interactionScore.value.completeness = draftArtifact.completeness;
     interactionScore.value.accuracy = draftArtifact.accuracy;
     interactionScore.value.tone = draftArtifact.tone;
     interactionScore.value.overall = draftArtifact.overall;
-    interactionScore.value.comments = draftArtifact.comments;
-
     interactionScore.value.comments = draftArtifact.comments;
 
     //Recheck the artifacts
