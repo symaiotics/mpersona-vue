@@ -34,7 +34,7 @@
             <td v-if="!simple" class="py-1 px-6">{{ doc?.name?.en }} </td>
             <td v-if="!simple" class="py-1 px-6"> {{ doc?.name?.fr }}</td>
             <!-- <td class="py-1 px-6">{{ doc.description.en  }} / {{  doc.description.fr }}</td> -->
-            <td class="py-1 px-6">{{ lenInKb(doc) }}</td>
+            <td class="py-1 px-6">{{ lenInKb(doc, 'htmlContent') }} ({{  lenInKb(doc, 'textContent') }})</td>
 
             <td class="py-1 px-6">
               <div class="flex space-x-1">
@@ -101,8 +101,11 @@ const emitViewEvent = (index) => {
 }
 
 
-function lenInKb(doc) {
-  let length = doc.htmlContent?.length || doc.textContent?.length;
-  if (length) return (length / 1000).toFixed(1) + "KB"
+function lenInKb(doc, type = 'textContent') {
+  let length = 0;
+  if(type == 'textContent') doc.textContent?.length;
+  if(type == 'htmlContent') doc.htmlContent?.length;
+  if (length) return (length / 1000).toFixed(1) + "KB";
+  else return "0KB";
 }
 </script>
