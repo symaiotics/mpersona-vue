@@ -302,7 +302,8 @@ function documentsPendingChanged(files) {
 }
 
 function documentsPendingCheck(val) {
-  documentsPending.value[val.index]._checked = val.isChecked;
+    let matchedDoc = documentsPending.value.find((doc) => { return doc.uuid == val.uuid })
+    if(matchedDoc) matchedDoc._checked = val.isChecked;
 }
 
 function documentsPendingToggleCheckAll() {
