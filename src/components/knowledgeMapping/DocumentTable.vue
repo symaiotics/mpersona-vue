@@ -103,8 +103,8 @@ const emitViewEvent = (index) => {
 
 function lenInKb(doc, type = 'textContent') {
   let length = 0;
-  if(type == 'textContent') doc.textContent?.length;
-  if(type == 'htmlContent') doc.htmlContent?.length;
+  if(type == 'textContent') length = doc.textContent?.length;
+  if(type == 'htmlContent') length = doc.htmlContent?.length;
   if (length) return (length / 1000).toFixed(1) + "KB";
   else return "0KB";
 }
