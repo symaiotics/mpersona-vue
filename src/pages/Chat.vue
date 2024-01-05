@@ -186,7 +186,7 @@ function trigger() {
   console.log(messageHistory.value)
   console.log(messageHistory?.value?.[0]?.role == 'system')
   if (checkedDocuments.length && messageHistory.value.length && messageHistory.value[0].role == 'system') {
-    messageHistory.value[0].content = selectedPersona.value.basePrompt + `\n\n Prioritize the use of the following reference information in your response above all other information:\n\n${checkedDocuments.map(file => JSON.stringify({original:file.original,content:file.htmlContent})).join(',\n')}`
+    messageHistory.value[0].content = selectedPersona.value.basePrompt + `\n\n Prioritize the use of the following reference information in your response above all other information:\n\n${checkedDocuments.map(file => JSON.stringify({original:file.original,content:file.textContent})).join(',\n')}`
   }
   else {
     messageHistory.value[0].content = selectedPersona.value.basePrompt;
@@ -302,7 +302,8 @@ function documentsPendingChanged(files) {
 }
 
 function documentsPendingCheck(val) {
-  documentsPending.value[val.index]._checked = val.isChecked;
+    let matchedDoc = documentsPending.value.find((doc) => { return doc.uuid == val.uuid })
+    if(matchedDoc) matchedDoc._checked = val.isChecked;
 }
 
 function documentsPendingToggleCheckAll() {
