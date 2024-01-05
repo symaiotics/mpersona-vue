@@ -10,26 +10,6 @@ on:
       - main
 
 jobs:
-  version-bump:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # fetches the entire history for all branches and tags
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14' # specify the node version
-
-      - name: Bump version
-        run: |
-          git config --global user.email "info@symaiotics.com"
-          git config --global user.name "symaiotics"
-          npm version patch -m "chore(release): bump version to %s [skip ci]"
-          git push origin main --follow-tags
-
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
