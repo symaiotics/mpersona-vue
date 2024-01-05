@@ -30,7 +30,7 @@
 
             <button @click="deleteItem(item)"
                 class="  bg-yellow-500 hover:bg-yellow-700 dark:bg-yellow-400 dark:hover:bg-yellow-600 text-white dark:text-gray-800 font-bold m-2 p-2 rounded w-auto">
-                {{ L_('Delete') }} <span v-if="item._initiateDelete">(Click again to confirm)</span>
+                {{ L_('Delete') }} <span v-if="item._initiateDelete">(Check to confirm)</span>
             </button>
 
             <div v-if="item._initiateDelete" class="pl-2">
@@ -38,10 +38,10 @@
                     <input type="checkbox" v-model="item._confirmDelete" class="mr-1 checkbox-large" />
                     Yes, I am sure.
                 </label><br />
-                <label class="label-style whitespace-nowrap">
+                <!-- <label class="label-style whitespace-nowrap">
                     <input type="checkbox" v-model="item._confirmDeleteAssociated" class="mr-1 checkbox-large" />
                     Delete associated knowledge.
-                </label>
+                </label> -->
             </div>
         </div>
     </div>
