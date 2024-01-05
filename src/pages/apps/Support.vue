@@ -97,7 +97,8 @@
                   </button>
                 </div>
                 <KnowledgeSetCreateEdit :wrappUuid="wrappUuid" :rosterUuid="props.rosterUuid" />
-                <KnowledgeSetCards v-if="knowledgeSets" :data="knowledgeSets" @selected="knowledgeSetSelected" />
+                <KnowledgeSetCards v-if="knowledgeSets" :data="knowledgeSets" :rosterUuid='props.rosterUuid'
+                  @selected="knowledgeSetSelected" />
 
 
 
@@ -440,6 +441,13 @@
                 <p>You can interact in Q&A Mode, with an automatic Audit function, or you can use Chat Mode and speak to
                   the persona directly.</p>
 
+                  <div class="">
+                  <input type="checkbox" v-model="isChatMode" @change="chatModeToggle"
+                    class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                  {{ L_('Chat Mode') }}
+                </div>
+
+
                 <!-- <ToggleSwitch v-model = "isChatMode"/> -->
 
                 <div v-show="false">
@@ -506,7 +514,7 @@
 
                 <div v-if="!isChatMode">
                   <h3 class="font-lato font-bold text-2xl mt-2 mb-1 pb-1 border-b border-red-600 leading-tight">
-                    Step 1: Define Your Input
+                    Step 1: Define and Triage Your Input
                   </h3>
 
 
@@ -534,31 +542,19 @@
                     {{ L_('Triage') }}
                   </button>
 
-
-                  <button @click="questionsWithReferences" v-if="!isChatMode"
+                  <button @click="selectReferences" v-if="!isChatMode"
                     class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
-                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress }"
-                    :disabled="questionInProgress">
-                    {{ L_('Generate') }}
+                    :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': referenceInProgress }"
+                    :disabled="referenceInProgress">
+                    {{ L_('Match References') }}
                   </button>
 
 
-                  <div v-if="!isChatMode" class="w-96 whitespace-nowrap self-start ">
-                    <label>Answers to Generate</label>
-                    <VueSlider :modelValue="settings.questions"
-                      @update:modelValue="value => updateSettings('questions', value)" :min="1" :max="10" />
-                  </div>
-
 
 
                 </div>
 
-                <div class="">
-                  <input type="checkbox" v-model="isChatMode" @change="chatModeToggle"
-                    class="w-6 h-6 m-2 text-blue-600 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                  {{ L_('Chat Mode') }}
-                </div>
-
+             
 
 
                 <div v-show="isChatMode">
@@ -663,8 +659,42 @@
                         Step 2: View or Edit Generated Answer(s)
                       </h3>
 
+                      <div class="flex space-x-2">
+                        <button @click="questionsWithReferences" v-if="!isChatMode"
+                          class="whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                          :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress }"
+                          :disabled="questionInProgress">
+                          {{ L_('Generate') }}
+                        </button>
 
+
+
+                        <button @click="selectAllAnswers"
+                          class="ml-2 whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
+                          {{ L_('Select All') }}
+                        </button>
+
+
+                        <button @click="mergeSelectedAnswers"
+                          class="ml-2 whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
+                          :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
+                          :disabled="questionInProgress || auditInProgress">
+                          {{ L_('Merge Selected') }}
+                        </button>
+
+                      </div>
+
+                      <div class="flex space-x-2">
+
+                        <div v-if="!isChatMode" class="w-96 whitespace-nowrap self-start ">
+                          <label>Answers to Generate</label>
+                          <VueSlider :modelValue="settings.questions"
+                            @update:modelValue="value => updateSettings('questions', value)" :min="1" :max="10" />
+                        </div>
+
+                      </div>
                       <div class="flex flex-wrap -m-2 mb-2">
+
                         <div v-for="(prompt, index) in prompts.questions.set" :key="index" :class="{
                           'w-full md:w-1/2 lg:w-1/3': prompts.questions.set.length > 2,
                           'w-1/2': prompts.questions.set.length === 2,
@@ -685,18 +715,7 @@
 
                         </div>
 
-                        <button @click="selectAllAnswers"
-                          class="ml-2 whitespace-nowrap self-start bg-blue-500 hover:bg-blue-700 dark:bg-blue-400 dark:hover:bg-blue-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto">
-                          {{ L_('Select All') }}
-                        </button>
 
-
-                        <button @click="mergeSelectedAnswers"
-                          class="ml-2 whitespace-nowrap self-start bg-green-500 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600 text-white dark:text-gray-800 font-bold mt-2 mb-2 p-2 rounded w-auto"
-                          :class="{ 'bg-gray-500 hover:bg-gray-500 dark:bg-gray-600 dark:hover:bg-gray-600 cursor-not-allowed': questionInProgress || auditInProgress }"
-                          :disabled="questionInProgress || auditInProgress">
-                          {{ L_('Merge Selected') }}
-                        </button>
 
                       </div>
 
@@ -1785,8 +1804,8 @@ function triageWithReferences() {
     return { ...acc, [prop]: value };
   }, {});
 
-  let documentMapper = createMapper(['uuid', 'name.en', 'description.en', 'original', 'keywords']);
-  let triageMapper = createMapper(['uuid', 'name.en', 'description.en', 'keywords']);
+  let documentMapper = createMapper(['uuid', 'name.en', 'description.en', 'original', 'keywords', 'textLength']);
+  let triageMapper = createMapper(['uuid', 'name.en', 'description.en', 'keywords', 'textLength']);
 
   let documentReferences = documents.value.map(documentMapper);
   let segmentReferences = segments.value.map(triageMapper);
@@ -1810,10 +1829,67 @@ function triageWithReferences() {
     prompts.value.reference.trigger = !prompts.value.reference.trigger;
   });
 
+  nextTick(() => {
+    prompts.value.triage.trigger = !prompts.value.triage.trigger;
+  });
 
   //triage
   //reference  
 }
+
+
+
+
+function selectReferences() {
+
+  //Step 2 References
+  referenceInProgress.value = true;
+  prompts.value.reference.promptType = 'reference';
+  prompts.value.reference.persona = checkAssignment('reference').persona;
+  prompts.value.reference.messageHistory = [];
+
+  //Reference attaches just the names, descriptions, keywords, categories of all documents, segments, and mappings as references to evaluate against
+  //There also needs to be a cutoff here, if someone has a significant number of files. If its TMI, then perhaps drop descriptions?
+  const getNestedValue = (obj, path) => {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  };
+
+  const createMapper = (props) => (item) => props.reduce((acc, prop) => {
+    let value = prop.includes('.') ? getNestedValue(item, prop) : item[prop];
+    if (prop === 'uuid' && typeof value === 'string') {
+      value = value.slice(0, 8);
+    }
+    return { ...acc, [prop]: value };
+  }, {});
+
+  let documentMapper = createMapper(['uuid', 'name.en', 'description.en', 'original', 'keywords']);
+  let triageMapper = createMapper(['uuid', 'name.en', 'description.en', 'keywords']);
+
+  let documentReferences = documents.value.map(documentMapper);
+  let segmentReferences = segments.value.map(triageMapper);
+  // let mappingReferences = mappings.value.map(triageMapper);
+
+  documentReferences.forEach(doc => {
+    prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a document you will consider in your analysis:\n\n${JSON.stringify(doc)}` });
+  });
+
+  segmentReferences.forEach(segment => {
+    prompts.value.reference.messageHistory.push({ role: "system", content: `Here is a segment of a document you will consider in your analysis:\n\n${JSON.stringify(segment)}` });
+  });
+
+  //Make the base prompt the last system prompt in the chain, as it seems to get ignored at the beginning.
+  prompts.value.reference.messageHistory.push({ role: "system", content: prompts.value.reference.persona.basePrompt });
+  prompts.value.reference.messageHistory.push({ role: "user", content: `Evaluate the following prompt against this reference material and provide an ordered list of scores and uuids :\n\n${prompts.value.questions.prompt}\n\n Here is the reference documents ${JSON.stringify(documentReferences)}\n\nAnd here are reference segments:\n\n${JSON.stringify(segmentReferences)}` });
+
+  nextTick(() => {
+    prompts.value.reference.trigger = !prompts.value.reference.trigger;
+  });
+
+
+  //triage
+  //reference  
+}
+
 
 
 // function questionWithReferences() {
@@ -2139,7 +2215,7 @@ function selectSavedArtifact(index) {
   if (draftArtifact) {
 
     prompts.value.chat.messageHistory = draftArtifact.chatMessageHistory;
-    if(draftArtifact.messageHistory?.length) prompts.value.chat.messageHistory = draftArtifact.MessageHistory; //old version of schema
+    if (draftArtifact.messageHistory?.length) prompts.value.chat.messageHistory = draftArtifact.MessageHistory; //old version of schema
 
     prompts.value.triage.message = draftArtifact.triageText;
     prompts.value.triage.json = draftArtifact.triageJson;

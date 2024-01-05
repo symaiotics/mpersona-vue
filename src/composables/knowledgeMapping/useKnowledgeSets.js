@@ -76,7 +76,8 @@ export function useKnowledgeSets() {
         try {
             if (!Array.isArray(knowledgeSetUuids)) knowledgeSetUuids = [knowledgeSetUuids]
             var params = { knowledgeSetUuids, rosterUuid }
-            var response = await configuredAxios.delete(import.meta.env.VITE_API_URL + '/knowledgeSets', params);
+            console.log("Delete params", params)
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeSets/delete', params);
             console.log("Deleted Knowledge Set(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Knowledge Set(s) deleted successfully" }, 4000) // 4s
             getKnowledgeSets(rosterUuid);

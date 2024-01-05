@@ -93,8 +93,8 @@ function deleteItem(item) {
     if (!item._initiateDelete) {
         item._initiateDelete = true;
     }
-    else if (item._initiateDelete && item._confirmDelete) {
-        // deleteKnowledgeSets([item], props.rosterUuid, item._confirmDeleteAssociated)
+    else if (item._initiateDelete && item._confirmDelete && props.rosterUuid) {
+        deleteKnowledgeSets(item.uuid, props.rosterUuid)
     }
 
     else if (item._initiateDelete && !item._confirmDelete) {

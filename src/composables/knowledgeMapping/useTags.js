@@ -76,7 +76,7 @@ export function useTags() {
     async function deleteTags(knowledgeSetUuid, tagUuids) {
         try {
             var params = { knowledgeSetUuid, tagUuids }
-            var response = await configuredAxios.delete(import.meta.env.VITE_API_URL + '/tags', params);
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/tags/delete', params);
             console.log("Deleted Tag(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Tag(s) deleted successfully" }, 4000) // 4s
             getTags(knowledgeSetUuid);

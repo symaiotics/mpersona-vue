@@ -158,7 +158,7 @@ export function useSegments() {
     async function deleteSegments(knowledgeSetUuid, segmentUuids) {
         try {
             var params = { knowledgeSetUuid, segmentUuids }
-            var response = await configuredAxios.delete(import.meta.env.VITE_API_URL + '/segments', params);
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/segments/delete', params);
             console.log("Deleted Segment(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Segment(s) deleted successfully" }, 4000) // 4s
             getSegments(knowledgeSetUuid);

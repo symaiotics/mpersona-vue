@@ -147,7 +147,7 @@ export function useDocuments() {
     async function deleteDocuments(knowledgeSetUuid, documentUuids) {
         try {
             var params = { knowledgeSetUuid, documentUuids }
-            var response = await configuredAxios.delete(import.meta.env.VITE_API_URL + '/documents', params);
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/documents/delete', params);
             console.log("Deleted Document(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Document(s) deleted successfully" }, 4000) // 4s
             getDocuments(knowledgeSetUuid);

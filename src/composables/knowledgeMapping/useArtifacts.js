@@ -137,7 +137,7 @@ export function useArtifacts() {
     async function deleteArtifacts(knowledgeSetUuid, artifactUuids) {
         try {
             var params = { knowledgeSetUuid, artifactUuids }
-            var response = await configuredAxios.delete(import.meta.env.VITE_API_URL + '/artifacts', params);
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/artifacts/delete', params);
             console.log("Deleted Artifact(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Artifact(s) deleted successfully" }, 4000) // 4s
             getArtifacts(knowledgeSetUuid);

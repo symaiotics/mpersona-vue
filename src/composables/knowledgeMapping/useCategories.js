@@ -78,7 +78,7 @@ export function useCategories() {
     async function deleteCategories(knowledgeSetUuid, categoryUuids) {
         try {
             var params = { knowledgeSetUuid, categoryUuids }
-            var response = await configuredAxios.delete(import.meta.env.VITE_API_URL + '/categories', params);
+            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/categories/delete', params);
             console.log("Deleted Category(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Category(s) deleted successfully" }, 4000) // 4s
             getCategories(knowledgeSetUuid);
