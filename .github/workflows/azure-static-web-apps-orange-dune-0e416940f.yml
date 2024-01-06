@@ -23,9 +23,9 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Create .env file for import-meta-env
+      - name: Create or overwrite .env file for import-meta-env
         run: |
-          echo "SELF=$SELF" >> .env
+          echo "SELF=$SELF" > .env
           echo "API_URL=$API_URL" >> .env
           echo "WEBSOCKET_URL=$WEBSOCKET_URL" >> .env
           echo "STORAGE_URL=$STORAGE_URL" >> .env
