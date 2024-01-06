@@ -1,3 +1,4 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 import { notify } from "notiwind"
@@ -31,7 +32,7 @@ export function useCategories() {
     async function getCategories(knowledgeSetUuid) {
         try {
             let params = { params: { knowledgeSetUuid } }
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/categories', params);
+            var response = await configuredAxios.get(env.API_URL + '/categories', params);
             categories.value = response.data.payload;
             console.log("Loaded Category", categories.value)
         }
@@ -44,7 +45,7 @@ export function useCategories() {
         try {
             if (!Array.isArray(categories)) categories = [categories]
             var params = { knowledgeSetUuid, categories }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/categories', params);
+            var response = await configuredAxios.post(env.API_URL + '/categories', params);
             console.log("Created Category(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Category(s) created successfully" }, 4000) // 4s
             getCategories(knowledgeSetUuid);
@@ -62,7 +63,7 @@ export function useCategories() {
         try {
             if (!Array.isArray(categories)) categories = [categories]
             var params = { knowledgeSetUuid, categories }
-            var response = await configuredAxios.patch(import.meta.env.API_URL + '/categories', params);
+            var response = await configuredAxios.patch(env.API_URL + '/categories', params);
             console.log("Updated Category(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Category(s) updated successfully" }, 4000) // 4s
             getCategories(knowledgeSetUuid);
@@ -78,7 +79,7 @@ export function useCategories() {
     async function deleteCategories(knowledgeSetUuid, categoryUuids) {
         try {
             var params = { knowledgeSetUuid, categoryUuids }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/categories/delete', params);
+            var response = await configuredAxios.post(env.API_URL + '/categories/delete', params);
             console.log("Deleted Category(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Category(s) deleted successfully" }, 4000) // 4s
             getCategories(knowledgeSetUuid);

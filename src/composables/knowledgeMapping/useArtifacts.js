@@ -1,7 +1,7 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 import { notify } from "notiwind"
-
 import { useTags } from '@/composables/knowledgeMapping/useTags.js';
 const { filterTags } = useTags()
 
@@ -71,7 +71,7 @@ export function useArtifacts() {
     async function getArtifacts(knowledgeSetUuid) {
         try {
             let params = { params: { knowledgeSetUuid } }
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/artifacts', params);
+            var response = await configuredAxios.get(env.API_URL + '/artifacts', params);
             artifacts.value = response.data.payload;
             console.log("Loaded Artifact", artifacts.value)
         }
@@ -84,7 +84,7 @@ export function useArtifacts() {
         try {
             if (!Array.isArray(artifacts)) artifacts = [artifacts]
             var params = { knowledgeSetUuid, artifacts }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/artifacts', params);
+            var response = await configuredAxios.post(env.API_URL + '/artifacts', params);
             console.log("Created Artifact(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Artifact(s) created successfully" }, 4000) // 4s
             getArtifacts(knowledgeSetUuid);
@@ -102,7 +102,7 @@ export function useArtifacts() {
         try {
             if (!Array.isArray(artifacts)) artifacts = [artifacts]
             var params = { knowledgeSetUuid, artifacts }
-            var response = await configuredAxios.patch(import.meta.env.API_URL + '/artifacts', params);
+            var response = await configuredAxios.patch(env.API_URL + '/artifacts', params);
             console.log("Created Artifact(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Artifact(s) created successfully" }, 4000) // 4s
             getArtifacts(knowledgeSetUuid);
@@ -121,7 +121,7 @@ export function useArtifacts() {
             if (!Array.isArray(artifacts)) artifacts = [artifacts]
             if (!Array.isArray(tags)) tags = [tags]
             var params = { knowledgeSetUuid, operation, artifacts, tags }
-            var response = await configuredAxios.patch(import.meta.env.API_URL + '/artifacts/tags', params);
+            var response = await configuredAxios.patch(env.API_URL + '/artifacts/tags', params);
             console.log("Added tags to artifacts(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Added tags to Artifacts" }, 4000) // 4s
             getArtifacts(knowledgeSetUuid);
@@ -137,7 +137,7 @@ export function useArtifacts() {
     async function deleteArtifacts(knowledgeSetUuid, artifactUuids) {
         try {
             var params = { knowledgeSetUuid, artifactUuids }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/artifacts/delete', params);
+            var response = await configuredAxios.post(env.API_URL + '/artifacts/delete', params);
             console.log("Deleted Artifact(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Artifact(s) deleted successfully" }, 4000) // 4s
             getArtifacts(knowledgeSetUuid);

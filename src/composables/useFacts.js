@@ -1,3 +1,4 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 
@@ -13,7 +14,7 @@ export function useFacts() {
 
     async function getFacts() {
         try {
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/facts');
+            var response = await configuredAxios.get(env.API_URL + '/facts');
             facts.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Facts", facts.value)
@@ -29,7 +30,7 @@ export function useFacts() {
             try {
                 if (!Array.isArray(newFacts)) newFacts = [newFacts]
                 var params = { facts: newFacts }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/facts', params);
+                var response = await configuredAxios.post(env.API_URL + '/facts', params);
                 resolve(response)
             }
             catch (error) {
@@ -48,7 +49,7 @@ export function useFacts() {
                 else {
                     var params = { searchString: searchString, knowledgeProfileUuids: knowledgeProfileUuids }
                     console.log("SEarching with params", params)
-                    var response = await configuredAxios.post(import.meta.env.API_URL + '/facts/search', params);
+                    var response = await configuredAxios.post(env.API_URL + '/facts/search', params);
                     console.log("Searched facts", response.data.payload)
                     factSearchResults.value = response.data.payload;
                     resolve(response.data.payload)
@@ -71,7 +72,7 @@ export function useFacts() {
                 else {
                     var params = {  knowledgeProfileUuids: knowledgeProfileUuids }
                     console.log("Search with params", params)
-                    var response = await configuredAxios.post(import.meta.env.API_URL + '/facts/jsonl', params);
+                    var response = await configuredAxios.post(env.API_URL + '/facts/jsonl', params);
                     console.log("JSONL of facts", response.data.payload)
                     resolve(response.data.payload)
                 }

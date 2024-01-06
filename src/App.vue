@@ -58,6 +58,8 @@
 </template>
 
 <script setup>
+import env from "@/env.js"
+
 import { onMounted } from 'vue'
 import AOS from 'aos'
 
@@ -68,7 +70,10 @@ const { getLexicon } = useLexicon();
 const { recallTokens } = useTokens();
 const { websocketConnection, wsUuid } = useWebsockets()
 
+
 onMounted(() => {
+  
+  console.log('env', env)
   getLexicon();
   recallTokens();
   AOS.init({

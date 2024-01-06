@@ -1,3 +1,4 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted } from 'vue'
 // import axios from "axios";
 import configuredAxios from "@/utils/axios.js"
@@ -34,7 +35,7 @@ export function useRosters() {
 
     async function getRosters() {
         try {
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/rosters');
+            var response = await configuredAxios.get(env.API_URL + '/rosters');
             rosters.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Rosters", rosters.value)
@@ -48,7 +49,7 @@ export function useRosters() {
     async function getRosterFromUuid(uuid) {
         try {
             var params = {params:{ rosterUuid:uuid }};
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/rosters/uuid', params);
+            var response = await configuredAxios.get(env.API_URL + '/rosters/uuid', params);
             selectedRoster.value = response.data.payload;
             console.log("Selected Roster", selectedRoster.value)
         }
@@ -61,7 +62,7 @@ export function useRosters() {
         try {
             if (!Array.isArray(newRosters)) newRosters = [newRosters]
             var params = { rosters: newRosters }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/rosters', params);
+            var response = await configuredAxios.post(env.API_URL + '/rosters', params);
             console.log("Saved Rosters", response)
             notify({ group: "success", title: "Success", text: "Roster created successfully" }, 4000) // 4s
             getRosters();
@@ -78,7 +79,7 @@ export function useRosters() {
         try {
             if (!Array.isArray(updateArr)) updateArr = [updateArr]
             var params = { rosters: updateArr }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/rosters/update', params);
+            var response = await configuredAxios.post(env.API_URL + '/rosters/update', params);
             console.log(response.data.payload)
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Roster(s) updated successfully" }, 4000) // 4s
@@ -96,7 +97,7 @@ export function useRosters() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { rosterUuid, rosterLink, linkType }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/rosters/addLink', params);
+                var response = await configuredAxios.post(env.API_URL + '/rosters/addLink', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -110,7 +111,7 @@ export function useRosters() {
             try {
                 console.log("Getting Roster details", link)
                 var params = { link: link }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/rosters/linkDetails', params);
+                var response = await configuredAxios.post(env.API_URL + '/rosters/linkDetails', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -123,7 +124,7 @@ export function useRosters() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { link: link }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/rosters/acceptLink', params);
+                var response = await configuredAxios.post(env.API_URL + '/rosters/acceptLink', params);
                 resolve(response.data.payload)
             }
             catch (error) {

@@ -1,3 +1,4 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 import { notify } from "notiwind"
@@ -31,7 +32,7 @@ export function useAssignments() {
         try {
 
             let params = { params: { wrappUuid, rosterUuid } }
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/assignments', params);
+            var response = await configuredAxios.get(env.API_URL + '/assignments', params);
             assignments.value = response.data.payload;
 
             console.log("Loaded Assignment", assignments.value)
@@ -45,7 +46,7 @@ export function useAssignments() {
         try {
             if (!Array.isArray(assignments)) assignments = [assignments]
             var params = { wrappUuid, rosterUuid, assignments }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/assignments', params);
+            var response = await configuredAxios.post(env.API_URL + '/assignments', params);
             console.log("Created Assignment(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Assignment(s) created successfully" }, 4000) // 4s
             getAssignments(wrappUuid, rosterUuid);
@@ -61,7 +62,7 @@ export function useAssignments() {
     async function deleteAssignments(wrappUuid, rosterUuid, assignmentUuids) {
         try {
             var params = { wrappUuid, rosterUuid, assignmentUuids }
-            var response = await configuredAxios.delete(import.meta.env.API_URL + '/assignments', params);
+            var response = await configuredAxios.delete(env.API_URL + '/assignments', params);
             console.log("Deleted Assignment(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Assignment(s) deleted successfully" }, 4000) // 4s
             getAssignments(wrappUuid, rosterUuid);

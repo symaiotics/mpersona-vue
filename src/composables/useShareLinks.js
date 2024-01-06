@@ -1,3 +1,4 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 
@@ -8,7 +9,7 @@ export function useShareLinks() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { schema, uuid, link, linkType }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/shareLinks/add', params);
+                var response = await configuredAxios.post(env.API_URL + '/shareLinks/add', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -22,7 +23,7 @@ export function useShareLinks() {
             try {
                 var params = { params: { schema, link } }
                 console.log("Getting Link Details", params)
-                var response = await configuredAxios.get(import.meta.env.API_URL + '/shareLinks/details', params);
+                var response = await configuredAxios.get(env.API_URL + '/shareLinks/details', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -35,7 +36,7 @@ export function useShareLinks() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { schema, link }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/shareLinks/accept', params);
+                var response = await configuredAxios.post(env.API_URL + '/shareLinks/accept', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -48,7 +49,7 @@ export function useShareLinks() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { schema, uuid, link, linkType }
-                var response = await configuredAxios.post(import.meta.env.API_URL + '/shareLinks/remove', params);
+                var response = await configuredAxios.post(env.API_URL + '/shareLinks/remove', params);
                 resolve(response.data.payload)
             }
             catch (error) {

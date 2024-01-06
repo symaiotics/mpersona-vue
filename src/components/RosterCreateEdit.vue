@@ -252,7 +252,7 @@ function triggerDelete() {
 }
 
 function demo(uuid, wrapp) {
-    window.open(`${import.meta.env.SELF}/apps/${wrapp}/${uuid}`, '_blank');
+    window.open(`${env.SELF}/apps/${wrapp}/${uuid}`, '_blank');
 }
 
 function createLink(linkType) {
@@ -295,7 +295,7 @@ function publish(status) {
 
 async function copyToClipboard(text) {
 
-    text = import.meta.env.SELF + "/linkRoster/" + text;
+    text = env.SELF + "/linkRoster/" + text;
     try {
         await navigator.clipboard.writeText(text);
         notify({ group: "success", title: "Success", text: "Link copied" }, 4000) // 4s

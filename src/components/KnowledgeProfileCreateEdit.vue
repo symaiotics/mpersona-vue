@@ -197,7 +197,7 @@ function createLink(linkType) {
 
 async function copyToClipboard(text) {
 
-    text = import.meta.env.SELF + "/linkKnowledgeProfile/" + text;
+    text = env.SELF + "/linkKnowledgeProfile/" + text;
     try {
         await navigator.clipboard.writeText(text);
         notify({ group: "success", title: "Success", text: "Link copied" }, 4000) // 4s

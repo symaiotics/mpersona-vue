@@ -1,10 +1,10 @@
+import env from "@/env.js"
 import axios from 'axios'
-
 import { useTokens } from '@/composables/useTokens.js'
 const { setTokens, unsetTokens } = useTokens();
 
 var config = {
-    baseURL: import.meta.env.API_URL,
+    baseURL: env.API_URL,
     headers: {
         Accept: "application/json",
     },

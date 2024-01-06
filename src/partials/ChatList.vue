@@ -177,6 +177,8 @@
 </template>
 
 <script setup>
+import env from "@/env.js"
+
 import { ref, onMounted, computed } from 'vue';
 
 let category = ref('questions')
@@ -211,8 +213,8 @@ let listResources = computed(() => {
 
 function formatUrl(url)
 {
-//return  import.meta.env.STORAGE_URL + "/" + url;
-return `https://docs.google.com/viewer?url=${import.meta.env.STORAGE_URL + "/" + url}&embedded=true`
+//return  env.STORAGE_URL + "/" + url;
+return `https://docs.google.com/viewer?url=${env.STORAGE_URL + "/" + url}&embedded=true`
 }
 
 function promptQuestion(question) {

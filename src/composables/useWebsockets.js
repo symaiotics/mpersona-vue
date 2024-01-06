@@ -1,3 +1,4 @@
+import env from "@/env.js"
 
 import { ref, computed } from 'vue';
 import { extractData } from '@/utils/extractJsonAndCode.js';
@@ -80,7 +81,7 @@ export function useWebsockets() {
         clearTimeout(pongTimeout);
 
         if (!ws) {
-            ws = new WebSocket(import.meta.env.WEBSOCKET_URL);
+            ws = new WebSocket(env.WEBSOCKET_URL);
             ws.addEventListener('open', handleOpen);
             ws.addEventListener('message', handleMessage);
             ws.addEventListener('close', handleClose);

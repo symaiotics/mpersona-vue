@@ -391,7 +391,7 @@ function checkFinetuneStatus() {
 
 async function copyToClipboard(text) {
 
-    text = import.meta.env.SELF + "/linkPersona/" + text;
+    text = env.SELF + "/linkPersona/" + text;
     try {
         await navigator.clipboard.writeText(text);
         notify({ group: "success", title: "Success", text: "Link copied" }, 4000) // 4s

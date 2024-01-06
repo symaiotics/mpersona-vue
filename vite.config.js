@@ -1,30 +1,21 @@
-import { fileURLToPath, URL } from "url";
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
 import ImportMetaEnvPlugin from "@import-meta-env/unplugin";
-
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  define: {
-    'process.env': process.env
-  },
-
-  // server: {
-  //   cors: true,
-  //   strictPort: true,
-  //   headers: {
-  //     'Cross-Origin-Opener-Policy': 'same-origin'
-  //   }
-  // },
-
-  plugins: [vue(),
-  ImportMetaEnvPlugin.vite({ example: ".env" }),
+  plugins: [
+    vue(),
+    ImportMetaEnvPlugin.vite({
+      example: ".env.example",
+      // "env": "...",
+      // "transformMode": "..."
+    }),
   ],
   resolve: {
-    alias: [
-      { find: '@', replacement: "/src" },
-    ],
+    alias: {
+      '@': '/src',
+    },
   },
-})
-
+  // Additional Vite configuration...
+});

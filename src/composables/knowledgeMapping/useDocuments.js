@@ -1,10 +1,9 @@
+import env from "@/env.js"
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import configuredAxios from "@/utils/axios.js"
 import { notify } from "notiwind"
 
-
 import { useTags } from '@/composables/knowledgeMapping/useTags.js';
-
 const { filterTags } = useTags()
 
 let documents = ref(null); //From the database
@@ -81,7 +80,7 @@ export function useDocuments() {
     async function getDocuments(knowledgeSetUuid) {
         try {
             let params = { params: { knowledgeSetUuid } }
-            var response = await configuredAxios.get(import.meta.env.API_URL + '/documents', params);
+            var response = await configuredAxios.get(env.API_URL + '/documents', params);
             documents.value = response.data.payload;
             console.log("Loaded Document", documents.value)
         }
@@ -94,7 +93,7 @@ export function useDocuments() {
         try {
             if (!Array.isArray(documents)) documents = [documents]
             var params = { knowledgeSetUuid, documents }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/documents', params);
+            var response = await configuredAxios.post(env.API_URL + '/documents', params);
             console.log("Created Document(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Document(s) created successfully" }, 4000) // 4s
             getDocuments(knowledgeSetUuid);
@@ -112,7 +111,7 @@ export function useDocuments() {
         try {
             if (!Array.isArray(documents)) documents = [documents]
             var params = { knowledgeSetUuid, documents }
-            var response = await configuredAxios.patch(import.meta.env.API_URL + '/documents', params);
+            var response = await configuredAxios.patch(env.API_URL + '/documents', params);
             console.log("Created Document(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Document(s) created successfully" }, 4000) // 4s
             getDocuments(knowledgeSetUuid);
@@ -131,7 +130,7 @@ export function useDocuments() {
             if (!Array.isArray(documents)) documents = [documents]
             if (!Array.isArray(tags)) tags = [tags]
             var params = { knowledgeSetUuid, operation, documents, tags }
-            var response = await configuredAxios.patch(import.meta.env.API_URL + '/documents/tags', params);
+            var response = await configuredAxios.patch(env.API_URL + '/documents/tags', params);
             console.log("Added tags to documents(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Added tags to Documents" }, 4000) // 4s
             getDocuments(knowledgeSetUuid);
@@ -147,7 +146,7 @@ export function useDocuments() {
     async function deleteDocuments(knowledgeSetUuid, documentUuids) {
         try {
             var params = { knowledgeSetUuid, documentUuids }
-            var response = await configuredAxios.post(import.meta.env.API_URL + '/documents/delete', params);
+            var response = await configuredAxios.post(env.API_URL + '/documents/delete', params);
             console.log("Deleted Document(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Document(s) deleted successfully" }, 4000) // 4s
             getDocuments(knowledgeSetUuid);
