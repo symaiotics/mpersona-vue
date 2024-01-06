@@ -15,11 +15,17 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     env:
-       SELF: ${{ secrets.SELF }}
-       API_URL: ${{ secrets.API_URL }}
-       WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
-       STORAGE_URL: ${{ secrets.STORAGE_URL }}
+      SELF: ${{ secrets.SELF }}
+      API_URL: ${{ secrets.API_URL }}
+      WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
+      STORAGE_URL: ${{ secrets.STORAGE_URL }}
     steps:
+      - name: Print environment variables
+        run: |
+          echo "SELF=$SELF"
+          echo "API_URL=$API_URL"
+          echo "WEBSOCKET_URL=$WEBSOCKET_URL"
+          echo "STORAGE_URL=$STORAGE_URL"
       - uses: actions/checkout@v3
         with:
           submodules: true
