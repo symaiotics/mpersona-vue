@@ -10,13 +10,13 @@ export default defineConfig({
     'process.env': process.env
   },
 
-  server: {
-    cors: true,
-    strictPort: true,
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin'
-    }
-  },
+  // server: {
+  //   cors: true,
+  //   strictPort: true,
+  //   headers: {
+  //     'Cross-Origin-Opener-Policy': 'same-origin'
+  //   }
+  // },
 
   plugins: [vue(),
   ImportMetaEnvPlugin.vite({ example: ".env.example" }),
