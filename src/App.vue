@@ -69,7 +69,6 @@ const { recallTokens } = useTokens();
 const { websocketConnection, wsUuid } = useWebsockets()
 
 onMounted(() => {
-
   getLexicon();
   recallTokens();
   AOS.init({
