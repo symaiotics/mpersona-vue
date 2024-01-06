@@ -19,7 +19,7 @@ export default defineConfig({
   // },
 
   plugins: [vue(),
-  ImportMetaEnvPlugin.vite({ example: ".env.example" }),
+  ImportMetaEnvPlugin.vite({ example: ".env" }),
   ],
   resolve: {
     alias: [
