@@ -30,10 +30,10 @@ jobs:
       - name: Build the project
         run: npm run build
         env:
-          SELF: ${{ secrets.SELF }}
-          API_URL: ${{ secrets.API_URL }}
-          STORAGE_URL: ${{ secrets.STORAGE_URL }}
-          WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
+          SELF: "SYMAIOTICS"
+          API_URL: "SYMAIOTICS"
+          STORAGE_URL: "SYMAIOTICS"
+          WEBSOCKET_URL: "SYMAIOTICS"
 
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
