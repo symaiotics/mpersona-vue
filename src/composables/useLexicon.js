@@ -14,7 +14,7 @@ let pendingLexicon = ref([]);
 export function useLexicon() {
     async function getLexicon() {
         try {
-            const response = await configuredAxios.get(`${import.meta.env.VITE_API_URL}/lexicon`);
+            const response = await configuredAxios.get(`${import.meta.env.API_URL}/lexicon`);
             lexicon.value = response.data.payload;
             lexiconLoaded.value = true;
             console.log("Lexicon", lexicon.value)
@@ -113,7 +113,7 @@ export function useLexicon() {
             for (const pendingWord of pendingLexicon.value) {
                 if (!pendingWord.started) {
                     pendingWord.started = true;
-                    await configuredAxios.post(`${import.meta.env.VITE_API_URL}/lexicon`, { words: [pendingWord] });
+                    await configuredAxios.post(`${import.meta.env.API_URL}/lexicon`, { words: [pendingWord] });
                 }
             }
             // await getLexicon();
@@ -125,7 +125,7 @@ export function useLexicon() {
     async function saveEditedWords(words) {
         const saveWords = words.filter(word => word.dirty);
         try {
-            await configuredAxios.post(`${import.meta.env.VITE_API_URL}/lexicon`, { words: saveWords, saveAll: true });
+            await configuredAxios.post(`${import.meta.env.API_URL}/lexicon`, { words: saveWords, saveAll: true });
             // await getLexicon();
         } catch (error) {
             throw error;
@@ -134,7 +134,7 @@ export function useLexicon() {
 
     async function deleteWord(word) {
         try {
-            await configuredAxios.delete(`${import.meta.env.VITE_API_URL}/lexicon`, { data: { word: word } });
+            await configuredAxios.delete(`${import.meta.env.API_URL}/lexicon`, { data: { word: word } });
             lexicon.value = lexicon.value.filter(item => item.id !== word.id);
         } catch (error) {
             throw error;

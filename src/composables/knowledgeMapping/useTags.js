@@ -29,7 +29,7 @@ export function useTags() {
     async function getTags(knowledgeSetUuid) {
         try {
             let params = { params: { knowledgeSetUuid } }
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/tags', params);
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/tags', params);
             tags.value = response.data.payload;
             console.log("Loaded Tag", tags.value)
         }
@@ -42,7 +42,7 @@ export function useTags() {
         try {
             if (!Array.isArray(tags)) tags = [tags]
             var params = { knowledgeSetUuid, tags }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/tags', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/tags', params);
             console.log("Created Tag(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Tag(s) created successfully" }, 4000) // 4s
             getTags(knowledgeSetUuid);
@@ -60,7 +60,7 @@ export function useTags() {
         try {
             if (!Array.isArray(tags)) tags = [tags]
             var params = { knowledgeSetUuid, tags }
-            var response = await configuredAxios.patch(import.meta.env.VITE_API_URL + '/tags', params);
+            var response = await configuredAxios.patch(import.meta.env.API_URL + '/tags', params);
             console.log("Created Tag(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Tag(s) created successfully" }, 4000) // 4s
             getTags(knowledgeSetUuid);
@@ -76,7 +76,7 @@ export function useTags() {
     async function deleteTags(knowledgeSetUuid, tagUuids) {
         try {
             var params = { knowledgeSetUuid, tagUuids }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/tags/delete', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/tags/delete', params);
             console.log("Deleted Tag(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Tag(s) deleted successfully" }, 4000) // 4s
             getTags(knowledgeSetUuid);

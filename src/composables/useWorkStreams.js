@@ -17,7 +17,7 @@ export function useWorkStreams() {
 
     async function getWorkStreams() {
         try {
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/workStreams');
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/workStreams');
             workStreams.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Work Streams", workStreams.value)
@@ -38,7 +38,7 @@ export function useWorkStreams() {
                 })
                 var params = { workStreams: newWorkStreams }
                 console.log("create work streams params", params)
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/workStreams', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/workStreams', params);
                 console.log(response.data.payload)
                 notify({ group: "success", title: "Success", text: "Work Stream(s) created successfully" }, 4000) // 4s
                 getWorkStreams();
@@ -71,7 +71,7 @@ export function useWorkStreams() {
         try {
             if (!Array.isArray(updateWorkStreams)) updateWorkStreams = [updateWorkStreams]
             var params = { workStreams: updateWorkStreams }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/workStreams/update', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/workStreams/update', params);
             console.log(response.data.payload)
             notify({ group: "success", title: "Success", text: "Work Stream(s) updated successfully" }, 4000) // 4s
             getWorkStreams();

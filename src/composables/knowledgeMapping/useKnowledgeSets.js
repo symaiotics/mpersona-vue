@@ -31,7 +31,7 @@ export function useKnowledgeSets() {
         try {
 
             let params = { params: { rosterUuid, viewAll } }
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/knowledgeSets', params);
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/knowledgeSets', params);
             knowledgeSets.value = response.data.payload;
             console.log("Loaded Knowledge Sets", knowledgeSets.value)
         }
@@ -44,7 +44,7 @@ export function useKnowledgeSets() {
         try {
             if (!Array.isArray(knowledgeSets)) knowledgeSets = [knowledgeSets]
             var params = { knowledgeSets, rosterUuid }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeSets', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeSets', params);
             console.log("Created Knowledge Set(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Knowledge Set(s) created successfully" }, 4000) // 4s
             getKnowledgeSets(rosterUuid, false);
@@ -61,7 +61,7 @@ export function useKnowledgeSets() {
         try {
             if (!Array.isArray(knowledgeSets)) knowledgeSets = [knowledgeSets]
             var params = { knowledgeSets, rosterUuid }
-            var response = await configuredAxios.patch(import.meta.env.VITE_API_URL + '/knowledgeSets', params);
+            var response = await configuredAxios.patch(import.meta.env.API_URL + '/knowledgeSets', params);
             console.log("Updated Knowledge Sets", response.data.payload)
             notify({ group: "success", title: "Success", text: "Knowledge Set(s) updated successfully" }, 4000) // 4s
             getKnowledgeSets(rosterUuid);
@@ -77,7 +77,7 @@ export function useKnowledgeSets() {
             if (!Array.isArray(knowledgeSetUuids)) knowledgeSetUuids = [knowledgeSetUuids]
             var params = { knowledgeSetUuids, rosterUuid }
             console.log("Delete params", params)
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeSets/delete', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeSets/delete', params);
             console.log("Deleted Knowledge Set(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Knowledge Set(s) deleted successfully" }, 4000) // 4s
             getKnowledgeSets(rosterUuid);

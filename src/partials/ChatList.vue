@@ -211,8 +211,8 @@ let listResources = computed(() => {
 
 function formatUrl(url)
 {
-//return  import.meta.env.VITE_STORAGE_URL + "/" + url;
-return `https://docs.google.com/viewer?url=${import.meta.env.VITE_STORAGE_URL + "/" + url}&embedded=true`
+//return  import.meta.env.STORAGE_URL + "/" + url;
+return `https://docs.google.com/viewer?url=${import.meta.env.STORAGE_URL + "/" + url}&embedded=true`
 }
 
 function promptQuestion(question) {

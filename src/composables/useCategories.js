@@ -50,7 +50,7 @@ export function useCategories() {
 
     async function getCategories() {
         try {
-            var response = await axios.get(import.meta.env.VITE_API_URL + '/categories');
+            var response = await axios.get(import.meta.env.API_URL + '/categories');
             categories.value = response.data.payload;
 
             //TODO enhance to receive the code as well

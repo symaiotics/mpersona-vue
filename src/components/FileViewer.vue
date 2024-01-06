@@ -417,11 +417,11 @@ async function saveFact(fileUuid, socket) {
 
 
 function viewFile(url) {
-    window.open(import.meta.env.VITE_STORAGE_URL + "/" + url, '_blank');
+    window.open(import.meta.env.STORAGE_URL + "/" + url, '_blank');
 }
 
 function viewFileInGoogle(url) {
-    window.open(`https://docs.google.com/viewer?url=${import.meta.env.VITE_STORAGE_URL + "/" + url}&embedded=true`, '_blank');
+    window.open(`https://docs.google.com/viewer?url=${import.meta.env.STORAGE_URL + "/" + url}&embedded=true`, '_blank');
 }
 
 

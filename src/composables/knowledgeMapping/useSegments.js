@@ -92,7 +92,7 @@ export function useSegments() {
     async function getSegments(knowledgeSetUuid) {
         try {
             let params = { params: { knowledgeSetUuid } }
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/segments', params);
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/segments', params);
             segments.value = response.data.payload;
             console.log("Loaded Segment", segments.value)
         }
@@ -105,7 +105,7 @@ export function useSegments() {
         try {
             if (!Array.isArray(segments)) segments = [segments]
             var params = { knowledgeSetUuid, segments }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/segments', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/segments', params);
             console.log("Created Segment(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Segment(s) created successfully" }, 4000) // 4s
             getSegments(knowledgeSetUuid);
@@ -123,7 +123,7 @@ export function useSegments() {
         try {
             if (!Array.isArray(segments)) segments = [segments]
             var params = { knowledgeSetUuid, segments }
-            var response = await configuredAxios.patch(import.meta.env.VITE_API_URL + '/segments', params);
+            var response = await configuredAxios.patch(import.meta.env.API_URL + '/segments', params);
             console.log("Created Segment(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Segment(s) created successfully" }, 4000) // 4s
             getSegments(knowledgeSetUuid);
@@ -142,7 +142,7 @@ export function useSegments() {
             if (!Array.isArray(segments)) segments = [segments]
             if (!Array.isArray(tags)) tags = [tags]
             var params = { knowledgeSetUuid, operation, segments, tags }
-            var response = await configuredAxios.patch(import.meta.env.VITE_API_URL + '/segments/tags', params);
+            var response = await configuredAxios.patch(import.meta.env.API_URL + '/segments/tags', params);
             console.log("Added tags to segments(s)", response.data.payload)
             notify({ group: "success", title: "Success", text: "Added tags to Segments" }, 4000) // 4s
             getSegments(knowledgeSetUuid);
@@ -158,7 +158,7 @@ export function useSegments() {
     async function deleteSegments(knowledgeSetUuid, segmentUuids) {
         try {
             var params = { knowledgeSetUuid, segmentUuids }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/segments/delete', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/segments/delete', params);
             console.log("Deleted Segment(s)", response.data.payload);
             notify({ group: "success", title: "Success", text: "Segment(s) deleted successfully" }, 4000) // 4s
             getSegments(knowledgeSetUuid);

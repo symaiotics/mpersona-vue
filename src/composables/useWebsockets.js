@@ -80,7 +80,7 @@ export function useWebsockets() {
         clearTimeout(pongTimeout);
 
         if (!ws) {
-            ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
+            ws = new WebSocket(import.meta.env.WEBSOCKET_URL);
             ws.addEventListener('open', handleOpen);
             ws.addEventListener('message', handleMessage);
             ws.addEventListener('close', handleClose);

@@ -42,7 +42,7 @@ export function useKnowledgeProfiles() {
 
     async function getKnowledgeProfiles() {
         try {
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/knowledgeProfiles');
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/knowledgeProfiles');
             knowledgeProfiles.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Knowledge Profiles", knowledgeProfiles.value)
@@ -56,7 +56,7 @@ export function useKnowledgeProfiles() {
         try {
             if (!Array.isArray(newKnowledgeProfiles)) newKnowledgeProfiles = [newKnowledgeProfiles]
             var params = { knowledgeProfiles: newKnowledgeProfiles }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeProfiles', params);
             console.log("Saved Knowledge Profiles", response)
             notify({ group: "success", title: "Success", text: "Knowledge Profile created successfully" }, 4000) // 4s
             getKnowledgeProfiles();
@@ -73,7 +73,7 @@ export function useKnowledgeProfiles() {
         try {
             if (!Array.isArray(updateArr)) updateArr = [updateArr]
             var params = { knowledgeProfiles: updateArr }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/update', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeProfiles/update', params);
             console.log(response.data.payload)
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Knowledge profile(s) updated successfully" }, 4000) // 4s
@@ -91,7 +91,7 @@ export function useKnowledgeProfiles() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { knowledgeProfileUuid, knowledgeProfileLink, linkType }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/addLink', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeProfiles/addLink', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -105,7 +105,7 @@ export function useKnowledgeProfiles() {
             try {
                 console.log("Getting Knowledge Profile details", link)
                 var params = { link: link }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/linkDetails', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeProfiles/linkDetails', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -118,7 +118,7 @@ export function useKnowledgeProfiles() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { link: link }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/knowledgeProfiles/acceptLink', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/knowledgeProfiles/acceptLink', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -130,7 +130,7 @@ export function useKnowledgeProfiles() {
 
     // async function getSkills() {
     //     try {
-    //         var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas/skills');
+    //         var response = await configuredAxios.get(import.meta.env.API_URL + '/personas/skills');
     //         skills.value = response.data.payload;
 
     //         //TODO enhance to receive the code as well
@@ -144,7 +144,7 @@ export function useKnowledgeProfiles() {
 
     // async function getUsedCategories() {
     //     try {
-    //         var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas/categories');
+    //         var response = await configuredAxios.get(import.meta.env.API_URL + '/personas/categories');
     //         usedCategories.value = response.data.payload;
 
     //         //TODO enhance to receive the code as well
@@ -159,7 +159,7 @@ export function useKnowledgeProfiles() {
     //     try {
     //         if (!Array.isArray(newPersonas)) newPersonas = [newPersonas]
     //         var params = { personas: newPersonas }
-    //         var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas', params);
+    //         var response = await configuredAxios.post(import.meta.env.API_URL + '/personas', params);
     //         console.log(response.data.payload)
     //         // currentPersona.value = response;    
     //         notify({ group: "success", title: "Success", text: "Persona(s) created successfully" }, 4000) // 4s
@@ -175,8 +175,8 @@ export function useKnowledgeProfiles() {
     //     return new Promise(async (resolve, reject) => {
     //         try {
     //             var params = { avatarPrompt: "An attractive digital avatar, Pixar style 3D render of a friendly person smiling, inside, 4k, high resolution, trending in artstation, for a " + description + " " }
-    //             var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/avatar', params);
-    //             resolve(import.meta.env.VITE_STORAGE_URL + "/images/" + response.data.payload)
+    //             var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/avatar', params);
+    //             resolve(import.meta.env.STORAGE_URL + "/images/" + response.data.payload)
     //             getPersonas();
     //         }
 
@@ -191,7 +191,7 @@ export function useKnowledgeProfiles() {
     //     try {
     //         if (!Array.isArray(updatePersonas)) updatePersonas = [updatePersonas]
     //         var params = { personas: updatePersonas }
-    //         var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/update', params);
+    //         var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/update', params);
     //         console.log(response.data.payload)
     //         // currentPersona.value = response;    
     //         notify({ group: "success", title: "Success", text: "Persona(s) updated successfully" }, 4000) // 4s

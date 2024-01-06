@@ -22,7 +22,7 @@ export function usePrompts() {
         clearInterval(pingInterval);
         clearTimeout(pongTimeout);
 
-        ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
+        ws = new WebSocket(import.meta.env.WEBSOCKET_URL);
 
         // Set up an event listener for when the connection is opened
         ws.addEventListener('open', (event) => {
@@ -76,7 +76,7 @@ export function usePrompts() {
             // Optionally: set up logic to attempt reconnection
             setTimeout(() => {
                 console.log('Attempting to reconnect...');
-                ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
+                ws = new WebSocket(import.meta.env.WEBSOCKET_URL);
             }, 500);  // Attempt to reconnect after 5 seconds
 
         });
@@ -103,7 +103,7 @@ export function usePrompts() {
 
                 console.log(params)
                 // console.log("params", params)
-                var response = await axios.post(import.meta.env.VITE_API_URL + '/prompts', params);
+                var response = await axios.post(import.meta.env.API_URL + '/prompts', params);
 
                 // console.log(response)
                 promptResponse.value = response.data.payload.text;

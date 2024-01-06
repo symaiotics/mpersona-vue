@@ -41,7 +41,7 @@ export function usePersonas() {
     async function getPersonas(viewAll) {
         try {
             let params = { params: { viewAll: viewAll } };
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas', params);
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/personas', params);
             personas.value = response.data.payload;
             //TODO enhance to receive the code as well
             console.log("Loaded Personas", personas.value)
@@ -53,7 +53,7 @@ export function usePersonas() {
 
     async function getSkills() {
         try {
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas/skills');
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/personas/skills');
             skills.value = response.data.payload;
 
             //TODO enhance to receive the code as well
@@ -66,7 +66,7 @@ export function usePersonas() {
 
     async function getUsedCategories() {
         try {
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/personas/categories');
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/personas/categories');
             usedCategories.value = response.data.payload;
 
             //TODO enhance to receive the code as well
@@ -81,7 +81,7 @@ export function usePersonas() {
         try {
             if (!Array.isArray(newPersonas)) newPersonas = [newPersonas]
             var params = { personas: newPersonas }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/personas', params);
             console.log(response.data.payload)
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Persona(s) created successfully" }, 4000) // 4s
@@ -97,8 +97,8 @@ export function usePersonas() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { avatarPrompt: description }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/avatar', params);
-                resolve(import.meta.env.VITE_STORAGE_URL + "/images/" + response.data.payload)
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/avatar', params);
+                resolve(import.meta.env.STORAGE_URL + "/images/" + response.data.payload)
                 getPersonas();
             }
 
@@ -113,7 +113,7 @@ export function usePersonas() {
         try {
             if (!Array.isArray(updatePersonas)) updatePersonas = [updatePersonas]
             var params = { personas: updatePersonas }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/update', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/update', params);
             console.log(response.data.payload)
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Persona(s) updated successfully" }, 4000) // 4s
@@ -131,7 +131,7 @@ export function usePersonas() {
         try {
             if (!Array.isArray(deletePersonas)) deletePersonas = [deletePersonas]
             var params = { personas: deletePersonas }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/delete', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/delete', params);
             console.log(response.data.payload)
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Persona(s) deleted successfully" }, 4000) // 4s
@@ -150,7 +150,7 @@ export function usePersonas() {
             try {
                 console.log("Adding persona link", personaLink)
                 var params = { personaUuid, personaLink, linkType }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/addLink', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/addLink', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -165,7 +165,7 @@ export function usePersonas() {
             try {
                 console.log("Getting Persona details", personaLink)
                 var params = { personaLink: personaLink }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/linkDetails', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/linkDetails', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -178,7 +178,7 @@ export function usePersonas() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = { personaLink: personaLink }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/acceptLink', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/acceptLink', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -192,7 +192,7 @@ export function usePersonas() {
             try {
                 if (!Array.isArray(personas)) personas = [personas];
                 var params = { personaUuids: personas.map((persona) => { return persona.uuid }), publishStatus: status }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/publish', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/publish', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -206,7 +206,7 @@ export function usePersonas() {
             try {
                 if (!Array.isArray(personas)) personas = [personas];
                 var params = { personaUuids: personas.map((persona) => { return persona.uuid }) }
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/finetune', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/finetune', params);
                 resolve(response.data.payload)
             }
             catch (error) {
@@ -219,7 +219,7 @@ export function usePersonas() {
         return new Promise(async (resolve, reject) => {
             try {
                 var params = {}
-                var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/personas/finetuneStatuses', params);
+                var response = await configuredAxios.post(import.meta.env.API_URL + '/personas/finetuneStatuses', params);
                 resolve(response.data.payload)
             }
             catch (error) {

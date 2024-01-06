@@ -4,7 +4,7 @@ import { useTokens } from '@/composables/useTokens.js'
 const { setTokens, unsetTokens } = useTokens();
 
 var config = {
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: import.meta.env.API_URL,
     headers: {
         Accept: "application/json",
     },

@@ -94,7 +94,7 @@ export function useFiles() {
             formData.append('uuids', JSON.stringify(uuidArray));
 
             // Get the results
-            const response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files', formData);
+            const response = await configuredAxios.post(import.meta.env.API_URL + '/files', formData);
 
             // Check response structure
             if (response && response.data && Array.isArray(response.data.payload)) {
@@ -119,7 +119,7 @@ export function useFiles() {
     async function getFiles(knowledgeProfileUuid) {
         try {
             var params = { params: { knowledgeProfileUuid: knowledgeProfileUuid } }
-            var response = await configuredAxios.get(import.meta.env.VITE_API_URL + '/files', params);
+            var response = await configuredAxios.get(import.meta.env.API_URL + '/files', params);
 
             //Transpose the array of results to a string based object array (object)
             if (!files.value) files.value = {};
@@ -144,7 +144,7 @@ export function useFiles() {
             var files = Object.values(newFiles);
             files = files.filter((file) => { return !file._id })
             var params = { files: files }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files/create', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/files/create', params);
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Files created successfully" }, 4000) // 4s
         }
@@ -159,7 +159,7 @@ export function useFiles() {
         try {
             // if (!Array.isArray(files)) files = [files]
             var params = { files: Object.values(files) }
-            var response = await configuredAxios.post(import.meta.env.VITE_API_URL + '/files/update', params);
+            var response = await configuredAxios.post(import.meta.env.API_URL + '/files/update', params);
             console.log(response.data.payload)
             // currentPersona.value = response;    
             notify({ group: "success", title: "Success", text: "Files updated successfully" }, 4000) // 4s
