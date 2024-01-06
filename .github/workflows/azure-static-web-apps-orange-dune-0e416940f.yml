@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     env:
-      VITE_SELF: https://mpersona.com
-      VITE_API_URL: https://api.mpersona.com
-      VITE_WEBSOCKET_URL: wss://api.mpersona.com
-      VITE_STORAGE_URL: https://mpersona.blob.core.windows.net
+       SELF: ${{ secrets.SELF }}
+       API_URL: ${{ secrets.API_URL }}
+       WEBSOCKET_URL: ${{ secrets.WEBSOCKET_URL }}
+       STORAGE_URL: ${{ secrets.STORAGE_URL }}
     steps:
       - uses: actions/checkout@v3
         with:
