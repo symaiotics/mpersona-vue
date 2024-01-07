@@ -252,7 +252,7 @@ watch(partialMessage, (newValue, oldValue) => {
 watch(errorMessage, (newValue, oldValue) => {
     // console.log("Error message", newValue);
     if (!oldValue?.length && newValue?.length) {
-        notify({ group: "failure", title: "Error", text: newValue }, 4000) // 4s
+        notify({ group: "failure", title: "Error", text: newValue }, 8000) // 4s
 
         emit('messageError');
 

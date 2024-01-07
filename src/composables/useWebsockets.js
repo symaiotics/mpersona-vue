@@ -122,21 +122,21 @@ export function useWebsockets() {
                     sessions.value[data.session].status = 'complete'
                 }
                 else if (data.type === 'ERROR') {
+                    console.log("Error in LLM response:", data)
 
                     var errorMessage = "Error: ";
-                    try {
-                        var parsedError = JSON.parse(data.message);
-                        errorMessage += parsedError.status + " " + parsedError.statusText;
-                        if (parsedError.status == 429 || parsedError.status == "429") errorMessage += ". You've submitted too many tokens. Try again in a minute."
-                    }
-                    catch (err) {
-                        //Not JSON, just leave as error
-                        //Maybe cancel and try again if an error is received mid stream?
-                    }
-
+                    // try {
+                    //     var parsedError = JSON.parse(data.message);
+                    //     errorMessage += parsedError.status + " " + parsedError.statusText;
+                    //     if (parsedError.status == 429 || parsedError.status == "429") errorMessage += ". You've submitted too many tokens. Try again in a minute."
+                    // }
+                    // catch (err) {
+                    //     //Not JSON, just leave as error
+                    //     //Maybe cancel and try again if an error is received mid stream?
+                    // }
 
                     sessions.value[data.session].status = 'waiting'; //Set a waiting status, to retry once available.
-                    sessions.value[data.session].errorMessage = errorMessage;
+                    sessions.value[data.session].errorMessage = errorMessage + data.message;
 
                     // Clean up messages to avoid memory bloat
                     sessions.value[data.session].messages = []; // Reset messages for the session
