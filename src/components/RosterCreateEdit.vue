@@ -199,6 +199,7 @@
 </template>
 
 <script setup>
+import env from "@/env.js"
 
 import { ref, onMounted, onBeforeMount } from 'vue';
 import { generate, count } from "random-words";
